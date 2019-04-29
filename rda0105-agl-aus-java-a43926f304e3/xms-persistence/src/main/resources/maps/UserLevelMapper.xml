@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="UserLevel">
+    <resultMap id="UserLevelMap" type="UserLevelVo">
+        <id column="user_level_id" property="userLevelId"/>
+        <result column="user_level_name" property="userLevelName"/>
+        <result column="user_level_code" property="userLevelCode"/>
+        <result column="localizationid" property="localizationId"/>
+    </resultMap>
+
+    <select id="selectById" parameterType="int" resultMap="UserLevelMap">
+        select * from xms_tbl_user_level
+        where user_level_id = #{userLevelId}
+    </select>
+
+    <select id="selectForPermission" resultMap="UserLevelMap">
+        select * from xms_tbl_user_level
+        where user_level_id > 1
+    </select>
+
+    <select id="selectForMenuEditor" resultMap="UserLevelMap">
+        select * from xms_tbl_user_level
+    </select>
+
+    <select id="getUserLevelsByUserId" resultMap="UserLevelMap" parameterType="long">
+        select * from xms_tbl_user_level
+        where user_level_code >= (select ul.user_level_code from xms_tbl_user as u
+        inner join xms_tbl_user_level as ul on ul.user_level_id = u.user_level_id
+        where u.userid = #{userId})
+        order by user_level_code
+    </select>
+</mapper>

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="labelRequest" nillable="false">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="consignment" type="labelConsignmentsType" nillable="false" minOccurs="1"
+                            maxOccurs="5"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="labelConsignmentsType">
+        <xs:sequence>
+            <xs:element name="consignmentIdentity" type="consignmentIdentityType" minOccurs="1"/>
+            <xs:element name="collectionDateTime" type="xs:dateTime" minOccurs="1"/>
+            <xs:element name="sender" type="nameAndAddressRequestType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="delivery" type="nameAndAddressRequestType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="contact" type="contactType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="product" type="productType" minOccurs="1"/>
+            <xs:element name="account" type="accountType" minOccurs="1"/>
+            <xs:element name="cashAmount" type="doubleTwoDecimalPlaces" minOccurs="0"/>
+            <xs:element name="cashCurrency" type="xs:string" minOccurs="0"/>
+            <xs:element name="cashType" type="cashTypeEnum" minOccurs="0"/>
+            <xs:element name="ncolNumber" type="xs:string" minOccurs="0"/>
+            <xs:element name="specialInstructions" type="xs:string" minOccurs="0"/>
+            <xs:element name="bulkShipment" type="booleanEnum" minOccurs="0"/>
+            <xs:element name="customControlled" type="booleanEnum" minOccurs="0"/>
+            <xs:element name="termsOfPayment" type="senderReceiverEnum" minOccurs="0"/>
+            <xs:element name="totalNumberOfPieces" type="xs:int" minOccurs="1"/>
+            <xs:element name="pieceLine" type="pieceLineType" minOccurs="1" maxOccurs="99"/>
+        </xs:sequence>
+        <xs:attribute name="key" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="consignmentIdentityType">
+        <xs:sequence>
+            <xs:element name="consignmentNumber" type="xs:string" minOccurs="1"/>
+            <xs:element name="customerReference" type="xs:string" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="nameAndAddressRequestType">
+        <xs:sequence>
+            <xs:element name="name" type="stringMaxLength40" minOccurs="1"/>
+            <xs:element name="addressLine1" type="stringMaxLength30" minOccurs="1"/>
+            <xs:element name="addressLine2" type="stringMaxLength30" minOccurs="0" nillable="true"/>
+            <xs:element name="addressLine3" type="stringMaxLength30" minOccurs="0" nillable="true"/>
+            <xs:element name="town" type="stringMaxLength40" minOccurs="0"/>
+            <xs:element name="exactMatch" type="booleanEnum" minOccurs="0" default="Y"/>
+            <xs:element name="province" type="stringMaxLength30" minOccurs="0"/>
+            <xs:element name="postcode" type="stringMaxLength9" minOccurs="0"/>
+            <xs:element name="country" type="stringMinLength2MaxLength2" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="contactType">
+        <xs:sequence>
+            <xs:element name="name" type="stringMaxLength30" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="telephoneNumber" type="stringMaxLength30" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="emailAddress" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="productType">
+        <xs:sequence>
+            <xs:element name="lineOfBusiness" type="integerMin0Max9"/>
+            <xs:element name="groupId" type="integerMin0Max9"/>
+            <xs:element name="subGroupId" type="integerMin0Max9"/>
+            <xs:element name="id" type="stringMaxLength4"/>
+            <xs:element name="type" type="productTypeEnum"/>
+            <xs:element name="option" type="stringMaxLength4" minOccurs="0" maxOccurs="5"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="accountType">
+        <xs:sequence>
+            <xs:element name="accountNumber" type="stringMaxLength10" minOccurs="1"/>
+            <xs:element name="accountCountry" type="stringMinLength2MaxLength2" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="doubleTwoDecimalPlaces">
+        <xs:restriction base="xs:decimal">
+            <xs:fractionDigits value="2"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="booleanEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="N"/>
+            <xs:enumeration value="Y"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="cashTypeEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="0"/>
+            <xs:enumeration value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="senderReceiverEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="S"/>
+            <xs:enumeration value="R"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="pieceLineType">
+        <xs:sequence>
+            <xs:element name="identifier" type="xs:int" minOccurs="1"/>
+            <xs:element name="goodsDescription" type="stringMaxLength30" minOccurs="1"/>
+            <xs:element name="barcodeForCustomer" type="booleanEnum" minOccurs="0"/>
+            <xs:element name="pieceMeasurements" type="measurementsType" minOccurs="1"/>
+            <xs:element name="pieces" type="pieceType" minOccurs="1" maxOccurs="99"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="stringMaxLength40">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="40"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="stringMaxLength9">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="9"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="stringMaxLength30">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="30"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="stringMinLength2MaxLength2">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="2"/>
+            <xs:maxLength value="2"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="integerMin0Max9">
+        <xs:restriction base="xs:int">
+            <xs:minInclusive value="0"/>
+            <xs:maxInclusive value="9"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="stringMaxLength4">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="4"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="productTypeEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="N"/>
+            <xs:enumeration value="D"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="stringMaxLength10">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="10"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="measurementsType">
+        <xs:sequence>
+            <xs:element name="length" type="doubleMaxExclusive100MinInclusive0.01" minOccurs="1"/>
+            <xs:element name="width" type="doubleMaxExclusive100MinInclusive0.01" minOccurs="1"/>
+            <xs:element name="height" type="doubleMaxExclusive100MinInclusive0.01" minOccurs="1"/>
+            <xs:element name="weight" type="doubleMaxExclusive100000MinInclusive0.01" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="pieceType">
+        <xs:sequence>
+            <xs:element name="sequenceNumbers" type="xs:string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="pieceReference" type="xs:string" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="doubleMaxExclusive100MinInclusive0.01">
+        <xs:restriction base="xs:double">
+            <xs:maxExclusive value="100"/>
+            <xs:minInclusive value="0.01"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="doubleMaxExclusive100000MinInclusive0.01">
+        <xs:restriction base="xs:double">
+            <xs:maxExclusive value="100000"/>
+            <xs:minInclusive value="0.01"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

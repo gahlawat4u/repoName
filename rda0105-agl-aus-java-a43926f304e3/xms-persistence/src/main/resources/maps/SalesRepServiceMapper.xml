@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="SalesRepService">
+    <resultMap id="SalesRepServiceMap" type="SalesRepServiceVo">
+        <result column="sales_rep_id" property="salesRepId"/>
+        <result column="serviceid" property="serviceId"/>
+        <result column="goal" property="goal"/>
+        <result column="payout" property="payout"/>
+    </resultMap>
+
+    <select id="selectByFilter" parameterType="SalesRepServiceVo" resultMap="SalesRepServiceMap">
+        select * from xms_tbl_sales_rep_service
+        where sales_rep_id = #{salesRepId} and serviceid = #{serviceId}
+    </select>
+
+    <insert id="insertSalesRepService" parameterType="SalesRepServiceVo">
+        insert into xms_tbl_sales_rep_service (
+        sales_rep_id,
+        serviceid,
+        goal,
+        payout
+        )
+        values (
+        #{salesRepId},
+        #{serviceId},
+        #{goal},
+        #{payout}
+        )
+    </insert>
+
+    <update id="updateSalesRepService" parameterType="SalesRepServiceVo">
+        update xms_tbl_sales_rep_service
+        <set>
+            <if test="goal!=null">
+                goal = #{goal},
+            </if>
+            <if test="payout!=null">
+                payout = #{payout},
+            </if>
+        </set>
+        where sales_rep_id = #{salesRepId} and serviceid = #{serviceId}
+    </update>
+
+    <select id="updateSalesRepService_SelectForLog" parameterType="SalesRepServiceVo" resultMap="SalesRepServiceMap">
+        select * from xms_tbl_sales_rep_service
+        where sales_rep_id = #{salesRepId} and serviceid = #{serviceId}
+    </select>
+
+    <delete id="deleteSalesRepService" parameterType="SalesRepServiceVo">
+        delete from xms_tbl_sales_rep_service
+        where sales_rep_id = #{salesRepId} and serviceid = #{serviceId}
+    </delete>
+
+    <select id="deleteSalesRepService_SelectForLog" parameterType="SalesRepServiceVo" resultMap="SalesRepServiceMap">
+        select * from xms_tbl_sales_rep_service
+        where sales_rep_id = #{salesRepId} and serviceid = #{serviceId}
+    </select>
+
+</mapper>
+ 
+

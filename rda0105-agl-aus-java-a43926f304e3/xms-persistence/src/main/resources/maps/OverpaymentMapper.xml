@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Overpayment">
+    <resultMap id="OverpaymentMap" type="com.gms.xms.txndb.vo.OverpaymentVo">
+        <result column="cus_paymentid" property="cusPaymentId" jdbcType="BIGINT"/>
+        <result column="over_amount" property="overAmount" jdbcType="DECIMAL"/>
+        <result column="row_count_overpay" property="countOverPay"/>
+    </resultMap>
+
+    <select id="selectByCustomerPaymentId" resultMap="OverpaymentMap" parameterType="long">
+        SELECT
+        *
+        FROM
+        xms_tbl_overpayment
+        WHERE
+        cus_paymentid = #{cusPaymentId}
+    </select>
+
+    <select id="selectByCustomerCode" parameterType="long" resultMap="OverpaymentMap">
+        select op.* from xms_tbl_overpayment as op
+        inner join xms_tbl_customer_payment as cp on cp.cus_paymentid = op.cus_paymentid
+        where cp.customer_code = #{customerCode}
+    </select>
+
+    <select id="selectByCustCodeAndSource" parameterType="OverpaymentInfoFilter" resultMap="OverpaymentMap">
+        select op.* from xms_tbl_overpayment as op
+        inner join xms_tbl_customer_payment as cp on cp.cus_paymentid = op.cus_paymentid
+        where cp.customer_code = #{customerCode}
+    </select>
+
+    <select id="selectCreditTypeByCustomerPaymentId" parameterType="Long" resultType="Long">
+        select credit_type from xms_tbl_airbill_adjustment where adjustmentid in (select adjustmentid from
+        xms_tbl_credit_note_detail where cus_paymentid = #{cusPaymentid});
+    </select>
+
+    <select id="selectOverPayByCustomerPaymentId" parameterType="long" resultMap="OverpaymentMap">
+        select
+        cus_paymentid,
+        sum(over_amount) as over_amount,
+        count(cus_paymentid) as row_count_overpay
+        from
+        xms_tbl_overpayment
+        where
+        cus_paymentid = #{cusPaymentId}
+        group by cus_paymentid
+    </select>
+
+    <insert id="insert" parameterType="OverpaymentVo">
+        insert into xms_tbl_overpayment (cus_paymentid, over_amount)
+        values (#{cusPaymentId}, #{overAmount})
+    </insert>
+
+    <update id="update" parameterType="OverpaymentVo">
+        update xms_tbl_overpayment
+        set over_amount = #{overAmount}
+        where cus_paymentid = #{cusPaymentId}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="OverpaymentVo" resultMap="OverpaymentMap">
+        select * from xms_tbl_overpayment
+        where cus_paymentid = #{cusPaymentId}
+    </select>
+
+    <delete id="delete" parameterType="long">
+        delete from xms_tbl_overpayment
+        where cus_paymentid = #{cusPaymentId}
+    </delete>
+
+    <select id="delete_SelectForLog" parameterType="long" resultMap="OverpaymentMap">
+        select * from xms_tbl_overpayment
+        where cus_paymentid = #{cusPaymentId}
+    </select>
+</mapper>

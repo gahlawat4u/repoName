@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FranchiseDetail">
+    <resultMap id="FranchiseDetailMap" type="com.gms.xms.txndb.vo.account.franchises.FranchiseDetailVo">
+        <result column="franchise_code" property="franchiseCode"/>
+        <result column="franchise_territory" property="franchiseTerritory"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="address1" property="address1"/>
+        <result column="address2" property="address2"/>
+        <result column="city" property="city"/>
+        <result column="country_name" property="countryName"/>
+        <result column="postal_code" property="postalCode"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="billing_customer_name" property="billingCustomerName"/>
+        <result column="billing_address1" property="billingAddress1"/>
+        <result column="billing_address2" property="billingAddress2"/>
+        <result column="billing_city" property="billingCity"/>
+        <result column="billing_country_name" property="billingCountryName"/>
+        <result column="billing_postal_code" property="billingPostalCode"/>
+        <result column="billing_phone" property="billingPhone"/>
+        <result column="dhl_international_account" property="dhlInternationalAccount"/>
+        <result column="franchise_start_date" property="franchiseStartDate"/>
+        <result column="create_date" property="createDate"/>
+        <result column="activate_date" property="activateDate"/>
+        <result column="invoice_term" property="invoiceTerm"/>
+        <result column="email_invoice" property="emailInvoice"/>
+    </resultMap>
+
+    <select id="selectAll" parameterType="com.gms.xms.filter.account.franchises.FranchiseDetailFilter"
+            resultMap="FranchiseDetailMap">
+        select
+        f.franchise_code,
+        f.franchise_territory,
+        ca.customer_name,
+        ca.address1,
+        ca.address2,
+        ca.city,
+        ct1.countryname as country_name,
+        ca.postal_code,
+        ca.phone,
+        ca.email,
+        cba.billing_customer_name,
+        cba.billing_address1,
+        cba.billing_address2,
+        cba.billing_city,
+        ct2.countryname as billing_country_name,
+        cba.billing_postal_code,
+        cba.billing_phone,
+        f.dhl_international_account,
+        f.franchise_start_date,
+        f.create_date,
+        f.activate_date,
+        it.days as invoice_term,
+        f.email_invoice
+        from xms_tbl_franchise as f
+        left join xms_tbl_customer_address as ca on ca.customer_code = f.franchise_code
+        left join xms_tbl_country as ct1 on ct1.countryid = ca.country
+        left join xms_tbl_customer_billing_address as cba on cba.customer_code = f.franchise_code
+        left join xms_tbl_country as ct2 on ct2.countryid = cba.billing_country
+        left join xms_tbl_invoice_terms as it on it.invoice_terms_id = f.invoice_terms
+        where left(f.franchise_code,3) in (${franchiseList})
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countAll" parameterType="com.gms.xms.filter.account.franchises.FranchiseDetailFilter" resultType="long">
+        select count(*) from xms_tbl_franchise as f
+        left join xms_tbl_customer_address as ca on ca.customer_code = f.franchise_code
+        left join xms_tbl_country as ct1 on ct1.countryid = ca.country
+        left join xms_tbl_customer_billing_address as cba on cba.customer_code = f.franchise_code
+        left join xms_tbl_country as ct2 on ct2.countryid = cba.billing_country
+        left join xms_tbl_invoice_terms as it on it.invoice_terms_id = f.invoice_terms
+        where left(f.franchise_code,3) in (${franchiseList})
+    </select>
+</mapper>

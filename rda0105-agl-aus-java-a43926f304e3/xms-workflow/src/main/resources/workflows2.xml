@@ -1,0 +1,799 @@
+<workflow2>
+    <!-- ====== DHL ======= -->
+    <flow name="Wfl-GetDhlIntlCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.dhl.international.GetDhlIntlZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.dhl.international.GetDhlIntlRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.dhl.international.GetDhlIntlBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.dhl.international.GetDhlIntlSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetDhlIntlBaseCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.dhl.international.GetDhlIntlZoneBaseTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.dhl.international.GetDhlIntlRateSheetBaseTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.dhl.international.GetDhlIntlBaseChargeBaseTask"/>
+    </flow>
+    <flow name="Wfl-GetDhlIntlDownloadBillingBaseCharge">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.dhl.international.downloadbilling.GetDhlIntlDownloadBillingZoneBaseTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.dhl.international.downloadbilling.GetDhlIntlDownloadBillingRateSheetBaseTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.dhl.international.downloadbilling.GetDhlIntlDownloadBillingBaseChargeBaseTask"/>
+    </flow>
+    <flow name="Wfl-GetDhlDomesticCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.dhl.domestic.GetDhlDomesticZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.dhl.domestic.GetDhlDomesticRateSheet"/>
+        <task type="task" className="com.gms.xms.workflow.task2.dhl.domestic.GetDhlDomesticBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.dhl.domestic.GetDhlDomesticSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetDhlDomesticBaseCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.dhl.domestic.GetDhlDomesticZoneBaseTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.dhl.domestic.GetDhlDomesticRateSheetBaseTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.dhl.domestic.GetDhlDomesticBaseChargeBaseTask"/>
+    </flow>
+    <flow name="Wfl-GetDhlDomesticDownloadBillingBaseCharge">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.dhl.domestic.downloadbilling.GetDhlDomesticDownloadBillingZoneBaseTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.dhl.domestic.downloadbilling.GetDhlDomesticDownloadBillingRateSheetBaseTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.dhl.domestic.downloadbilling.GetDhlDomesticDownloadBillingBaseChargeBaseTask"/>
+    </flow>
+
+    <!-- ======= TNT ======= -->
+    <flow name="Wfl-GetTntIntlCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.tnt.international.GetTntIntlZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.tnt.international.GetTntIntlRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.tnt.international.GetTntIntlBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.tnt.international.GetTntIntlSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetTntIntlBaseCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.tnt.international.GetTntIntlZoneBaseTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.tnt.international.GetTntIntlRateSheetBaseTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.tnt.international.GetTntIntlBaseChargeBaseTask"/>
+    </flow>
+
+    <flow name="Wfl-GetTntIntlImportBillingBaseCharge">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.tnt.international.importbilling.GetTntIntlImportBillingZoneBaseTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.tnt.international.importbilling.GetTntIntlImportBillingRateSheetBaseTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.tnt.international.importbilling.GetTntIntlImportBillingBaseChargeBaseTask"/>
+    </flow>
+
+    <flow name="Wfl-GetTntDomesticCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.tnt.domestic.GetTntDomesticZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.tnt.domestic.GetTntDomesticRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.tnt.domestic.GetTntDomesticBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.tnt.domestic.GetTntDomesticSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetQuoteResultTask"/>
+    </flow>
+
+    <flow name="Wfl-GetTntDomesticBaseCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.tnt.domestic.GetTntDomesticZoneBaseTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.tnt.domestic.GetTntDomesticRateSheetBaseTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.tnt.domestic.GetTntDomesticBaseChargeBaseTask"/>
+    </flow>
+
+    <flow name="Wfl-GetTntDomesticImportBillingBaseCharge">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.tnt.domestic.importbilling.GetTntDomesticImportBillingZoneBaseTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.tnt.domestic.importbilling.GetTntDomesticImportBillingRateSheetBaseTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.tnt.domestic.importbilling.GetTntDomesticImportBillingBaseChargeBaseTask"/>
+    </flow>
+
+    <!-- ====== TOLL IPEC ====== -->
+    <flow name="Wfl-GetTollIpecCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.toll.ipec.GetTollIpecZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.toll.ipec.GetTollIpecRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.toll.ipec.GetTollIpecBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.toll.ipec.GetTollIpecSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetTollIpecBaseCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.toll.ipec.GetTollIpecZoneBaseTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.toll.ipec.GetTollIpecRateSheetBaseTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.toll.ipec.GetTollIpecBaseChargeBaseTask"/>
+    </flow>
+    <flow name="Wfl-GetTollIpecImportBillingBaseCharge">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.toll.ipec.importbilling.GetTollIpecImportBillingZoneBaseTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.toll.ipec.importbilling.GetTollIpecImportBillingRateSheetBaseTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.toll.ipec.importbilling.GetTollIpecImportBillingBaseChargeBaseTask"/>
+    </flow>
+    <flow name="Wfl-TollIpecBooking">
+        <task type="task" className="com.gms.xms.workflow.task2.toll.ipec.booking.ValidTollIpecShipmentRequestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.toll.ipec.booking.PrepareTollIpecSaveShipmentDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.pickup.RefineSaveShipmentDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.toll.ipec.booking.ProcessTollIpecSaveShipmentDataTask"/>
+    </flow>
+    <flow name="Wfl-TollIpecScheduleCollection">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.toll.ipec.schedule.ValidateTollIpecScheduleCollectionDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.toll.ipec.schedule.PrepareTollIpecScheduleCollectionTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.toll.ipec.schedule.ProcessTollIpecScheduleCollectionTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.toll.ipec.schedule.ProcessSaveScheduleCollectionTask"/>
+    </flow>
+    <!-- ====== TOL PRIORITY ====== -->
+    <flow name="Wfl-GetTollPriorityCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.toll.priority.GetTollPriorityZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.toll.priority.GetTollPriorityBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.toll.priority.GetTollPrioritySurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetTollPriorityBaseCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.toll.priority.GetTollPriorityZoneBaseTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.toll.priority.GetTollPriorityBaseChargeBaseTask"/>
+    </flow>
+
+    <flow name="Wfl-GetTollPriorityImportBillingBaseCharge">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.toll.priority.importbilling.GetTollPriorityImportBillingZoneBaseTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.toll.priority.importbilling.GetTollPriorityImportBillingBaseChargeBaseTask"/>
+    </flow>
+
+    <flow name="Wfl-TollPriorityBooking">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.toll.priority.booking.ValidTollPriorityShipmentRequestTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.toll.priority.booking.PrepareTollPrioritySaveShipmentDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.pickup.RefineSaveShipmentDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.toll.priority.booking.ProcessTollPrioritySaveShipmentDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.toll.priority.booking.ProcessSendEmailTollPriorityTask"/>
+    </flow>
+    <flow name="Wfl-TollPriorityScheduleCollection">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.toll.priority.schedule.ValidateTollPriorityScheduleCollectionDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.toll.priority.schedule.PrepareTollPriorityScheduleCollectionTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.toll.priority.schedule.ProcessTollPriorityScheduleCollectionTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.toll.priority.schedule.ProcessSaveScheduleCollectionTask"/>
+    </flow>
+
+
+    <flow name="Wfl-GetScheduleCollections">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.schedule.PrepareDataScheduleTask"/>
+    </flow>
+
+    <flow name="Wfl-DhlModifySchedule">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.schedule.dhl.PrepareDataForModifyScheduleTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.schedule.dhl.ProcessModifyScheduleTask"/>
+    </flow>
+
+    <flow name="Wfl-DhlBookSchedule">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.schedule.dhl.PrepareDataForBookScheduleTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.schedule.dhl.ProcessBookScheduleTask"/>
+    </flow>
+
+    <flow name="Wfl-DHLViewThermalLable">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.PrepareDataViewThermalLableTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.GenFileViewThermalLableTask"/>
+    </flow>
+
+    <flow name="Wfl-DHLViewPakingList">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.PrepareDataViewPackingListTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.GenFileViewPackingListTask"/>
+    </flow>
+    
+    <!-- code by shahabuddin -->
+    <flow name="Wfl-UpsBookSchedule">
+		<task type="task" className="com.gms.xms.workflow.task2.webship.schedule.ups.PrepareDataForBookScheduleTask" />
+		<task type="task" className="com.gms.xms.workflow.task2.webship.schedule.ups.ProcessBookScheduleTask" />
+	</flow>
+    
+
+    <flow name="Wfl-DHLViewCommercialInvoice">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.PrepareDataViewCommercialInvoiceTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.GenFileViewCommercialInvoiceTask"/>
+    </flow>
+
+    <flow name="Wfl-DhlVoidShipment">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.voids.dhl.PrepareDataForVoidShipmentTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.voids.dhl.ProcessVoidShipmentTask"/>
+    </flow>
+    
+    <flow name="Wfl-UpsVoidShipment">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.voids.ups.PrepareDataForCancelShipmentTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.voids.ups.ProcessCancelShipmentTask"/>
+    </flow>
+    
+
+    <flow name="Wfl-DhlCancelCollection">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.webship.cancelschedule.dhl.PrepareDataForCancelShipmentTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.cancelschedule.dhl.ProcessCancelShipmentTask"/>
+    </flow>
+
+    <flow name="Wfl-TntCancelCollection">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.webship.cancelschedule.tntdom.PrepareCancelTntDomScheduleCollectionTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.cancelschedule.tntdom.SendEmailCancelTntDomScheduleCollectionTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.cancelschedule.tntdom.CancelTntDomScheduleCollectionTask"/>
+    </flow>
+
+    <flow name="Wfl-StartrackCancelCollection">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.webship.cancelschedule.startrack.PrepareCancelStartrackScheduleCollectionTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.cancelschedule.startrack.SendEmailCancelStartrackScheduleCollectionTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.cancelschedule.startrack.CancelStartrackScheduleCollectionTask"/>
+    </flow>
+
+    <flow name="Wfl-TollCancelCollection">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.cancelschedule.tntdom.CancelTntDomScheduleCollectionTask"/>
+    </flow>
+
+
+
+    <!-- <flow name="Wfl-DhlCancelCollection"> <task type="task" className="com.gms.xms.workflow.task2.webship.voids.dhl.PrepareDataForVoidShipmentTask" /> <task type="task" className="com.gms.xms.workflow.task2.webship.schedule.dhl.ProcessCancelScheduleTask" /> </flow> -->
+
+    <!-- TNT International -->
+    <flow name="Wfl-TntIntlBooking">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.international.booking.ValidTntIntlShipmentRequestTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.international.booking.PrepareTntIntlSaveShipmentDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.pickup.RefineSaveShipmentDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.international.booking.PrepareTntIntlShipmentRequestTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.international.booking.ProcessTntIntlShipmentRequestTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.international.booking.ProcessTntIntlSaveShipmentDataTask"/>
+    </flow>
+    <flow name="Wfl-TntIntlScheduleCollection">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.international.schedule.ValidateTntIntlScheduleCollectionDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.international.schedule.PrepareTntIntlScheduleCollectionTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.international.schedule.ProcessTntIntlScheduleCollectionTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.international.schedule.ProcessSaveScheduleCollectionTask"/>
+    </flow>
+
+    <!-- TNT Domestic -->
+    <flow name="Wfl-TntDomBooking">
+        <task type="task" className="com.gms.xms.workflow.task2.tnt.domestic.booking.ValidTntDomShipmentRequestTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.domestic.booking.PrepareTntDomSaveShipmentDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.pickup.RefineSaveShipmentDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.tnt.domestic.booking.PrepareTntDomShipmentRequestTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.domestic.booking.ProcessTntDomSaveShipmentDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.domestic.booking.ProcessTntDomBookingSendEmailTask"/>
+    </flow>
+    <flow name="Wfl-TntDomScheduleCollection">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.domestic.schedule.ValidateTntDomScheduleCollectionDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.domestic.schedule.PrepareTntDomScheduleCollectionTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.domestic.schedule.ProcessTntDomScheduleCollectionTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.domestic.schedule.ProcessSaveScheduleCollectionTask"/>
+    </flow>
+
+    <!-- TNT View Airbill -->
+    <flow name="Wfl-TntViewAirbill">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.tnt.PrepareDataViewAirbillTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.tnt.GenFileViewAirbillTask"/>
+    </flow>
+    <flow name="Wfl-TntIntViewThermalLable">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.tnt.PrepareDataViewThermalLableTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.tnt.GenFileViewThermalLableTask"/>
+    </flow>
+    <flow name="Wfl-TntDomViewThermalLable">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.webship.history.tnt.PrepareDataViewThermalLableDomTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.tnt.GenFileViewThermalLableDomTask"/>
+    </flow>
+
+    <flow name="Wfl-TntViewManifest">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.tnt.PrepareDataViewManifestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.tnt.GenFileViewManifestTask"/>
+    </flow>
+
+    <flow name="Wfl-TntDomViewManifest">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.tnt.PrepareDataViewManifestNewStyleDomTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.tnt.GenFileViewManifestDomTask"/>
+    </flow>
+    <!-- DHL Tracking Airbill -->
+    <flow name="Wfl-DhlTrackingAirbill">
+        <task type="task" className="com.gms.xms.workflow.task2.dhl.tracking.PrepareDhlTrackingRequestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.dhl.tracking.ProcessDhlTrackingRequestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.dhl.tracking.LoadDhlTrackingDataTask"/>
+    </flow>
+    
+     <!-- UPS Tracking Airbill -->
+    <flow name="Wfl-UpsTrackingAirbill">
+        <task type="task" className="com.gms.xms.workflow.task2.ups.tracking.PrepareUpsTrackingRequestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ups.tracking.ProcessUpsTrackingRequestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ups.tracking.LoadUpsTrackingDataTask"/>
+    </flow>
+    <!-- TNT International Tracking Airbill -->
+    <flow name="Wfl-TntIntlTrackingAirbill">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.international.tracking.PrepareTntIntlTrackingRequestTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.international.tracking.ProcessTntIntlTrackingRequestTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.international.tracking.LoadTntIntlTrackingDataTask"/>
+    </flow>
+    <!-- TNT Domestic Tracking Airbill -->
+    <flow name="Wfl-TntDomTrackingAirbill">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.domestic.tracking.PrepareTntDomTrackingRequestTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.tnt.domestic.tracking.ProcessTntDomlTrackingRequestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.tnt.domestic.tracking.LoadTntDomTrackingDataTask"/>
+    </flow>
+    <!-- Startrack Tracking Airbill -->
+    <flow name="Wfl-StartrackTrackingAirbill">
+        <task type="task" className="com.gms.xms.workflow.task2.tracking.startrack.PrepareXmlRequestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.tracking.startrack.ProcessXmlRequestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.tracking.startrack.GetTrackingInfoTask"/>
+    </flow>
+    <!-- TOLL View Themal Lable -->
+    <flow name="Wfl-TollIpecViewThermalLable">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.toll.PrepareDataViewThermalLableTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.toll.GenFileViewThermalLableTask"/>
+    </flow>
+
+    <flow name="Wfl-TollPriorityViewThermalLable">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.webship.history.toll.PrepareDataViewThermalLablePriorityTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.webship.history.toll.GenFileViewThermalLablePriorityTask"/>
+    </flow>
+
+    <flow name="Wfl-TollPriorityViewManifest">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.webship.history.toll.PrepareDataViewManifestPriorityTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.toll.GenFileViewManifestPriorityTask"/>
+    </flow>
+
+    <flow name="Wfl-TollPriorityViewManifestNew">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.webship.history.toll.PrepareDataViewManifestPriorityNewStyleTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.toll.GenFileViewManifestPriorityTask"/>
+    </flow>
+
+    <flow name="Wfl-TollIpecViewManifestNew">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.webship.history.toll.ipec.PrepareDataViewManifestIpecNewStyleTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.toll.ipec.GenFileViewManifestIpecTask"/>
+    </flow>
+
+    <flow name="Wfl-TollIpecViewManifest">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.toll.PrepareDataViewManifestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.toll.GenFileViewManifestTask"/>
+    </flow>
+
+    <flow name="Wfl-TollPriorityViewManifest">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.webship.history.toll.PrepareDataViewManifestPriorityTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.history.toll.GenFileViewManifestTask"/>
+    </flow>
+
+    <!-- ====== STARTRACK ====== -->
+    <flow name="Wfl-GetStartrackCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.startrack.GetStartrackZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.startrack.GetStartrackBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.startrack.GetStartrackSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetStartrackBaseCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.startrack.GetStartrackZoneBaseTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.startrack.GetStartrackBaseChargeBaseTask"/>
+    </flow>
+    <flow name="Wfl-GetStartrackImportBillingBaseCharge">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.startrack.importbilling.GetStartrackImportBillingZoneBaseTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.invoice.startrack.importbilling.GetStartrackImportBillingBaseChargeBaseTask"/>
+    </flow>
+    <flow name="Wfl-StartrackBooking">
+        <task type="task" className="com.gms.xms.workflow.task2.startrack.booking.ValidStartrackShipmentRequestTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.startrack.booking.PrepareStartrackSaveShipmentDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.pickup.RefineSaveShipmentDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.startrack.booking.PrepareStartrackShipmentRequestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.startrack.booking.ProcessStartrackShipmentRequestTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.startrack.booking.ProcessStartrackSaveShipmentDataTask"/>
+    </flow>
+    <flow name="Wfl-StartrackScheduleCollection">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.startrack.schedule.ValidateStartrackScheduleCollectionDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.startrack.schedule.PrepareStartrackScheduleCollectionTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.startrack.schedule.ProcessStartrackScheduleCollectionTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.startrack.schedule.ProcessSaveScheduleCollectionTask"/>
+    </flow>
+    <flow name="Wfl-StarTrackViewAirbill">
+        <task type="task" className="com.gms.xms.workflow.task2.startrack.viewairbill.RenderStarTrackViewAirbillTask"/>
+    </flow>
+    <flow name="Wfl-StarTrackViewManifest">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.startrack.viewmanifest.RenderStarTrackViewManifestTask"/>
+    </flow>
+
+    <!-- ====== UPS CARRIER ====== -->
+    <flow name="Wfl-GetUpsCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetUPSShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ups.international.GetUpsIntlZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ups.international.GetUpsIntlRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ups.international.GetUpsIntlBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ups.international.GetUpsIntlSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetQuoteResultTask"/>
+    </flow>
+
+        
+
+    <!-- <flow name="Wfl-UpsBooking">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.ups.international.booking.ValidUpsIntlShipmentRequestTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.ups.international.booking.PrepareUpsIntlSaveShipmentDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.pickup.RefineSaveShipmentDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.ups.international.booking.PrepareUpsIntlShipmentRequestTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.ups.international.booking.ProcessUpsIntlSaveShipmentDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.ups.international.booking.ProcessUpsBookingSendEmailTask"/>
+    </flow> -->
+
+        
+
+
+    <flow name="Wfl-UpsScheduleCollection">
+        <!-- <task type="task"
+              className="com.gms.xms.workflow.task2.ups.international.schedule.ValidateUpsScheduleCollectionDataTask"/> -->
+        <task type="task"
+              className="com.gms.xms.workflow.task2.ups.international.schedule.PrepareUpsScheduleCollectionTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.ups.international.schedule.ProcessUpsScheduleCollectionTask"/>
+       <!--  <task type="task"
+              className="com.gms.xms.workflow.task2.ups.international.schedule.ProcessSaveScheduleCollectionTask"/> -->
+    </flow>
+
+
+    <!-- ====== OTHER CARRIERS ====== -->
+    <flow name="Wfl-GetOtherCarrierQuoteInfo">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetOtherBaseCharge">
+        <task type="task" className="com.gms.xms.workflow.task2.invoice.othercarriers.GetOtherCarriersBaseChargeTask"/>
+    </flow>
+    <flow name="Wfl-OtherCarrierBooking">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.othercarrier.booking.ValidOtherCarrierShipmentRequestTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.othercarrier.booking.PrepareOtherCarrierSaveShipmentDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.pickup.RefineSaveShipmentDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.othercarrier.booking.ProcessOtherCarrierSaveShipmentDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.othercarrier.booking.ProcessOtherCarrierBookingSendEmailTask"/>
+    </flow>
+    <!-- DHL Tracking Airbill -->
+    <flow name="Wfl-TollTrackingAirbill">
+        <task type="task" className="com.gms.xms.workflow.task2.toll.tracking.PrepareTollTrackingRequestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.toll.tracking.ProcessTollTrackingRequestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.toll.tracking.LoadTollTrackingDataTask"/>
+    </flow>
+
+    <!-- View Edit Invoice -->
+    <flow name="Wfl-ViewEditInvoiceSearchInvoice">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.PrepareDataSearchInvoiceTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.ProcessSearchInvoiceTask"/>
+    </flow>
+
+    <flow name="Wfl-ViewEditInvoiceSearchInvoiceDetail">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.GetInvoiceInfoByIdTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.GetCompanyAddressTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.GetMailPaymentToInvoiceTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.GetListShipmentInvoiceInfoByIdTask"/>
+    </flow>
+
+    <flow name="Wfl-ShowAirbillDetail">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.editairbill.GetAirbillInforEditTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.editairbill.GetListAccessorialInfoTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.editairbill.GetListAccessorialTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.editairbill.GetListServiceTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.editairbill.GetListShipmentTypeTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.editairbill.GetListCountryOriginTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.editairbill.GetListCountryDestinationTask"/>
+    </flow>
+    <flow name="Wfl-ViewEditInvoice-EditAirbillDo">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.editairbill.PrepareEditAirbillInfoTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.editairbill.PrepareAccessorialTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.editairbill.DoEditAirbillTask"/>
+    </flow>
+    <flow name="Wfl-ShowAirbillDetail-ChangeService">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.editairbill.GetListShipmentTypeTask"/>
+    </flow>
+
+    <!-- Manage Franchise Save BaseRate -->
+
+    <flow name="Wfl-ManageFranchise-SaveBaseRate">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.account.franchise.managefranchise.ProcessSaveBaseRateTask"/>
+    </flow>
+
+    <flow name="Wfl-ShowCreateAirbill">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.createairbill.GetListAccessorialTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.createairbill.GetListServiceTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.createairbill.GetListShipmentTypeTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.createairbill.GetListCountryOriginTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.createairbill.GetListCountryDestinationTask"/>
+    </flow>
+    <flow name="Wfl-ViewEditInvoice-CreateAirbillDo">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.createairbill.PrepareCreateAirbillInfoTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.createairbill.PrepareAccessorialTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.createairbill.PrepareShipmentVoTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.createairbill.PrepareShipmentInvoiceTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.createairbill.DoCreateAirbillTask"/>
+    </flow>
+    <flow name="Wfl-ViewEditInvoice-CreateInvoiceAndAirbill">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.createairbill.PrepareCreateAirbillInfoTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.createairbill.PrepareAccessorialTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.createairbill.PrepareShipmentVoTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.createairbill.PrepareShipmentInvoiceTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.invoicing.vieweditinvoice.createairbill.DoCreateInvoiceAndAirbillTask"/>
+    </flow>
+
+    <!-- Send customer invoices email -->
+    <flow name="Wfl-SendCustomerInvoicesEmail">
+        <task type="task" className="com.gms.xms.workflow.task2.sendemailinvoices.SendCustomerEmailInvoicesTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.sendemailinvoices.SendNotifyEmailTask"/>
+    </flow>
+
+    <!-- Import rate sheet -->
+    <flow name="Wfl-ImportRateSheet">
+        <task type="task" className="com.gms.xms.workflow.task2.ratesheets.ValidateRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ratesheets.ReadRateSheetDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ratesheets.PrepareRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ratesheets.PrepareRateSheetColumnTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ratesheets.PrepareRateSheetRowTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ratesheets.PrepareRateSheetDetailTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ratesheets.SaveRateSheetTask"/>
+    </flow>
+    <!-- Import rate sheet startrack -->
+    <flow name="Wfl-ImportRateSheet-Startrack">
+        <task type="task" className="com.gms.xms.workflow.task2.ratesheets.ValidateRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ratesheets.startrack.ReadRateSheetDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ratesheets.PrepareRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ratesheets.startrack.PrepareRateSheetColumnTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ratesheets.startrack.PrepareRateSheetRowTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ratesheets.startrack.PrepareRateSheetDetailTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ratesheets.startrack.SaveRateSheetTask"/>
+    </flow>
+
+    <flow name="Wfl-ViewAirbillRateSheet">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.ratesheet.viewbyairbill.PrepareViewRateSheetRequestTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.ratesheet.viewbycustomer.PrepareShipmentTypeFilterTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.admin.ratesheet.viewbyairbill.GetShipmentTypeInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.admin.ratesheet.viewbyairbill.DetectRateSheetInfoTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.ratesheet.viewbycustomer.GetServiceMarkupRateTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.admin.ratesheet.viewbycustomer.GetRateSheetDataTask"/>
+    </flow>
+
+    <flow name="Wfl-ViewCustomerRateSheet">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.ratesheet.viewbycustomer.PrepareShipmentTypeFilterTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.admin.ratesheet.viewbyairbill.GetShipmentTypeInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.admin.ratesheet.viewbyairbill.DetectRateSheetInfoTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.admin.ratesheet.viewbycustomer.GetServiceMarkupRateTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.admin.ratesheet.viewbycustomer.GetRateSheetDataTask"/>
+    </flow>
+
+    <flow name="Wfl-GetInvoicedAirbillReport">
+        <task type="task" className="com.gms.xms.workflow.task2.report.selfinsurance.CheckInvoicedAirbillReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.report.selfinsurance.PrepareData4InvoicedAirbillReportTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.report.selfinsurance.GetInvoicedAirbillReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.report.selfinsurance.GetSummaryInvoicedAirbillReportTask"/>
+    </flow>
+
+    <!-- Import billing DHL International -->
+    <flow name="Wfl-ImportBillingDhlIntl">
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.ReadImportBillingFileTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.dhl.PrepareFieldsDhlTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.ValidateImportBillingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.PrepareBillingDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.dhl.intl.SaveBillingDataDhlIntlTask"/>
+    </flow>
+
+    <!-- Import billing DHL Domestic -->
+    <flow name="Wfl-ImportBillingDhlDomestic">
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.ReadImportBillingFileTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.dhl.PrepareFieldsDhlTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.ValidateImportBillingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.PrepareBillingDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.importbilling.dhl.domestic.SaveBillingDataDhlDomesticTask"/>
+    </flow>
+
+    <!-- Import billing TNT International -->
+    <flow name="Wfl-ImportBillingTntIntl">
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.ReadImportBillingFileTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.tnt.intl.PrepareFieldsTntIntlTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.ValidateImportBillingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.PrepareBillingDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.tnt.intl.SaveBillingDataTntIntlTask"/>
+    </flow>
+    <!-- Import billing TNT Domestic -->
+    <flow name="Wfl-ImportBillingTntDomestic">
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.ReadImportBillingFileTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.importbilling.tnt.domestic.PrepareFieldsTntDomesticTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.ValidateImportBillingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.PrepareBillingDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.importbilling.tnt.domestic.SaveBillingDataTntDomesticTask"/>
+    </flow>
+    <!-- Import billing Toll Priority -->
+    <flow name="Wfl-ImportBillingTollPriority">
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.ReadImportBillingFileTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.importbilling.toll.priority.PrepareFieldsTollPriorityTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.ValidateImportBillingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.PrepareBillingDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.importbilling.toll.priority.SaveBillingDataTollPriorityTask"/>
+    </flow>
+    <!-- Import billing Toll Ipec -->
+    <flow name="Wfl-ImportBillingTollIpec">
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.toll.ipec.PrepareFieldsTollIpecTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.importbilling.toll.ipec.ReadImportBillingFileTollIpecTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.ValidateImportBillingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.PrepareBillingDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.toll.ipec.SaveBillingDataTollIpecTask"/>
+    </flow>
+    <!-- Import billing Startrack -->
+    <flow name="Wfl-ImportBillingStartrack">
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.startrack.PrepareFieldsStartrackTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.importbilling.startrack.ReadImportBillingFileStartrackTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.ValidateImportBillingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.PrepareBillingDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.startrack.SaveBillingDataStartrackTask"/>
+    </flow>
+    <!-- Import billing other carrier -->
+    <flow name="Wfl-ImportBillingOtherCarrier">
+        <task type="task"
+              className="com.gms.xms.workflow.task2.importbilling.othercarrier.PrepareFieldsOtherCarrierTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.importbilling.othercarrier.ReadImportBillingFileOtherCarrierTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.ValidateImportBillingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.PrepareBillingDataTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.importbilling.othercarrier.SaveBillingDataOtherCarrierTask"/>
+    </flow>
+    <!-- Download billing DHL International + Domestic -->
+    <flow name="Wfl-DownloadBillingDHL">
+        <task type="task" className="com.gms.xms.workflow.task2.downloadbilling.dhl.PrepareFtpAccountInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.downloadbilling.dhl.DownloadBillingFileTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.downloadbilling.dhl.ReadBillingFileTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.downloadbilling.dhl.SaveDownloadBillingFileTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.downloadbilling.dhl.SendEDIDownloadMailTask"/>
+    </flow>
+    <!-- Assign error airbills -->
+    <flow name="Wfl-AssignErrorAirbills">
+        <task type="task" className="com.gms.xms.workflow.task.repairairbills.GetErrorAirbillListTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.repairairbills.ProcessRepairAirbillsTask"/>
+    </flow>
+    <flow name="Wfl-ReadImportBillingFile">
+        <task type="task" className="com.gms.xms.workflow.task2.importbilling.ReadImportBillingFileTask"/>
+    </flow>
+    <flow name="Wfl-ReadImportAddressBook">
+        <task type="task" className="com.gms.xms.workflow.task2.webship.addressbook.ReadImportAddressBookTask"/>
+    </flow>
+    <!-- View TNT Consignment Note -->
+    <flow name="Wfl-ViewTntConnote">
+        <task type="task" className="com.gms.xms.workflow.task2.tnt.connote.PrepareViewConnoteDataTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.tnt.connote.ProcessRenderViewConnoteTask"/>
+    </flow>
+    <!-- Generate Toll ET File -->
+    <flow name="Wfl-GenerateTollETFile">
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.toll.GetTollShipmentListTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.toll.PrepareFolderFileTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.toll.PrepareDataForETFileTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.toll.WriteTollETFileTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.toll.UpdateTollManifestIdentifierTask"/>
+        <!-- 		<task type="task" className="com.gms.xms.workflow.task2.generateetfile.toll.TollManifestFileDisposeTask" /> -->
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.toll.SendEmailForTollTask"/>
+    </flow>
+
+    <flow name="Wfl-GenerateTollFlagManifest">
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.toll.manifest.GetTollShipmentByCustomerListTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.toll.PrepareFolderFileTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.PrepareDataForManifestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.toll.UpdateTollManifestIdentifierViewLocalTask"/>
+    </flow>
+
+    <flow name="Wfl-GenerateTollIpecFlagManifest">
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.tollipec.manifest.GetTollIpecShipmentByCustomerListTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.toll.PrepareFolderFileTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.PrepareDataForManifestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.tollipec.manifest.UpdateTollIpecManifestIdentifierViewLocalTask"/>
+    </flow>
+
+    <!-- Generate Toll Ipec ET File -->
+    <flow name="Wfl-GenerateTollIpecETFile">
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.tollipec.GetTollIpecShipmentListTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.tollipec.PrepareFolderFileTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.tollipec.PrepareDataForETFileTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.tollipec.WriteTollIpecETFileTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task2.generateetfile.tollipec.UpdateTollIpecManifestIdentifierTask"/>
+        <!-- 		<task type="task" className="com.gms.xms.workflow.task2.generateetfile.tollipec.TollIpecManifestFileDisposeTask" /> -->
+        <task type="task" className="com.gms.xms.workflow.task2.generateetfile.tollipec.SendEmailForTollIpecTask"/>
+    </flow>
+</workflow2>

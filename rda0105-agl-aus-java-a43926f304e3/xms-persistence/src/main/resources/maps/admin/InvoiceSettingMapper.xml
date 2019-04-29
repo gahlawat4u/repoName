@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="InvoiceSetting">
+    <resultMap id="InvoiceSettingMap" type="InvoiceSettingVo">
+        <id column="inv_setting_id" property="invSettingId"/>
+        <result column="inv_setting_name" property="invSettingName"/>
+        <result column="invSettingValue" property="invSettingValue"/>
+        <result column="franchise_code" property="franchiseCode"/>
+        <result column="localizationid" property="localizationId"/>
+    </resultMap>
+    <select id="selectInvoiceSettingByFilter" parameterType="com.gms.xms.filter.admin.InvoiceSettingFilter"
+            resultType="string">
+        SELECT
+        inv_setting_value
+        FROM
+        xms_tbl_invoice_setting
+        WHERE
+        franchise_code = #{franchiseCode}
+        AND inv_setting_name = #{invSettingName}
+    </select>
+</mapper>

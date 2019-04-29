@@ -1,0 +1,1264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ShipmentMapper">
+    <resultMap id="ShipmentMapper" type="com.gms.xms.txndb.vo.ShipmentVo">
+        <id column="shipmentid" property="shipmentId"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="webshipid" property="webshipId"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="create_date" property="createDate"/>
+        <result column="shipment_date" property="shipmentDate"/>
+        <result column="non_standard_charge" property="nonStandardCharge"/>
+        <result column="manual_handling_surcharge" property="manualHandlingSurcharge"/>
+        <result column="senderaddressid" property="senderAddressId"/>
+        <result column="receiveraddressid" property="receiverAddressId"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="packageid" property="packageId"/>
+        <result column="contents" property="contents"/>
+        <result column="weight_unit" property="weightUnit"/>
+        <result column="dimension_unit" property="dimensionUnit"/>
+        <result column="no_of_pieces" property="noOfPieces"/>
+        <result column="withinsurance" property="withInsurance"/>
+        <result column="base_charge" property="baseCharge"/>
+        <result column="carrier_cost" property="carrierCost"/>
+        <result column="day" property="day"/>
+        <result column="dhl_note" property="dhlNote"/>
+        <result column="billing_code" property="billingCode"/>
+        <result column="currency_code" property="currencyCode"/>
+        <result column="courier_message" property="courierMessage"/>
+        <result column="dhl_routing_code" property="dhlRoutingCode"/>
+        <result column="awb_barcode" property="awbBarcode"/>
+        <result column="productcontentcode" property="productContentCode"/>
+        <result column="status" property="status"/>
+        <result column="content_description" property="contentDescription"/>
+        <result column="total_custom_value" property="totalCustomValue"/>
+        <result column="commercial_invoice_id" property="commercialInvoiceId"/>
+        <result column="collection_type_id" property="collectionTypeId"/>
+        <result column="billing_type" property="billingType"/>
+        <result column="billing_account" property="billingAccount"/>
+        <result column="duties_type" property="dutiesType"/>
+        <result column="duties_account" property="dutiesAccount"/>
+        <result column="term_of_trade" property="termOfTrade"/>
+        <result column="service_area_code_destination" property="serviceAreaCodeDestination"/>
+        <result column="service_area_code_origin" property="serviceAreaCodeOrigin"/>
+        <result column="receivertaxid" property="receiverTaxId"/>
+        <result column="reasonforexport" property="reasonForExport"/>
+        <result column="special_deliveryinst" property="specialDeliveryinst"/>
+        <result column="reference" property="reference"/>
+        <result column="reference2" property="reference2"/>
+        <result column="reference3" property="reference3"/>
+        <result column="received_by" property="receivedBy"/>
+        <result column="received_date" property="receivedDate"/>
+        <result column="freight_class" property="freightClass"/>
+        <result column="rewiight_weight" property="rewiightWeight"/>
+        <result column="actual_dimension" property="actualDimension"/>
+        <result column="franchise_base_charge" property="franchiseBaseCharge"/>
+        <result column="modified_date" property="modifiedDate"/>
+        <result column="packinglist" property="packingList"/>
+        <result column="bound_status" property="boundStatus"/>
+        <result column="sales_rep_id" property="salesRepId"/>
+        <result column="carrier_payment" property="carrierPayment"/>
+        <result column="old_customer_code" property="oldCustomerCode"/>
+        <result column="globalproductcode" property="globalProductCode"/>
+        <result column="dhlroutingdataid" property="dhlRoutingDataId"/>
+        <result column="internalservicecode" property="internalServiceCode"/>
+        <result column="deliverydatecode" property="deliveryDateCode"/>
+        <result column="deliverytimecode" property="deliveryTimeCode"/>
+        <result column="zone" property="zone"/>
+        <result column="label_pdf" property="labelPdf"/>
+        <result column="manifest_pdf" property="manifestPdf"/>
+    </resultMap>
+
+    <resultMap id="ShipmentInfoManifest" type="ShipmentInfoManifestVo">
+        <id column="shipmentid" property="shipmentId"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="shipment_date" property="shipmentDate"/>
+        <result column="senderaddressid" property="senderAddressId"/>
+        <result column="receiveraddressid" property="receiverAddressId"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="no_of_pieces" property="noOfPieces"/>
+        <result column="courier_message" property="courierMessage"/>
+        <result column="reference" property="reference"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <resultMap id="CustomerMinimumInfoManifest" type="CustomerMinimumInfoManifestVo">
+        <id column="customer_code" property="customerCode"/>
+        <id column="postal_code" property="postalCode"/>
+
+    </resultMap>
+
+    <select id="selectCustomerCodeByShipmentId" parameterType="long" resultType="long">
+        select
+        customer_code
+        from xms_tbl_shipment
+        where shipmentid = #{shipmentId}
+    </select>
+
+    <select id="selectCustomerMinimumInfoByShipmentId" parameterType="long" resultMap="CustomerMinimumInfoManifest">
+        select
+        customer_code, postal_code
+        FROM xms_tbl_shipment s inner join xms_tbl_address a on s.senderaddressid=a.addressid
+        where shipmentid = #{shipmentId}
+    </select>
+
+    <select id="selectByAirbillNumber" parameterType="string" resultMap="ShipmentMapper">
+        select * from xms_tbl_shipment
+        where airbill_number = #{airbillNumber}
+        limit 1
+    </select>
+
+    <delete id="delete" parameterType="long">
+        delete from xms_tbl_shipment
+        where shipmentid=#{shipmentId}
+    </delete>
+
+    <select id="delete_SelectForLog" parameterType="long" resultMap="ShipmentMapper">
+        select * from xms_tbl_shipment
+        where shipmentid=#{shipmentId}
+    </select>
+
+    <select id="checkEU" resultType="int">
+        SELECT count(*) as rcount FROM information_schema.`TABLES` where table_schema='xms2_au' and
+        table_name='xms_tbl_country_EU';
+    </select>
+
+    <select id="Shipment_SelectCusCodeByShipment" parameterType="long" resultType="long">
+        select customer_code from xms_tbl_shipment
+        where shipmentid = #{shipmentId}
+    </select>
+
+    <insert id="insertShipment" parameterType="ShipmentVo" useGeneratedKeys="true" keyProperty="shipmentId">
+        insert into xms_tbl_shipment
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="customerCode != null">
+                customer_code,
+            </if>
+            <if test="webshipId != null">
+                webshipid,
+            </if>
+            <if test="airbillNumber != null">
+                airbill_number,
+            </if>
+            <if test="createDate != null">
+                create_date,
+            </if>
+            <if test="shipmentDate != null">
+                shipment_date,
+            </if>
+            <if test="nonStandardCharge != null">
+                non_standard_charge,
+            </if>
+            <if test="manualHandlingSurcharge != null">
+                manual_handling_surcharge,
+            </if>
+            <if test="senderAddressId != null">
+                senderaddressid,
+            </if>
+            <if test="receiverAddressId != null">
+                receiveraddressid,
+            </if>
+            <if test="shipmentTypeId != null">
+                shipment_type_id,
+            </if>
+            <if test="packageId != null">
+                packageid,
+            </if>
+            <if test="contents != null">
+                contents,
+            </if>
+            <if test="weightUnit != null">
+                weight_unit,
+            </if>
+            <if test="dimensionUnit != null">
+                dimension_unit,
+            </if>
+            <if test="noOfPieces != null">
+                no_of_pieces,
+            </if>
+            <if test="withInsurance != null">
+                withinsurance,
+            </if>
+            <if test="baseCharge != null">
+                base_charge,
+            </if>
+            <if test="carrierCost != null">
+                carrier_cost,
+            </if>
+            <if test="day != null">
+                day,
+            </if>
+            <if test="currencyCode != null">
+                currency_code,
+            </if>
+            <if test="productContentCode != null">
+                productcontentcode,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="contentDescription != null">
+                content_description,
+            </if>
+            <if test="totalCustomValue != null">
+                total_custom_value,
+            </if>
+            <if test="commercialInvoiceId != null">
+                commercial_invoice_id,
+            </if>
+            <if test="collectionTypeId != null">
+                collection_type_id,
+            </if>
+            <if test="billingType != null">
+                billing_type,
+            </if>
+            <if test="billingAccount != null">
+                billing_account,
+            </if>
+            <if test="dutiesType != null">
+                duties_type,
+            </if>
+            <if test="dutiesAccount != null">
+                duties_account,
+            </if>
+            <if test="termOfTrade != null">
+                term_of_trade,
+            </if>
+            <if test="serviceAreaCodeDestination != null">
+                service_area_code_destination,
+            </if>
+            <if test="serviceAreaCodeOrigin != null">
+                service_area_code_origin,
+            </if>
+            <if test="receiverTaxId != null">
+                receivertaxid,
+            </if>
+            <if test="reasonForExport != null">
+                reasonforexport,
+            </if>
+            <if test="reference != null">
+                reference,
+            </if>
+            <if test="reference2 != null">
+                reference2,
+            </if>
+            <if test="reference3 != null">
+                reference3,
+            </if>
+            <if test="receivedBy != null">
+                received_by,
+            </if>
+            <if test="receivedDate != null">
+                received_date,
+            </if>
+            <if test="freightClass != null">
+                freight_class,
+            </if>
+            <if test="rewiightWeight != null">
+                rewiight_weight,
+            </if>
+            <if test="actualDimension != null">
+                actual_dimension,
+            </if>
+            <if test="franchiseBaseCharge != null">
+                franchise_base_charge,
+            </if>
+            <if test="modifiedDate != null">
+                modified_date,
+            </if>
+            <if test="packingList != null">
+                packinglist,
+            </if>
+            <if test="boundStatus != null">
+                bound_status,
+            </if>
+            <if test="salesRepId != null">
+                sales_rep_id,
+            </if>
+            <if test="carrierPayment != null">
+                carrier_payment,
+            </if>
+            <if test="oldCustomerCode != null">
+                old_customer_code,
+            </if>
+            <if test="globalProductCode != null">
+                globalproductcode,
+            </if>
+            <if test="dhlRoutingDataId != null">
+                dhlroutingdataid,
+            </if>
+            <if test="awbProductContentCode != null">
+                awb_productcontentcode,
+            </if>
+            <if test="internalServiceCode != null">
+                internalservicecode,
+            </if>
+            <if test="deliveryDateCode != null">
+                deliverydatecode,
+            </if>
+            <if test="deliveryTimeCode != null">
+                deliverytimecode,
+            </if>
+            <if test="zone != null">
+                zone,
+            </if>
+            <if test="dhlNote != null">
+                dhl_note,
+            </if>
+            <if test="billingCode != null">
+                billing_code,
+            </if>
+            <if test="courierMessage != null">
+                courier_message,
+            </if>
+            <if test="dhlRoutingCode != null">
+                dhl_routing_code,
+            </if>
+            <if test="awbBarcode != null">
+                awb_barcode,
+            </if>
+            <if test="originDestiBarcode != null">
+                origin_desti_barcode,
+            </if>
+            <if test="dhlRoutingBarcode != null">
+                dhl_routing_barcode,
+            </if>
+            <if test="labelPdf != null">
+                label_pdf,
+            </if>
+            <if test="manifestPdf != null">
+                manifest_pdf,
+            </if>
+            <if test="specialDeliveryinst != null">
+                special_deliveryinst,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="customerCode != null">
+                #{customerCode},
+            </if>
+            <if test="webshipId != null">
+                #{webshipId},
+            </if>
+            <if test="airbillNumber != null">
+                #{airbillNumber},
+            </if>
+            <if test="createDate != null">
+                #{createDate},
+            </if>
+            <if test="shipmentDate != null">
+                #{shipmentDate},
+            </if>
+            <if test="nonStandardCharge != null">
+                #{nonStandardCharge},
+            </if>
+            <if test="manualHandlingSurcharge != null">
+                #{manualHandlingSurcharge},
+            </if>
+            <if test="senderAddressId != null">
+                #{senderAddressId},
+            </if>
+            <if test="receiverAddressId != null">
+                #{receiverAddressId},
+            </if>
+            <if test="shipmentTypeId != null">
+                #{shipmentTypeId},
+            </if>
+            <if test="packageId != null">
+                #{packageId},
+            </if>
+            <if test="contents != null">
+                #{contents},
+            </if>
+            <if test="weightUnit != null">
+                #{weightUnit},
+            </if>
+            <if test="dimensionUnit != null">
+                #{dimensionUnit},
+            </if>
+            <if test="noOfPieces != null">
+                #{noOfPieces},
+            </if>
+            <if test="withInsurance != null">
+                #{withInsurance},
+            </if>
+            <if test="baseCharge != null">
+                #{baseCharge},
+            </if>
+            <if test="carrierCost != null">
+                #{carrierCost},
+            </if>
+            <if test="day != null">
+                #{day},
+            </if>
+            <if test="currencyCode != null">
+                #{currencyCode},
+            </if>
+            <if test="productContentCode != null">
+                #{productContentCode},
+            </if>
+            <if test="status != null">
+                #{status},
+            </if>
+            <if test="contentDescription != null">
+                #{contentDescription},
+            </if>
+            <if test="totalCustomValue != null">
+                #{totalCustomValue},
+            </if>
+            <if test="commercialInvoiceId != null">
+                #{commercialInvoiceId},
+            </if>
+            <if test="collectionTypeId != null">
+                #{collectionTypeId},
+            </if>
+            <if test="billingType != null">
+                #{billingType},
+            </if>
+            <if test="billingAccount != null">
+                #{billingAccount},
+            </if>
+            <if test="dutiesType != null">
+                #{dutiesType},
+            </if>
+            <if test="dutiesAccount != null">
+                #{dutiesAccount},
+            </if>
+            <if test="termOfTrade != null">
+                #{termOfTrade},
+            </if>
+            <if test="serviceAreaCodeDestination != null">
+                #{serviceAreaCodeDestination},
+            </if>
+            <if test="serviceAreaCodeOrigin != null">
+                #{serviceAreaCodeOrigin},
+            </if>
+            <if test="receiverTaxId != null">
+                #{receiverTaxId},
+            </if>
+            <if test="reasonForExport != null">
+                #{reasonForExport},
+            </if>
+            <if test="reference != null">
+                #{reference},
+            </if>
+            <if test="reference2 != null">
+                #{reference2},
+            </if>
+            <if test="reference3 != null">
+                #{reference3},
+            </if>
+            <if test="receivedBy != null">
+                #{receivedBy},
+            </if>
+            <if test="receivedDate != null">
+                #{receivedDate},
+            </if>
+            <if test="freightClass != null">
+                #{freightClass},
+            </if>
+            <if test="rewiightWeight != null">
+                #{rewiightWeight},
+            </if>
+            <if test="actualDimension != null">
+                #{actualDimension},
+            </if>
+            <if test="franchiseBaseCharge != null">
+                #{franchiseBaseCharge},
+            </if>
+            <if test="modifiedDate != null">
+                #{modifiedDate},
+            </if>
+            <if test="packingList != null">
+                #{packingList},
+            </if>
+            <if test="boundStatus != null">
+                #{boundStatus},
+            </if>
+            <if test="salesRepId != null">
+                #{salesRepId},
+            </if>
+            <if test="carrierPayment != null">
+                #{carrierPayment},
+            </if>
+            <if test="oldCustomerCode != null">
+                #{oldCustomerCode},
+            </if>
+            <if test="globalProductCode != null">
+                #{globalProductcode},
+            </if>
+            <if test="dhlRoutingDataId != null">
+                #{dhlRoutingDataId},
+            </if>
+            <if test="awbProductContentCode != null">
+                #{awbProductContentCode},
+            </if>
+            <if test="internalServiceCode != null">
+                #{internalServiceCode},
+            </if>
+            <if test="deliveryDateCode != null">
+                #{deliveryDateCode},
+            </if>
+            <if test="deliveryTimeCode != null">
+                #{deliveryTimeCode},
+            </if>
+            <if test="zone != null">
+                #{zone},
+            </if>
+            <if test="dhlNote != null">
+                #{dhlNote},
+            </if>
+            <if test="billingCode != null">
+                #{billingCode},
+            </if>
+            <if test="courierMessage != null">
+                #{courierMessage},
+            </if>
+            <if test="dhlRoutingCode != null">
+                #{dhlRoutingCode},
+            </if>
+            <if test="awbBarcode != null">
+                #{awbBarcode},
+            </if>
+            <if test="originDestiBarcode != null">
+                #{originDestiBarcode},
+            </if>
+            <if test="dhlRoutingBarcode != null">
+                #{dhlRoutingBarcode},
+            </if>
+            <if test="labelPdf != null">
+                #{labelPdf},
+            </if>
+            <if test="manifestPdf != null">
+                #{manifestPdf},
+            </if>
+            <if test="specialDeliveryinst != null">
+                #{specialDeliveryinst},
+            </if>
+        </trim>
+    </insert>
+
+
+    <insert id="insert" parameterType="ShipmentVo">
+        insert into xms_tbl_shipment
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="shipmentId != null">
+                shipmentid,
+            </if>
+            <if test="customerCode != null">
+                customer_code,
+            </if>
+            <if test="webshipId != null">
+                webshipid,
+            </if>
+            <if test="airbillNumber != null">
+                airbill_number,
+            </if>
+            <if test="createDate != null">
+                create_date,
+            </if>
+            <if test="shipmentDate != null">
+                shipment_date,
+            </if>
+            <if test="nonStandardCharge != null">
+                non_standard_charge,
+            </if>
+            <if test="senderAddressId != null">
+                senderaddressid,
+            </if>
+            <if test="receiverAddressId != null">
+                receiveraddressid,
+            </if>
+            <if test="shipmentTypeId != null">
+                shipment_type_id,
+            </if>
+            <if test="packageId != null">
+                packageid,
+            </if>
+            <if test="contents != null">
+                contents,
+            </if>
+            <if test="weightUnit != null">
+                weight_unit,
+            </if>
+            <if test="dimensionUnit != null">
+                dimension_unit,
+            </if>
+            <if test="noOfPieces != null">
+                no_of_pieces,
+            </if>
+            <if test="withInsurance != null">
+                withinsurance,
+            </if>
+            <if test="baseCharge != null">
+                base_charge,
+            </if>
+            <if test="carrierCost != null">
+                carrier_cost,
+            </if>
+            <if test="day != null">
+                day,
+            </if>
+            <if test="currencyCode != null">
+                currency_code,
+            </if>
+            <if test="productContentCode != null">
+                productcontentcode,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="contentDescription != null">
+                content_description,
+            </if>
+            <if test="totalCustomValue != null">
+                total_custom_value,
+            </if>
+            <if test="commercialInvoiceId != null">
+                commercial_invoice_id,
+            </if>
+            <if test="collectionTypeId != null">
+                collection_type_id,
+            </if>
+            <if test="billingType != null">
+                billing_type,
+            </if>
+            <if test="billingAccount != null">
+                billing_account,
+            </if>
+            <if test="dutiesType != null">
+                duties_type,
+            </if>
+            <if test="dutiesAccount != null">
+                duties_account,
+            </if>
+            <if test="termOfTrade != null">
+                term_of_trade,
+            </if>
+            <if test="serviceAreaCodeDestination != null">
+                service_area_code_destination,
+            </if>
+            <if test="serviceAreaCodeOrigin != null">
+                service_area_code_origin,
+            </if>
+            <if test="receiverTaxId != null">
+                receivertaxid,
+            </if>
+            <if test="reasonForExport != null">
+                reasonforexport,
+            </if>
+            <if test="reference != null">
+                reference,
+            </if>
+            <if test="reference2 != null">
+                reference2,
+            </if>
+            <if test="reference3 != null">
+                reference3,
+            </if>
+            <if test="receivedBy != null">
+                received_by,
+            </if>
+            <if test="receivedDate != null">
+                received_date,
+            </if>
+            <if test="freightClass != null">
+                freight_class,
+            </if>
+            <if test="rewiightWeight != null">
+                rewiight_weight,
+            </if>
+            <if test="actualDimension != null">
+                actual_dimension,
+            </if>
+            <if test="franchiseBaseCharge != null">
+                franchise_base_charge,
+            </if>
+            <if test="modifiedDate != null">
+                modified_date,
+            </if>
+            <if test="packingList != null">
+                packinglist,
+            </if>
+            <if test="boundStatus != null">
+                bound_status,
+            </if>
+            <if test="salesRepId != null">
+                sales_rep_id,
+            </if>
+            <if test="carrierPayment != null">
+                carrier_payment,
+            </if>
+            <if test="oldCustomerCode != null">
+                old_customer_code,
+            </if>
+            <if test="globalProductCode != null">
+                globalproductcode,
+            </if>
+            <if test="dhlRoutingDataId != null">
+                dhlroutingdataid,
+            </if>
+            <if test="awbProductContentCode != null">
+                awb_productcontentcode,
+            </if>
+            <if test="internalServiceCode != null">
+                internalservicecode,
+            </if>
+            <if test="deliveryDateCode != null">
+                deliverydatecode,
+            </if>
+            <if test="deliveryTimeCode != null">
+                deliverytimecode,
+            </if>
+            <if test="zone != null">
+                zone,
+            </if>
+            <if test="dhlNote != null">
+                dhl_note,
+            </if>
+            <if test="billingCode != null">
+                billing_code,
+            </if>
+            <if test="courierMessage != null">
+                courier_message,
+            </if>
+            <if test="dhlRoutingCode != null">
+                dhl_routing_code,
+            </if>
+            <if test="awbBarcode != null">
+                awb_barcode,
+            </if>
+            <if test="originDestiBarcode != null">
+                origin_desti_barcode,
+            </if>
+            <if test="dhlRoutingBarcode != null">
+                dhl_routing_barcode,
+            </if>
+            <if test="labelPdf != null">
+                label_pdf,
+            </if>
+            <if test="manifestPdf != null">
+                manifest_pdf,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="shipmentId != null">
+                #{shipmentId},
+            </if>
+            <if test="customerCode != null">
+                #{customerCode},
+            </if>
+            <if test="webshipId != null">
+                #{webshipId},
+            </if>
+            <if test="airbillNumber != null">
+                #{airbillNumber},
+            </if>
+            <if test="createDate != null">
+                #{createDate},
+            </if>
+            <if test="shipmentDate != null">
+                #{shipmentDate},
+            </if>
+            <if test="nonStandardCharge != null">
+                #{nonStandardCharge},
+            </if>
+            <if test="senderAddressId != null">
+                #{senderAddressId},
+            </if>
+            <if test="receiverAddressId != null">
+                #{receiverAddressId},
+            </if>
+            <if test="shipmentTypeId != null">
+                #{shipmentTypeId},
+            </if>
+            <if test="packageId != null">
+                #{packageId},
+            </if>
+            <if test="contents != null">
+                #{contents},
+            </if>
+            <if test="weightUnit != null">
+                #{weightUnit},
+            </if>
+            <if test="dimensionUnit != null">
+                #{dimensionUnit},
+            </if>
+            <if test="noOfPieces != null">
+                #{noOfPieces},
+            </if>
+            <if test="withInsurance != null">
+                #{withInsurance},
+            </if>
+            <if test="baseCharge != null">
+                #{baseCharge},
+            </if>
+            <if test="carrierCost != null">
+                #{carrierCost},
+            </if>
+            <if test="day != null">
+                #{day},
+            </if>
+            <if test="currencyCode != null">
+                #{currencyCode},
+            </if>
+            <if test="productContentCode != null">
+                #{productContentCode},
+            </if>
+            <if test="status != null">
+                #{status},
+            </if>
+            <if test="contentDescription != null">
+                #{contentDescription},
+            </if>
+            <if test="totalCustomValue != null">
+                #{totalCustomValue},
+            </if>
+            <if test="commercialInvoiceId != null">
+                #{commercialInvoiceId},
+            </if>
+            <if test="collectionTypeId != null">
+                #{collectionTypeId},
+            </if>
+            <if test="billingType != null">
+                #{billingType},
+            </if>
+            <if test="billingAccount != null">
+                #{billingAccount},
+            </if>
+            <if test="dutiesType != null">
+                #{dutiesType},
+            </if>
+            <if test="dutiesAccount != null">
+                #{dutiesAccount},
+            </if>
+            <if test="termOfTrade != null">
+                #{termOfTrade},
+            </if>
+            <if test="serviceAreaCodeDestination != null">
+                #{serviceAreaCodeDestination},
+            </if>
+            <if test="serviceAreaCodeOrigin != null">
+                #{serviceAreaCodeOrigin},
+            </if>
+            <if test="receiverTaxId != null">
+                #{receiverTaxId},
+            </if>
+            <if test="reasonForExport != null">
+                #{reasonForExport},
+            </if>
+            <if test="reference != null">
+                #{reference},
+            </if>
+            <if test="reference2 != null">
+                #{reference2},
+            </if>
+            <if test="reference3 != null">
+                #{reference3},
+            </if>
+            <if test="receivedBy != null">
+                #{receivedBy},
+            </if>
+            <if test="receivedDate != null">
+                #{receivedDate},
+            </if>
+            <if test="freightClass != null">
+                #{freightClass},
+            </if>
+            <if test="rewiightWeight != null">
+                #{rewiightWeight},
+            </if>
+            <if test="actualDimension != null">
+                #{actualDimension},
+            </if>
+            <if test="franchiseBaseCharge != null">
+                #{franchiseBaseCharge},
+            </if>
+            <if test="modifiedDate != null">
+                #{modifiedDate},
+            </if>
+            <if test="packingList != null">
+                #{packingList},
+            </if>
+            <if test="boundStatus != null">
+                #{boundStatus},
+            </if>
+            <if test="salesRepId != null">
+                #{salesRepId},
+            </if>
+            <if test="carrierPayment != null">
+                #{carrierPayment},
+            </if>
+            <if test="oldCustomerCode != null">
+                #{oldCustomerCode},
+            </if>
+            <if test="globalProductCode != null">
+                #{globalProductcode},
+            </if>
+            <if test="dhlRoutingDataId != null">
+                #{dhlRoutingDataId},
+            </if>
+            <if test="awbProductContentCode != null">
+                #{awbProductContentCode},
+            </if>
+            <if test="internalServiceCode != null">
+                #{internalServiceCode},
+            </if>
+            <if test="deliveryDateCode != null">
+                #{deliveryDateCode},
+            </if>
+            <if test="deliveryTimeCode != null">
+                #{deliveryTimeCode},
+            </if>
+            <if test="zone != null">
+                #{zone},
+            </if>
+            <if test="dhlNote != null">
+                #{dhlNote},
+            </if>
+            <if test="billingCode != null">
+                #{billingCode},
+            </if>
+            <if test="courierMessage != null">
+                #{courierMessage},
+            </if>
+            <if test="dhlRoutingCode != null">
+                #{dhlRoutingCode},
+            </if>
+            <if test="awbBarcode != null">
+                #{awbBarcode},
+            </if>
+            <if test="originDestiBarcode != null">
+                #{originDestiBarcode},
+            </if>
+            <if test="dhlRoutingBarcode != null">
+                #{dhlRoutingBarcode},
+            </if>
+            <if test="labelPdf != null">
+                #{labelPdf},
+            </if>
+            <if test="manifestPdf != null">
+                #{manifestPdf},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="ShipmentVo">
+        update xms_tbl_shipment
+        <set>
+            <if test="customerCode != null">
+                customer_code = #{customerCode},
+            </if>
+            <if test="webshipId != null">
+                webshipid = #{webshipId},
+            </if>
+            <if test="airbillNumber != null">
+                airbill_number = #{airbillNumber},
+            </if>
+            <if test="createDate != null">
+                create_date = #{createDate},
+            </if>
+            <if test="shipmentDate != null">
+                shipment_date = #{shipmentDate},
+            </if>
+            <if test="nonStandardCharge != null">
+                non_standard_charge = #{nonStandardCharge},
+            </if>
+            <if test="senderAddressId != null">
+                senderaddressid = #{senderAddressId},
+            </if>
+            <if test="receiverAddressId != null">
+                receiveraddressid = #{receiverAddressId},
+            </if>
+            <if test="shipmentTypeId != null">
+                shipment_type_id = #{shipmentTypeId},
+            </if>
+            <if test="packageId != null">
+                packageid = #{packageId},
+            </if>
+            <if test="contents != null">
+                contents = #{contents},
+            </if>
+            <if test="weightUnit != null">
+                weight_unit = #{weightUnit},
+            </if>
+            <if test="dimensionUnit != null">
+                dimension_unit = #{dimensionUnit},
+            </if>
+            <if test="noOfPieces != null">
+                no_of_pieces = #{noOfPieces},
+            </if>
+            <if test="withInsurance != null">
+                withinsurance = #{withInsurance},
+            </if>
+            <if test="baseCharge != null">
+                base_charge = #{baseCharge},
+            </if>
+            <if test="carrierCost != null">
+                carrier_cost = #{carrierCost},
+            </if>
+            <if test="day != null">
+                day = #{day},
+            </if>
+            <if test="currencyCode != null">
+                currency_code = #{currencyCode},
+            </if>
+            <if test="productContentCode != null">
+                productcontentcode = #{productContentCode},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="contentDescription != null">
+                content_description = #{contentDescription},
+            </if>
+            <if test="totalCustomValue != null">
+                total_custom_value = #{totalCustomValue},
+            </if>
+            <if test="commercialInvoiceId != null">
+                commercial_invoice_id = #{commercialInvoiceId},
+            </if>
+            <if test="collectionTypeId != null">
+                collection_type_id = #{collectionTypeId},
+            </if>
+            <if test="billingType != null">
+                billing_type = #{billingType},
+            </if>
+            <if test="billingAccount != null">
+                billing_account = #{billingAccount},
+            </if>
+            <if test="dutiesType != null">
+                duties_type = #{dutiesType},
+            </if>
+            <if test="dutiesAccount != null">
+                duties_account = #{dutiesAccount},
+            </if>
+            <if test="termOfTrade != null">
+                term_of_trade = #{termOfTrade},
+            </if>
+            <if test="serviceAreaCodeDestination != null">
+                service_area_code_destination = #{serviceAreaCodeDestination},
+            </if>
+            <if test="serviceAreaCodeOrigin != null">
+                service_area_code_origin = #{serviceAreaCodeOrigin},
+            </if>
+            <if test="receiverTaxId != null">
+                receivertaxid = #{receiverTaxId},
+            </if>
+            <if test="reasonForExport != null">
+                reasonforexport = #{reasonForExport},
+            </if>
+            <if test="reference != null">
+                reference = #{reference},
+            </if>
+            <if test="reference2 != null">
+                reference2 = #{reference2},
+            </if>
+            <if test="reference3 != null">
+                reference3 = #{reference3},
+            </if>
+            <if test="receivedBy != null">
+                received_by = #{receivedBy},
+            </if>
+            <if test="receivedDate != null">
+                received_date = #{receivedDate},
+            </if>
+            <if test="freightClass != null">
+                freight_class = #{freightClass},
+            </if>
+            <if test="rewiightWeight != null">
+                rewiight_weight = #{rewiightWeightR},
+            </if>
+            <if test="actualDimension != null">
+                actual_dimension = #{actualDimension},
+            </if>
+            <if test="franchiseBaseCharge != null">
+                franchise_base_charge = #{franchiseBaseCharge},
+            </if>
+            <if test="modifiedDate != null">
+                modified_date = #{modifiedDate},
+            </if>
+            <if test="packingList != null">
+                packinglist = #{packingList},
+            </if>
+            <if test="boundStatus != null">
+                bound_status = #{boundStatus},
+            </if>
+            <if test="salesRepId != null">
+                sales_rep_id = #{salesRepId},
+            </if>
+            <if test="carrierPayment != null">
+                carrier_payment = #{carrierPayment},
+            </if>
+            <if test="oldCustomerCode != null">
+                old_customer_code = #{oldCustomerCode},
+            </if>
+            <if test="globalProductCode != null">
+                globalproductcode = #{globalProductCode},
+            </if>
+            <if test="dhlRoutingDataId != null">
+                dhlroutingdataid = #{dhlRoutingDataId},
+            </if>
+            <if test="awbProductContentCode != null">
+                awb_productcontentcode = #{awbProductContentCode},
+            </if>
+            <if test="internalServiceCode != null">
+                internalservicecode = #{internalServiceCode},
+            </if>
+            <if test="deliveryDateCode != null">
+                deliverydatecode = #{deliveryDateCode},
+            </if>
+            <if test="deliveryTimeCode != null">
+                deliverytimecode = #{deliveryTimeCode},
+            </if>
+            <if test="zone != null">
+                zone = #{zone},
+            </if>
+            <if test="dhlNote != null">
+                dhl_note = #{dhlNote},
+            </if>
+            <if test="billingCode != null">
+                billing_code = #{billingCode},
+            </if>
+            <if test="courierMessage != null">
+                courier_message = #{courierMessage},
+            </if>
+            <if test="dhlRoutingCode != null">
+                dhl_routing_code = #{dhlRoutingCode},
+            </if>
+            <if test="awbBarcode != null">
+                awb_barcode = #{awbBarcode},
+            </if>
+            <if test="originDestiBarcode != null">
+                origin_desti_barcode = #{originDestiBarcode},
+            </if>
+            <if test="dhlRoutingBarcode != null">
+                dhl_routing_barcode = #{dhlRoutingBarcode},
+            </if>
+            <if test="labelPdf != null">
+                label_pdf = #{labelPdf},
+            </if>
+            <if test="manifestPdf != null">
+                manifest_pdf = #{manifestPdf},
+            </if>
+        </set>
+        where shipmentid = #{shipmentId}
+    </update>
+
+
+    <select id="update_SelectForLog" parameterType="ShipmentVo" resultMap="ShipmentMapper">
+        select * from xms_tbl_shipment
+        where shipmentid = #{shipmentId}
+    </select>
+
+    <select id="selectAwbBarcode" resultType="String" parameterType="long">
+        select awb_barcode from xms_tbl_shipment
+        WHERE shipmentid= #{shipmentId};
+    </select>
+
+    <select id="selectById" resultMap="ShipmentMapper" parameterType="long">
+        select * from xms_tbl_shipment
+        WHERE shipmentid= #{shipmentId};
+    </select>
+
+    <select id="selectShipmentIdByAirbillNumber" resultType="string"
+            parameterType="com.gms.xms.txndb.vo.ShipmentFilter">
+        select
+        shipmentid
+        from
+        xms_tbl_shipment
+        where airbill_number = #{airbill_number};
+    </select>
+
+    <resultMap id="CheckShipmentMapper" type="CheckShipmentVo" extends="ShipmentMapper">
+        <result column="shipment_type_name" property="shipmentTypeName"/>
+        <result column="org_stname" property="orgShipmentTypeName"/>
+    </resultMap>
+
+    <select id="checkShipment" parameterType="ShipmentBillingVo" resultMap="CheckShipmentMapper">
+        select
+        s.shipmentid as shipmentid,
+        s.customer_code as customer_code,
+        s.weight_unit as weight_unit,
+        (select
+        description
+        from
+        xms_tbl_shipment_billing
+        where
+        carrier = #{carrier}
+        and airbill_number = #{airbillNumber}
+        limit 1) as shipment_type_name,
+        st.shipment_type_name as org_stname,
+        s.shipment_type_id as shipment_type_id,
+        s.contents as contents,
+        senderaddressid,
+        receiveraddressid,
+        reference,
+        reference2,
+        reference3,
+        billing_type,
+        billing_account,
+        service_area_code_origin,
+        service_area_code_destination
+        from
+        xms_tbl_shipment as s
+        left join xms_tbl_shipment_type as st on s.shipment_type_id = st.shipment_type_id
+        where
+        s.airbill_number = #{airbillNumber}
+        <if test="carrier!=null">
+            and st.serviceid = #{carrier}
+        </if>
+        limit 1
+    </select>
+
+    <select id="getWeightByShipmentId" parameterType="long" resultType="double">
+        select sum(weight) from xms_tbl_piece as p
+        inner join xms_tbl_shipment as sm on sm.shipmentid = p.shipmentid
+        where sm.shipmentid = #{shipmentId}
+    </select>
+
+    <select id="getShipmentInfoForETFile" parameterType="long" resultMap="ShipmentMapper">
+        select sm.*
+        from xms_tbl_shipment as sm
+        inner join
+        (select customer_code from xms_tbl_customer
+        union
+        select franchise_code as customer_code from xms_tbl_franchise
+        ) as c on c.customer_code = sm.customer_code
+        where sm.shipmentid = #{shipmentId}
+    </select>
+
+    <update id="updateTollManifestIdentifier" parameterType="com.gms.xms.filter.webship.TollManifestFilter">
+        update xms_tbl_shipment
+        set
+        courier_message = ifnull((select
+        concat(lpad(manifest_identifier,
+        length('999999999'),
+        '0'),
+        '#@@#',
+        create_date)
+        from
+        xms_tbl_aae_manifest
+        where
+        manifest_id = #{manifestId}
+        order by manifest_id desc
+        limit 1),"")
+        where
+        shipmentid = #{shipmentId}
+    </update>
+
+    <select id="getShipmentsInfoCustomerCodeByShipmentId" parameterType="long" resultMap="ShipmentInfoManifest">
+        SELECT s.* , c.* , sc.confirmation_no, sc.status as pickup, sc.special_instructions FROM xms_tbl_shipment s
+        inner join xms_tbl_customer c on s.customer_code=c.customer_code
+		left join xms_tbl_schedule_collection sc on sc.shipmentid=s.shipmentid and sc.status=1
+		where s.shipmentid =#{shipmentId}
+    </select>
+
+    <select id="getShipmentsInfoFranchiseCodeByShipmentId" parameterType="long" resultMap="ShipmentInfoManifest">
+        SELECT s.* , f.* , sc.confirmation_no, sc.status as pickup, sc.special_instructions FROM xms_tbl_shipment s
+        inner join xms_tbl_franchise f on s.customer_code=f.franchise_code
+		left join xms_tbl_schedule_collection sc on sc.shipmentid=s.shipmentid and sc.status=1
+		where s.shipmentid =#{shipmentId}
+    </select>
+</mapper>

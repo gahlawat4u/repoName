@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ShipmentProductDetailMap">
+    <resultMap id="ShipmentProductDetailMap" type="com.gms.xms.txndb.vo.ShipmentProductDetailVo">
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="description" property="description"/>
+        <result column="code" property="code"/>
+        <result column="country_of_origin" property="countryOfOrigin"/>
+        <result column="qty" property="qty"/>
+        <result column="amount" property="amount"/>
+        <result column="no_of_carton" property="noOfCarton"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="ShipmentProductDetailVo">
+        INSERT INTO xms_tbl_shipment_product_detail ( shipmentid, description, code, country_of_origin, qty, amount,
+        no_of_carton)
+        values (#{shipmentId}, #{description}, #{code}, #{countryOfOrigin} , #{qty} , #{amount} , #{noOfCarton} );
+    </insert>
+
+    <select id="selectProductDetailByShipmentId" parameterType="long" resultMap="ShipmentProductDetailMap">
+        select * from xms_tbl_shipment_product_detail where shipmentid = #{shipmentId}
+    </select>
+
+
+</mapper>

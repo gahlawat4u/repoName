@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="TntRoute">
+    <resultMap id="TntRouteMap" type="TntRouteVo">
+        <result column="destination_suburb" property="destinationSuburb" jdbcType="VARCHAR"/>
+        <result column="state_code" property="stateCode" jdbcType="VARCHAR"/>
+        <result column="post_code" property="postCode" jdbcType="VARCHAR"/>
+        <result column="origin_depot" property="originDepot" jdbcType="VARCHAR"/>
+        <result column="gateway_depot" property="gatewayDepot" jdbcType="VARCHAR"/>
+        <result column="forwarding_depot" property="forwardingDepot" jdbcType="VARCHAR"/>
+        <result column="route_bin" property="routeBin" jdbcType="VARCHAR"/>
+        <result column="service_group" property="serviceGroup" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectByFilterView" resultMap="TntRouteMap" parameterType="TntRouteViewFilter">
+        SELECT * FROM xms_tbl_tnt_route where service_group=#{serviceGroup} and destination_suburb =
+        #{destinationSuburb} and post_code = #{postCode}
+    </select>
+</mapper>

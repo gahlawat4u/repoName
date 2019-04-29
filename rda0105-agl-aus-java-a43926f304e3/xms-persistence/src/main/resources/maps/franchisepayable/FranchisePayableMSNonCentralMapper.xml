@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FranchisePayableMSNonCentral">
+    <resultMap id="FranchisePayableMSNonCentralMap" type="FranchisePayableMSNonCentralVo">
+        <result column="payment_date" property="paymentDate" jdbcType="DATE"/>
+        <result column="invoice_number" property="invoiceNumber" jdbcType="VARCHAR"/>
+        <result column="airbill_number" property="airbillNumber" jdbcType="VARCHAR"/>
+        <result column="customer_number" property="customerNumber" jdbcType="BIGINT"/>
+        <result column="customer_name" property="customerName" jdbcType="VARCHAR"/>
+        <result column="international_domestic" property="internationalDomestic" jdbcType="VARCHAR"/>
+        <result column="customer_total_exc_gst" property="customerTotalExcGst" jdbcType="DECIMAL"/>
+        <result column="customer_total_gst" property="customerTotalGst" jdbcType="DECIMAL"/>
+        <result column="franchise_cost_exc_gst" property="franchiseCostExcGst" jdbcType="DECIMAL"/>
+        <result column="franchise_cost_gst" property="franchiseCostGst" jdbcType="DECIMAL"/>
+        <result column="previously_paid" property="previouslyPaid" jdbcType="DECIMAL"/>
+        <result column="payments_received" property="paymentsReceived" jdbcType="DECIMAL"/>
+        <result column="amount_outstanding" property="amountOutstanding" jdbcType="DECIMAL"/>
+        <result column="credits_franchise_cost" property="creditsFranchiseCost" jdbcType="DECIMAL"/>
+        <result column="credits_customer_cost" property="creditsCustomerCost" jdbcType="DECIMAL"/>
+        <result column="gross_margin_exc_gst" property="grossMarginExcGst" jdbcType="DECIMAL"/>
+        <result column="gross_margin_gst" property="grossMarginGst" jdbcType="DECIMAL"/>
+        <result column="profit_share_exc_gst" property="profitShareExcGst" jdbcType="DECIMAL"/>
+        <result column="profit_share_gst" property="profitShareGst" jdbcType="DECIMAL"/>
+        <result column="total_profit_share" property="totalProfitShare" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <!-- Non centralized details (Margin Share) -->
+    <select id="getNonCentralizedDetails" parameterType="FranchisePayableFilter"
+            resultMap="FranchisePayableMSNonCentralMap">
+        <![CDATA[
+		SELECT * FROM tmp_xms_tbl_ms_rpt_fran_pab_non_central 
+	    WHERE rpt_txn_id = #{rptTxnId}
+	    ]]>
+        AND franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        ORDER BY payment_date, invoice_number, airbill_number
+        <if test="startRecord!=null and recordSize!=null">
+            LIMIT #{startRecord}, #{recordSize}
+        </if>
+    </select>
+
+    <select id="getNonCentralizedDetailsTotal" parameterType="FranchisePayableFilter"
+            resultMap="FranchisePayableMSNonCentralMap">
+        <![CDATA[
+		SELECT
+			SUM(customer_total_exc_gst) AS customer_total_exc_gst,
+			SUM(customer_total_gst) AS customer_total_gst,
+			SUM(franchise_cost_exc_gst) AS franchise_cost_exc_gst,
+			SUM(franchise_cost_gst) AS franchise_cost_gst,
+			SUM(previously_paid) AS previously_paid,
+			SUM(payments_received) AS payments_received,
+			SUM(amount_outstanding) AS amount_outstanding,
+			SUM(credits_franchise_cost) AS credits_franchise_cost,
+			SUM(credits_customer_cost) AS credits_customer_cost,
+			SUM(gross_margin_exc_gst) AS gross_margin_exc_gst,
+			SUM(gross_margin_gst) AS gross_margin_gst,
+			SUM(profit_share_exc_gst) AS profit_share_exc_gst,
+			SUM(profit_share_gst) AS profit_share_gst,
+			SUM(total_profit_share) AS total_profit_share
+		FROM tmp_xms_tbl_ms_rpt_fran_pab_non_central 
+	    WHERE rpt_txn_id = #{rptTxnId}
+	    ]]>
+        AND franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+
+    <select id="getNonCentralizedDetailsRecordCount" parameterType="FranchisePayableFilter" resultType="int">
+        <![CDATA[
+		SELECT COUNT(*) FROM tmp_xms_tbl_ms_rpt_fran_pab_non_central
+		WHERE rpt_txn_id = #{rptTxnId}
+		]]>
+        AND franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+</mapper>

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerBaseRate">
+    <resultMap id="CustomerBaseRate" type="CustomerBaseRateVo">
+        <id column="customer_base_rate_id" property="customerBaseRateId"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="rate_type" property="rateType"/>
+        <result column="weight" property="weight"/>
+        <result column="rate" property="rate"/>
+        <result column="zone_check" property="zoneCheck"/>
+        <result column="content" property="content"/>
+        <result column="bound" property="bound"/>
+        <result column="baserate_description" property="baserateDescription"/>
+        <result column="carrierid" property="carrierId"/>
+    </resultMap>
+
+    <resultMap id="CustomerBaseRateDetailMap" type="CustomerBaseRateVo" extends="CustomerBaseRate">
+        <collection property="customerBaseRateDetails" column="customer_base_rate_id" ofType="CustomerBaseRateDetailVo"
+                    javaType="ArrayList">
+            <result column="base_rate_detail_id" property="customerBaseRateId"/>
+            <result column="zone" property="zone"/>
+            <result column="zone_rate" property="rate"/>
+        </collection>
+    </resultMap>
+
+    <delete id="delete" parameterType="long">
+        delete from xms_tbl_customer_base_rate where customer_base_rate_id = #{customerBaseRateId}
+    </delete>
+
+    <select id="delete_SelectForLog" parameterType="long" resultMap="CustomerBaseRate">
+        select * from xms_tbl_customer_base_rate where customer_base_rate_id = #{customerBaseRateId}
+    </select>
+
+    <delete id="deleteByCustomerCode" parameterType="string">
+        delete from xms_tbl_customer_base_rate
+        where customer_code = #{customerCode}
+    </delete>
+
+    <select id="deleteByCustomerCode_SelectForLog" parameterType="string" resultMap="CustomerBaseRate">
+        select * from xms_tbl_customer_base_rate
+        where customer_code = #{customerCode}
+    </select>
+
+    <update id="update" parameterType="CustomerBaseRateVo">
+        update xms_tbl_customer_base_rate
+        <set>
+            <if test="customerCode != null and  customerCode != ''">
+                customer_code = #{customerCode}
+            </if>
+            <if test="shipmentTypeId != null and  shipmentTypeId != ''">
+                shipment_type_id = #{shipmentTypeId}
+            </if>
+            <if test="rateType != null and  rateType != ''">
+                rate_type = #{rateType}
+            </if>
+            <if test="weight != null and  weight != ''">
+                weight = #{weight}
+            </if>
+            <if test="rate != null and  rate != ''">
+                rate = #{rate}
+            </if>
+            <if test="zoneCheck != null and  zoneCheck != ''">
+                zone_check = #{zoneCheck}
+            </if>
+            <if test="content != null and  content != ''">
+                content = #{content}
+            </if>
+            <if test="bound != null and  bound != ''">
+                bound = #{bound}
+            </if>
+            <if test="baserateDescription != null and  baserateDescription != ''">
+                baserate_description = #{baserateDescription}
+            </if>
+            <if test="carrierId != null and  carrierId != ''">
+                carrierid = #{carrierId}
+            </if>
+        </set>
+        <where>
+            <if test="customerCode != null and  customerCode != ''">
+                and customer_code = #{customerCode}
+            </if>
+            <if test="shipmentTypeId != null and  shipmentTypeId != ''">
+                and shipment_type_id = #{shipmentTypeId}
+            </if>
+        </where>
+    </update>
+
+    <select id="update_SelectForLog" parameterType="CustomerBaseRateVo" resultMap="CustomerBaseRate">
+        select * from xms_tbl_customer_base_rate
+        <where>
+            <if test="customerCode != null and  customerCode != ''">
+                and customer_code = #{customerCode}
+            </if>
+            <if test="shipmentTypeId != null and  shipmentTypeId != ''">
+                and shipment_type_id = #{shipmentTypeId}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="CustomerBaseRateVo" useGeneratedKeys="true" keyProperty="customerBaseRateId">
+        insert into xms_tbl_customer_base_rate (
+        customer_code,
+        shipment_type_id,
+        rate_type,
+        weight,
+        rate,
+        zone_check,
+        content,
+        bound,
+        baserate_description,
+        carrierid
+        )
+        values (
+        #{customerCode},
+        #{shipmentTypeId},
+        #{rateType},
+        #{weight},
+        #{rate},
+        #{zoneCheck},
+        #{content},
+        #{bound},
+        #{baserateDescription},
+        #{carrierId}
+        )
+    </insert>
+
+    <select id="selectCustomerBaseRateByCustomerCodeAndShipmentTypeId" resultMap="CustomerBaseRate"
+            parameterType="CustomerBaseRateFilter">
+        select * from xms_tbl_customer_base_rate
+        where (1 = 1)
+        <if test="customerCode != null">
+            and customer_code = #{customerCode}
+        </if>
+        and shipment_type_id = #{shipmentTypeId}
+        <if test="content != null">
+            and content = #{content}
+        </if>
+        <if test="bound != null">
+            and bound = #{bound}
+        </if>
+        <if test="carrierId != null">
+            and carrierid = #{carrierId}
+        </if>
+        <![CDATA[
+			and  weight <= #{weight}
+		]]>
+        order by weight desc
+        limit 1
+    </select>
+
+    <select id="selectCustomerBaseRateByZone" resultType="double" parameterType="CustomerBaseRateFilter">
+        select brd.rate from
+        xms_tbl_customer_base_rate as br
+        left join xms_tbl_customer_base_rate_detail as brd on brd.customer_base_rate_id = br.customer_base_rate_id
+        where br.customer_code = #{customerCode}
+        and br.shipment_type_id = #{shipmentTypeId}
+        and brd.zone = #{zone}
+        and brd.customer_base_rate_id = #{customerBaseRateId}
+    </select>
+
+    <select id="getBaseRateDetailByFilter" parameterType="CustomerBaseRateFilter" resultMap="CustomerBaseRateDetailMap">
+        select
+        cbr.*,
+        cbd.customer_base_rate_id as base_rate_detail_id,
+        cbd.zone,
+        cbd.rate as zone_rate
+        from xms_tbl_customer_base_rate as cbr
+        left join xms_tbl_customer_base_rate_detail as cbd on cbd.customer_base_rate_id = cbr.customer_base_rate_id
+        where cbr.customer_code = #{customerCode}
+        and cbr.shipment_type_id = #{shipmentTypeId}
+        and cbr.content = #{content}
+        and cbr.bound = #{bound}
+        order by cbr.weight, cbd.zone
+    </select>
+</mapper>

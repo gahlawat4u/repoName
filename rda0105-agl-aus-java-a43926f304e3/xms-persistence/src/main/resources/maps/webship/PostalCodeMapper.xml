@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PostalCode">
+    <resultMap id="SearchPostalCodeMap" type="SearchPostalCodeVo">
+        <result column="city_name" property="cityName"/>
+        <result column="postal_code" property="postalCode"/>
+        <result column="state_code" property="stateCode"/>
+    </resultMap>
+
+    <select id="searchCityByNameOrPostalCode" parameterType="SearchPostalCodeFilter" resultMap="SearchPostalCodeMap">
+        <![CDATA[
+		select 
+			pc.city_name, 
+		    pc.from_postcode as postal_code, 
+		    spc.state_code 
+		from xms_tbl_postal_code as pc
+		left join xms_tbl_statecode_by_postcode as spc on spc.countrycode = pc.countrycode and pc.from_postcode >= spc.from_postcode and pc.from_postcode <= spc.to_postcode
+		inner join xms_tbl_country as c on c.countrycode = pc.countrycode
+		]]>
+        where c.countryid = #{countryId}
+        <if test="cityName!=null and cityName!=''">
+            and pc.city_name like concat(#{cityName},'%')
+        </if>
+        <if test="postalCode!=null">
+            and pc.from_postcode like concat(#{postalCode},'%')
+        </if>
+        order by city_name, state_code, postal_code
+        limit 200
+    </select>
+</mapper>

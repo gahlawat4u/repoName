@@ -1,0 +1,1016 @@
+<workflow>
+    <flow name="Wfl-GetAdjustmentById">
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.GetAirbillAdjustmentByIdTask"/>
+    </flow>
+
+    <flow name="Wfl-GetAdjustmentById-Request">
+        <task type="task" className="com.gms.xms.workflow.task.adjustmentrequest.GetAirbillAdjustmentByIdTask"/>
+    </flow>
+
+    <flow name="Wfl-EditAdjustment">
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.EditAdjustmentTask"/>
+    </flow>
+
+    <flow name="Wfl-EditAdjustment-Request">
+        <task type="task" className="com.gms.xms.workflow.task.adjustmentrequest.EditAdjustmentTask"/>
+    </flow>
+
+    <flow name="Wfl-UpdateAdjustment">
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.UpdateAirbillAdjustmentTask"/>
+    </flow>
+
+    <flow name="Wfl-UpdateAdjustment-Request">
+        <task type="task" className="com.gms.xms.workflow.task.adjustmentrequest.UpdateAirbillAdjustmentTask"/>
+    </flow>
+
+    <flow name="Wfl-SaveAdjustmentRequests">
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.SaveAdjustmentRequestsTask"/>
+    </flow>
+
+    <flow name="Wfl-SaveAdjustmentRequests-Request">
+        <task type="task" className="com.gms.xms.workflow.task.adjustmentrequest.SaveAdjustmentRequestsTask"/>
+    </flow>
+
+    <flow name="Wfl-GetTotalPayableOfAdjustType">
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.GetTotalPayableOfAdjustTypeTask"/>
+    </flow>
+
+    <flow name="Wfl-GetTotalPayableOfAdjustType-Request">
+        <task type="task" className="com.gms.xms.workflow.task.adjustmentrequest.GetTotalPayableOfAdjustTypeTask"/>
+    </flow>
+
+    <flow name="Wfl-GetAdjustableAmount">
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.GetTotalPayableOfAWBTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.GetTotalAdjustAmountOfAWBTask"/>
+    </flow>
+
+    <flow name="Wfl-GetAdjustableAmount-Request">
+        <task type="task" className="com.gms.xms.workflow.task.adjustmentrequest.GetTotalPayableOfAWBTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.adjustmentrequest.GetTotalAdjustAmountOfAWBTask"/>
+    </flow>
+
+    <flow name="Wfl-GetAdjustableRequestAmount">
+        <task type="task" className="com.gms.xms.workflow.task.adjustmentrequest.GetTotalPayableOfAWBTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.adjustmentrequest.GetTotalAdjustAmountOfAWBTask"/>
+    </flow>
+
+    <flow name="Wfl-GetTotalPayableOfAdjustType">
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.GetTotalPayableOfAdjustTypeTask"/>
+    </flow>
+
+    <flow name="Wfl-CountAWBAdjustmentByFilter">
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.CountAirbillAdjustmentDetailByFilterTask"/>
+    </flow>
+
+    <flow name="Wfl-CountAWBAdjustmentByFilter-Request">
+        <task type="task"
+              className="com.gms.xms.workflow.task.adjustmentrequest.CountAirbillAdjustmentDetailByFilterTask"/>
+    </flow>
+
+    <flow name="Wfl-GetAWBAdjustmentByFilter">
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.GetAirbillAdjustmentDetailByFilterTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.TotalAirbillAdjustmentDetailByFilterTask"/>
+    </flow>
+
+    <flow name="Wfl-GetAWBAdjustmentByFilter-Request">
+        <task type="task"
+              className="com.gms.xms.workflow.task.adjustmentrequest.GetAirbillAdjustmentDetailByFilterTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.adjustmentrequest.TotalAirbillAdjustmentDetailByFilterTask"/>
+    </flow>
+
+    <flow name="Wfl-SaveInvoicePayments">
+        <task type="task" className="com.gms.xms.workflow.task.overpayment.SaveInvoicePaymentsTask"/>
+    </flow>
+
+    <flow name="Wfl-GetOverpaymentVoByFilter">
+        <task type="task" className="com.gms.xms.workflow.task.overpayment.GetOverpaymentVoByFilterTask"/>
+    </flow>
+
+    <flow name="Wfl-CountOverpaymentInfoByFilter">
+        <task type="task" className="com.gms.xms.workflow.task.overpayment.CountOverpaymentInfoByFilterTask"/>
+    </flow>
+
+    <flow name="Wfl-GetOverpaymentInfoByFilter">
+        <task type="task" className="com.gms.xms.workflow.task.overpayment.GetOverpaymentInfoByFilterTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.overpayment.SumOverpaymentInfoByFilterTask"/>
+    </flow>
+
+    <flow name="Wfl-GetInvoiceByCode">
+        <task type="task" className="com.gms.xms.workflow.task.receivepayments.GetInvoiceByCodeTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCustomerAddressByCode">
+        <task type="task" className="com.gms.xms.workflow.task.receivepayments.GetCustomerAddressByCodeTask"/>
+    </flow>
+
+    <flow name="Wfl-SaveCustomerPayment">
+        <task type="task" className="com.gms.xms.workflow.task.receivepayments.SaveReceivePaymentTask"/>
+    </flow>
+
+    <flow name="Wfl-GetShipmentInvoiceByInvoiceCode">
+        <task type="task" className="com.gms.xms.workflow.task.receivepayments.GetShipmentInvoiceByInvoiceCodeTask"/>
+    </flow>
+
+    <flow name="Wfl-GetOverpaymentByCustomerCode">
+        <task type="task" className="com.gms.xms.workflow.task.receivepayments.GetOverpaymentByCustomerCodeTask"/>
+    </flow>
+
+    <flow name="Wfl-GetAllBankTask">
+        <task type="task" className="com.gms.xms.workflow.task.receivepayments.GetAllBankTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCustomerAddressByNameTask">
+        <task type="task" className="com.gms.xms.workflow.task.receivepayments.GetCustomerAddressByNameTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCustomerAddressByCustomerCode">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetCustomerAddressByCustomerCodeTask"/>
+    </flow>
+
+    <flow name="Wfl-GetOutstandingInvoicesByCustOrInvoiceCode">
+        <task type="task"
+              className="com.gms.xms.workflow.task.receivepayments.GetOutstandingInvoicesByCustOrInvoiceCodeTask"/>
+    </flow>
+
+    <flow name="Wfl-ChangeWebshipPass">
+        <task type="task" className="com.gms.xms.workflow.task.webship.ChangeWebshipPassTask"/>
+    </flow>
+
+    <flow name="Wfl-ResetCustomerPasswordByCodeNameMail">
+        <task type="task" className="com.gms.xms.workflow.task.common.ResetCustomerPasswordByCodeNameMailTask"/>
+    </flow>
+
+    <flow name="Wfl-GetPackageById">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetPackageByIdTask"/>
+    </flow>
+
+    <flow name="Wfl-GetPackageByShipmentTypeIdAndPackageId">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetPackageByShipmentTypeIdAndPackageIdTask"/>
+    </flow>
+
+    <flow name="Wfl-InsertCustomerDefaultSetting">
+        <task type="task" className="com.gms.xms.workflow.task.webship.InsertCustomerDefaultSettingTask"/>
+    </flow>
+
+    <flow name="Wfl-UpdateCustomerDefaultSetting">
+        <task type="task" className="com.gms.xms.workflow.task.webship.UpdateCustomerDefaultSettingTask"/>
+    </flow>
+
+    <flow name="Wfl-GetOutstandingInvoiceTotalByCustCode">
+        <task type="task" className="com.gms.xms.workflow.task.webship.UpdateCustomerDefaultSettingTask"/>
+    </flow>
+
+    <flow name="Wfl-GetPaidInvoiceTotalByCustCode">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetPaidInvoiceTotalByCustCodeTask"/>
+    </flow>
+
+    <flow name="Wfl-GetPaidInvoicesCountByCustCode">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetPaidInvoicesCountByCustCodeTask"/>
+    </flow>
+
+    <flow name="Wfl-GetOutstandingInvoicesCountByCustCode">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetOutstandingInvoicesCountByCustCodeTask"/>
+    </flow>
+
+    <flow name="Wfl-GetPaidInvoicesByCustCode">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetPaidInvoicesByCustCodeTask"/>
+    </flow>
+
+    <flow name="Wfl-GetOutstandingInvoicesByCustCode">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetOutstandingInvoicesByCustCodeTask"/>
+    </flow>
+
+    <flow name="Wfl-GetPackageListByServiceId">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetPackageListByServiceIdTask"/>
+    </flow>
+
+    <flow name="Wfl-GetPackageListByShipmentTypeId">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetPackageListByShipmentTypeIdTask"/>
+    </flow>
+
+    <flow name="Wfl-GetShipmentTypeByShipmentTypeId">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetShipmentTypeByShipmentTypeIdTask"/>
+    </flow>
+
+    <flow name="Wfl-GetServiceListByWebshipId">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetServiceListByWebshipIdTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetServiceListByWebshipIdTask"/>
+    </flow>
+
+    <flow name="Wfl-GetServiceByServiceId">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetServiceByServiceIdTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCollectionTypeList">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetCollectionTypeListTask"/>
+    </flow>
+
+    <flow name="Wfl-GetTradeTypeList">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetTradeTypeListTask"/>
+    </flow>
+
+    <flow name="Wfl-GetFranchiseListManagedByUser">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.GetFranchiseListManagedByUserTask"/>
+    </flow>
+
+    <flow name="Wfl-GetFranchiseInfoByCode">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.GetFranchiseInfoByCodeTask"/>
+    </flow>
+
+    <flow name="Wfl-GetParentFranchiseByCode">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.GetParentFranchiseByCodeTask"/>
+    </flow>
+
+    <flow name="Wfl-GetUnfrozenPeriodList">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.GetUnfrozenPeriodListTask"/>
+    </flow>
+
+    <flow name="Wfl-GetFrozenPeriodList">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.GetFrozenPeriodListTask"/>
+    </flow>
+
+    <flow name="Wfl-GetUserById">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.GetUserByIdTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCreditNoteCreateDateList">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetCreditNoteCreateDateListTask"/>
+    </flow>
+
+    <flow name="Wfl-GetFreezeCreditNoteDateList">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetFreezeCreditNoteDateListTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCreditNotesList">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetCreditNotesListTask"/>
+    </flow>
+
+    <flow name="Wfl-SendCreditNotes">
+        <task type="task" className="com.gms.xms.workflow.task.admin.invoicing.SendCreditNotesTask"/>
+    </flow>
+
+    <!-- Overview -->
+    <flow name="Wfl-GetFranchisePayableMSOverview">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.DetermineReportCacheTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.ReconcileFranchiseTaxAmountTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.PrepareDataForFranchisePayableReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductBefore6xTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductAfter6xTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.PrepareFranchisePayableDataV2Task"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableMSOverviewTask"/>
+    </flow>
+    <!-- Payment Margin Details -->
+    <flow name="Wfl-GetFranchisePayableMSMargin">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.DetermineReportCacheTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.ReconcileFranchiseTaxAmountTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.PrepareDataForFranchisePayableReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductBefore6xTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductAfter6xTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.PrepareFranchisePayableDataV2Task"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableMSMarginTask"/>
+    </flow>
+
+    <!-- Carrier Cost Deduction -->
+    <flow name="Wfl-GetFranchisePayableMSDeduct">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.DetermineReportCacheTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.ReconcileFranchiseTaxAmountTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.PrepareDataForFranchisePayableReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductBefore6xTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductAfter6xTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.PrepareFranchisePayableDataV2Task"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableMSDeductTask"/>
+    </flow>
+
+    <!-- 61+ Days Payment Credit Details -->
+    <flow name="Wfl-GetFranchisePayableMS61Days">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.DetermineReportCacheTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.ReconcileFranchiseTaxAmountTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.PrepareDataForFranchisePayableReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductBefore6xTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductAfter6xTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.PrepareFranchisePayableDataV2Task"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableMS61DaysTask"/>
+    </flow>
+
+    <!-- Non Centralized Details -->
+    <flow name="Wfl-GetFranchisePayableMSNonCentral">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.DetermineReportCacheTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.ReconcileFranchiseTaxAmountTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.PrepareDataForFranchisePayableReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductBefore6xTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductAfter6xTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.PrepareFranchisePayableDataV2Task"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableMSNonCentralTask"/>
+    </flow>
+
+    <!-- Carrier Credit Details -->
+    <flow name="Wfl-GetFranchisePayableMSCredit">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.DetermineReportCacheTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.ReconcileFranchiseTaxAmountTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.PrepareDataForFranchisePayableReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductBefore6xTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductAfter6xTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.PrepareFranchisePayableDataV2Task"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableMSCreditTask"/>
+    </flow>
+
+    <!-- Over payment -->
+    <flow name="Wfl-GetFranchisePayableMSOverpayment">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.DetermineReportCacheTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.ReconcileFranchiseTaxAmountTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.PrepareDataForFranchisePayableReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductBefore6xTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductAfter6xTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.PrepareFranchisePayableDataV2Task"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableMSOverpaymentTask"/>
+    </flow>
+
+    <!-- Freeze/Send email franchise payable report work flow -->
+    <flow name="Wfl-FreezeFranchisePayableReport">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.DetermineReportCacheTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.ReconcileFranchiseTaxAmountTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.PrepareDataForFranchisePayableReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductBefore6xTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductAfter6xTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.PrepareFranchisePayableDataV2Task"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.FreezeFranchisePayableReportTask"/>
+    </flow>
+
+    <flow name="Wfl-SendEmailMSPayableReport">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.DetermineReportCacheTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.ReconcileFranchiseTaxAmountTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.PrepareDataForFranchisePayableReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductBefore6xTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductAfter6xTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.PrepareFranchisePayableDataV2Task"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.SendEmailMSPayableReportTask"/>
+    </flow>
+
+    <!-- ===== Get invoice export data ===== -->
+    <flow name="Wfl-GetFranchisePayableInvExportData">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.DetermineReportCacheTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.ReconcileFranchiseTaxAmountTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.PrepareDataForFranchisePayableReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductBefore6xTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.RecalcFranchiseChargeForDeductAfter6xTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.PrepareFranchisePayableDataV2Task"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableInvExportDataTask"/>
+    </flow>
+
+    <!-- Carrier Credit Details (SC)-->
+    <flow name="Wfl-GetFranchisePayableSCCredit">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.DetermineReportCacheSCTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.ReconcileFranchiseTaxAmountSCTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.sc.PrepareDataForFranchisePayableSCReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.sc.PrepareFranchisePayableSCDataV2Task"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.GetFranchisePayableSCCreditTask"/>
+    </flow>
+
+    <!-- Over payment (SC) -->
+    <flow name="Wfl-GetFranchisePayableSCOverpayment">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.DetermineReportCacheSCTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.ReconcileFranchiseTaxAmountSCTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.sc.PrepareDataForFranchisePayableSCReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.sc.PrepareFranchisePayableSCDataV2Task"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.sc.GetFranchisePayableSCOverpaymentTask"/>
+    </flow>
+
+    <!-- Shipment Detail (SC) -->
+    <flow name="Wfl-GetFranchisePayableSCShipmentDetail">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.DetermineReportCacheSCTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.ReconcileFranchiseTaxAmountSCTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.sc.PrepareDataForFranchisePayableSCReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.sc.PrepareFranchisePayableSCDataV2Task"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.GetFranchisePayableSCShipmentTask"/>
+    </flow>
+
+    <!-- Technology Fee Detail (SC) -->
+    <flow name="Wfl-GetFranchisePayableSCTechFeeDetail">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.DetermineReportCacheSCTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.ReconcileFranchiseTaxAmountSCTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.sc.PrepareDataForFranchisePayableSCReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.sc.PrepareFranchisePayableSCDataV2Task"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.GetFranchisePayableSCTechFeeTask"/>
+    </flow>
+
+    <!-- Overview (SC) -->
+    <flow name="Wfl-GetFranchisePayableSCOverview">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.DetermineReportCacheSCTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.ReconcileFranchiseTaxAmountSCTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.sc.PrepareDataForFranchisePayableSCReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.sc.PrepareFranchisePayableSCDataV2Task"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.UpdateManagementFeeOnCreditTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.GetFranchisePayableSCOverviewTask"/>
+    </flow>
+
+    <!-- Freeze Franchise Receivable (SC) -->
+    <flow name="Wfl-FreezeFranchiseReceivableReport">
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.DetermineReportCacheSCTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.ReconcileFranchiseTaxAmountSCTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.sc.PrepareDataForFranchisePayableSCReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.sc.PrepareFranchisePayableSCDataV2Task"/>
+        <task type="task" className="com.gms.xms.workflow.task.franchisepayable.sc.UpdateManagementFeeOnCreditTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.franchisepayable.sc.FreezeFranchiseReceivableReportTask"/>
+    </flow>
+
+    <!-- ====== WEBSHIP ====== -->
+    <flow name="Wfl-WebshipHistory">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetWebshipHistoryTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCountryList">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetCountryListTask"/>
+    </flow>
+
+    <flow name="Wfl-GetServiceList">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetServiceListTask"/>
+    </flow>
+
+    <flow name="Wfl-GetShipmentTypeList">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetShipmentTypeListTask"/>
+    </flow>
+
+    <flow name="Wfl-GetPackageList">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetPackageListTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCurrencyList">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetCurrencyListTask"/>
+    </flow>
+
+    <flow name="Wfl-GetBillingTypeList">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetBillingTypeListTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCustomerDefaultSettingByCustomerCode">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetCustomerDefaultSettingByCustomerCodeTask"/>
+    </flow>
+
+    <flow name="Wfl-WebshipHistoryCount">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetWebshipHistoryCountTask"/>
+    </flow>
+
+    <flow name="Wfl-GetAllState">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetAllStateTask"/>
+    </flow>
+
+    <flow name="Wfl-GetSystemSettingBySettingName">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetSystemSettingBySettingNameTask"/>
+    </flow>
+
+    <flow name="Wfl-SearchHistory">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetWebshipHistoryCountTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.SearchHistoryTask"/>
+    </flow>
+
+    <flow name="Wfl-VoidShipmentHistory">
+        <!-- <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentCollectionScheduleBySmIdTask" /> <task type="task" className="com.gms.xms.workflow.task.webship.GetCarrierByServiceTypeTask" /> <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentInfoByShipIDTask" /> <task type="task" className="com.gms.xms.workflow.task.webship.CheckVoidShipmentBySmIdTask" /> -->
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentCollectionScheduleBySmIdTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetCarrierByServiceTypeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentInfoByShipIDTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.CheckVoidShipmentBySmIdTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentForHistoryDetailTask"/>
+    </flow>
+
+    <flow name="Wfl-VoidShipmentHistoryAc">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentCollectionScheduleBySmIdTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetCarrierByServiceTypeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentInfoByShipIDTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.CheckVoidShipmentBySmIdTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentForHistoryDetailTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.VoidShipmentTask"/>
+    </flow>
+
+    <flow name="Wfl-WebshipHistory">
+        <task type="task" className="com.gms.xms.workflow.task.webship.ShowWebshipHistoryTask"/>
+    </flow>
+
+    <flow name="Wfl-GetDhlDomesticCharge">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.domestic.GetDhlDomesticZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.domestic.GetDhlDomesticRateSheet"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.domestic.GetDhlDomesticBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.domestic.GetDhlDomesticSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.international.GetDhlAddtionalInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetQuoteResultTask"/>
+    </flow>
+
+    <flow name="Wfl-GetDhlDomesticBooking">
+        <task type="task" className="com.gms.xms.workflow.task.dhl.international.GetDhlAddtionalInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.domestic.DhlDomesticShipmentRequestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.domestic.ValidDataBookingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.domestic.SaveAddressTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.domestic.SaveShipmentTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.domestic.SaveScheduleCollectionTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.domestic.SaveProductInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.domestic.SavePiecesTask"/>
+    </flow>
+
+
+    <flow name="Wfl-GetDhlIntlCharge">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.international.GetDhlIntlZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.international.GetDhlIntlRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.international.GetDhlIntlBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.international.GetDhlIntlSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.international.GetDhlAddtionalInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetQuoteResultTask"/>
+    </flow>
+
+    <flow name="Wfl-GetDhlIntlBooking">
+        <task type="task" className="com.gms.xms.workflow.task.dhl.international.GetDhlAddtionalInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.international.DhlIntlShipmentRequestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.international.ValidDataBookingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.international.SaveAddressTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.international.SaveShipmentTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.international.SaveScheduleCollectionTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.international.SaveProductInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.dhl.international.SavePiecesTask"/>
+    </flow>
+    
+     <flow name="Wfl-UpsBooking">
+        <task type="task"  className="com.gms.xms.workflow.task2.ups.international.booking.upsIntlShipmentRequestTask"/>
+        <task type="task" className="com.gms.xms.workflow.task2.ups.international.booking.ValidDataBookingTask"/>
+        <task type="task"  className="com.gms.xms.workflow.task2.ups.international.booking.SaveAddressTask"/>
+        <task type="task"  className="com.gms.xms.workflow.task2.ups.international.booking.SaveShipmentTask"/>
+        <task type="task"  className="com.gms.xms.workflow.task2.ups.international.booking.SaveScheduleCollectionTask"/>
+        <!-- <task type="task"  className="com.gms.xms.workflow.task2.ups.international.booking.SaveProductInfoTask"/> -->
+        <task type="task"  className="com.gms.xms.workflow.task2.ups.international.booking.SavePiecesTask"/>
+         </flow>
+
+    <flow name="Wfl-GetTntDomesticCharge">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.domestic.GetTntDomesticZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.domestic.GetTntDomesticRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.domestic.GetTntDomesticBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.domestic.GetTntDomesticSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetTntDomesticBooking">
+        <task type="task" className="com.gms.xms.workflow.task.tnt.domestic.ValidDataBookingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.domestic.SaveAddressTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.domestic.SaveShipmentTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.domestic.SaveScheduleCollectionTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.domestic.SaveProductInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.domestic.SavePiecesTask"/>
+    </flow>
+
+    <flow name="Wfl-GetTollPriorityCharge">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.toll.priority.GetTollPriorityZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.toll.priority.GetTollPriorityBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.toll.priority.GetTollPrioritySurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetTollPriorityBooking">
+        <task type="task" className="com.gms.xms.workflow.task.toll.priority.ValidDataBookingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.toll.priority.SaveAddressTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.toll.priority.SaveShipmentTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.toll.priority.SaveProductInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.toll.priority.SavePiecesTask"/>
+    </flow>
+
+    <flow name="Wfl-GetTollIpecCharge">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.toll.ipec.GetTollIpecZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.toll.ipec.GetTollIpecRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.toll.ipec.GetTollIpecBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.toll.ipec.GetTollIpecSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetTollIpecBooking">
+        <task type="task" className="com.gms.xms.workflow.task.toll.ipec.ValidDataBookingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.toll.ipec.SaveAddressTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.toll.ipec.SaveShipmentTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.toll.ipec.SaveProductInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.toll.ipec.SavePiecesTask"/>
+    </flow>
+
+    <flow name="Wfl-GetHiTransCharge">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.hitrans.GetHiTransZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.hitrans.GetHiTransRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.hitrans.GetHiTransBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.hitrans.GetHiTransSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetHiTransBooking">
+        <task type="task" className="com.gms.xms.workflow.task.hitrans.ValidDataBookingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.hitrans.SaveAddressTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.hitrans.SaveShipmentTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.hitrans.SaveProductInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.hitrans.SavePiecesTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCouriersPleaseCharge">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.couriersplease.GetCouriersPleaseZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.couriersplease.GetCouriersPleaseRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.couriersplease.GetCouriersPleaseBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.couriersplease.GetCouriersPleaseSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetCouriersPleaseBooking">
+        <task type="task" className="com.gms.xms.workflow.task.couriersplease.ValidDataBookingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.couriersplease.SaveAddressTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.couriersplease.SaveShipmentTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.couriersplease.SaveProductInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.couriersplease.SavePiecesTask"/>
+    </flow>
+
+    <flow name="Wfl-GetDirectCouriersCharge">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.directcouriers.GetDirectCouriersZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.directcouriers.GetDirectCouriersRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.directcouriers.GetDirectCouriersBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.directcouriers.GetDirectCouriersSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetDirectCouriersBooking">
+        <task type="task" className="com.gms.xms.workflow.task.directcouriers.ValidDataBookingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.directcouriers.SaveAddressTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.directcouriers.SaveShipmentTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.directcouriers.SaveProductInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.directcouriers.SavePiecesTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCapitalTransportCharge">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.capitaltransport.GetCapitalTransportZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.capitaltransport.GetCapitalTransportRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.capitaltransport.GetCapitalTransportBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.capitaltransport.GetCapitalTransportSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetCapitalTransportBooking">
+        <task type="task" className="com.gms.xms.workflow.task.capitaltransport.ValidDataBookingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.capitaltransport.SaveAddressTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.capitaltransport.SaveShipmentTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.capitaltransport.SaveProductInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.capitaltransport.SavePiecesTask"/>
+    </flow>
+
+    <flow name="Wfl-GetFastwayCharge">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.fastway.GetFastwayZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.fastway.GetFastwayRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.fastway.GetFastwayBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.fastway.GetFastwaySurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetFastwayBooking">
+        <task type="task" className="com.gms.xms.workflow.task.fastway.ValidDataBookingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.fastway.SaveAddressTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.fastway.SaveShipmentTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.fastway.SaveProductInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.fastway.SavePiecesTask"/>
+    </flow>
+
+    <flow name="Wfl-GetFollowmontTransportCharge">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.followmonttransport.GetFollowmontTransportZoneTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.followmonttransport.GetFollowmontTransportRateSheetTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.followmonttransport.GetFollowmontTransportBaseChargeTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.followmonttransport.GetFollowmontTransportSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetQuoteResultTask"/>
+    </flow>
+
+    <flow name="Wfl-GetFollowmontTransportBooking">
+        <task type="task" className="com.gms.xms.workflow.task.followmonttransport.ValidDataBookingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.followmonttransport.SaveAddressTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.followmonttransport.SaveShipmentTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.followmonttransport.SaveProductInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.followmonttransport.SavePiecesTask"/>
+    </flow>
+
+    <flow name="Wfl-GetTntIntlCharge">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentWeightTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.international.GetTntIntlZoneTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.international.GetTntIntlRateSheetTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.international.GetTntIntlBaseChargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.international.GetTntIntlSurchargeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetQuoteResultTask"/>
+    </flow>
+    <flow name="Wfl-GetTntIntlBooking">
+        <task type="task" className="com.gms.xms.workflow.task.tnt.international.ValidDataBookingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.international.SaveAddressTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.international.SaveShipmentTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.international.SaveProductInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.tnt.international.SavePiecesTask"/>
+    </flow>
+
+    <flow name="Wfl-DetailHistory">
+        <task type="task" className="com.gms.xms.workflow.task.webship.HistoryDetailTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetAllAccessorialTask"/>
+    </flow>
+
+    <flow name="Wfl-ScheduleCollectionWebship">
+        <task type="task" className="com.gms.xms.workflow.task.webship.GetShipmentCollectionScheduleBySmIdTask"/>
+    </flow>
+
+    <flow name="Wfl-ScheduleCollectionWebshipUpdateInsert">
+        <task type="task" className="com.gms.xms.workflow.task.webship.UpdateInsertShipmentCollectionScheduleTask"/>
+    </flow>
+
+    <flow name="Wfl-InsertShipmentNote">
+        <task type="task" className="com.gms.xms.workflow.task.webship.InsertShipmentNoteTask"/>
+    </flow>
+
+    <flow name="Wfl-SendAirbillHistory">
+        <task type="task" className="com.gms.xms.workflow.task.webship.SendAirbillHistoryTask"/>
+    </flow>
+
+    <flow name="Wfl-WebshipHistoryViewAwbHistory">
+        <task type="task" className="com.gms.xms.workflow.task.webship.HistoryViewAwbHistoryTask"/>
+    </flow>
+
+    <flow name="Wfl-MultiVoidProceedToVoid">
+        <task type="task" className="com.gms.xms.workflow.task.webship.MultiVoidProceedToVoidTask"/>
+    </flow>
+
+    <flow name="Wfl-MultiVoidProceedToUpdateCollection">
+        <task type="task" className="com.gms.xms.workflow.task.webship.MultiVoidProceedToUpdateCollectionTask"/>
+    </flow>
+
+    <flow name="Wfl-SaveQuoteLogWebship">
+        <task type="task" className="com.gms.xms.workflow.task.webship.WebshipSaveQuoteLogTask"/>
+    </flow>
+
+    <!--//Start Admin Invoicing -->
+    <flow name="Wfl-InvoicingManageCreditNotes">
+        <task type="task" className="com.gms.xms.workflow.task.admin.invoicing.GetListCustomerCodeByLoginTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.admin.invoicing.GetListCreateDateCreditNoteByCustomerTask"/>
+    </flow>
+
+    <flow name="Wfl-CreditNoteViewDetail">
+        <task type="task" className="com.gms.xms.workflow.task.admin.invoicing.GetCreditNoteShowListTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.admin.invoicing.GetCreditNoteInfoTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.admin.invoicing.GetCreditNoteInfoSystemAdminTask"/>
+    </flow>
+    <!--//End Admin Invoicing -->
+    <flow name="Wfl-FreezeCreditNotes">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetCreditNotesListTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.admin.invoicing.FreezeCreditNotesTask"/>
+    </flow>
+    <flow name="Wfl-UnfreezeCreditNotes">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetCreditNotesListTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.admin.invoicing.UnfreezeCreditNotesTask"/>
+    </flow>
+    <flow name="Wfl-FreezeCreditNotesByCode">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetCreditNotesByCodeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.admin.invoicing.FreezeCreditNotesByCodeTask"/>
+    </flow>
+    <flow name="Wfl-UnfreezeCreditNotesByCode">
+        <task type="task" className="com.gms.xms.workflow.task.common.GetCreditNotesByCodeTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.admin.invoicing.UnfreezeCreditNotesByCodeTask"/>
+    </flow>
+
+    <flow name="Wfl-ManageCarrierAdjustment">
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.CarrierAdjustmentByFilterGetCountTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.CarrierAdjustmentByFilterGetListTask"/>
+    </flow>
+
+    <flow name="Wfl-CarrierAdjustmentAcceptSubmittedRequest">
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.CarrierAdjustmentSubmittedTask"/>
+    </flow>
+
+    <flow name="Wfl-CarrierAdjustmentRejectSubmittedRequest">
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.CarrierAdjustmentRejectTask"/>
+    </flow>
+
+    <flow name="Wfl-CarrierAdjustmentAcceptPendingRequest">
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.CarrierAdjustmentPendingTask"/>
+    </flow>
+
+    <flow name="Wfl-CarrierAdjustmentRejectPendingRequest">
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.CarrierAdjustmentRejectPendingTask"/>
+    </flow>
+
+    <flow name="Wfl-CarrierAdjustmentCountStaticByStatus">
+        <task type="task" className="com.gms.xms.workflow.task.adjustment.CarrierAdjustmentCountStaticByStatusTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCustomerAgingReport">
+        <task type="task" className="com.gms.xms.workflow.task.customeraging.DetermineCustomerAgingCachingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.customeraging.PrepareDataForCustomerAgingReportTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.customeraging.GetCustomerAgingByFilterTask"/>
+    </flow>
+
+    <flow name="Wfl-GetTotalCustomerAgingReport">
+        <task type="task" className="com.gms.xms.workflow.task.customeraging.DetermineCustomerAgingCachingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.customeraging.PrepareDataForCustomerAgingReportTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.customeraging.SumCustomerAgingByFilterTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCountCustomerAgingReport">
+        <task type="task" className="com.gms.xms.workflow.task.customeraging.DetermineCustomerAgingCachingTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.customeraging.PrepareDataForCustomerAgingReportTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.customeraging.CountCustomerAgingByFilterTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCustomerSummaryReport">
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.summary.PrepareDataForCustomerSummaryTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.report.customer.summary.GetCustomerSummaryByFilterTask"/>
+    </flow>
+
+    <flow name="Wfl-CountCustomerSummaryReport">
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.summary.PrepareDataForCustomerSummaryTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.summary.CountCustomerSummaryByFilterTask"/>
+    </flow>
+
+    <flow name="Wfl-SumCustomerSummaryReport">
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.summary.PrepareDataForCustomerSummaryTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.report.customer.summary.SumCustomerSummaryByFilterTask"/>
+    </flow>
+
+    <flow name="Wfl-GetWeeklyCustomerStatusReport">
+        <task type="task" className="com.gms.xms.workflow.task.report.customer.status.PrepareWeeklyReportTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.report.customer.status.GetWeeklyReportTask"/>
+    </flow>
+
+    <flow name="Wfl-SumWeeklyCustomerStatusReport">
+        <task type="task" className="com.gms.xms.workflow.task.report.customer.status.PrepareWeeklyReportTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.report.customer.status.SumWeeklyReportTask"/>
+    </flow>
+
+    <flow name="Wfl-GetMonthlyCustomerStatusReport">
+        <task type="task" className="com.gms.xms.workflow.task.report.customer.status.PrepareMonthlyReportTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.report.customer.status.GetMonthlyReportTask"/>
+    </flow>
+
+    <flow name="Wfl-SumMonthlyCustomerStatusReport">
+        <task type="task" className="com.gms.xms.workflow.task.report.customer.status.PrepareMonthlyReportTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.report.customer.status.SumMonthlyReportTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCustomerActivationReport">
+        <task type="task" className="com.gms.xms.workflow.task.report.customer.activation.PrepareActivationReportTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.report.customer.activation.GetActivationReportTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCustomerActivationCount">
+        <task type="task" className="com.gms.xms.workflow.task.report.customer.activation.PrepareActivationReportTask"/>
+        <task type="task" className="com.gms.xms.workflow.task.report.customer.activation.GetActivationCountTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCustomerInvoiceDetailReport">
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.invoicedetail.PrepareInvoiceDetailReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.invoicedetail.GetInvoiceDetailReportTask"/>
+    </flow>
+
+    <flow name="Wfl-SumCustomerInvoiceDetailReport">
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.invoicedetail.PrepareInvoiceDetailReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.invoicedetail.SumInvoiceDetailReportTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCustomerInvoiceDetailCount">
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.invoicedetail.PrepareInvoiceDetailReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.invoicedetail.GetInvoiceDetailCountTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCustomerCreditNoteDetailReport">
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.invoicedetail.PrepareCreditNoteDetailReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.invoicedetail.GetCreditNoteDetailReportTask"/>
+    </flow>
+
+    <flow name="Wfl-SumCustomerCreditNoteDetailReport">
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.invoicedetail.PrepareCreditNoteDetailReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.invoicedetail.SumCreditNoteDetailReportTask"/>
+    </flow>
+
+    <flow name="Wfl-GetCustomerCreditNoteDetailCount">
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.invoicedetail.PrepareCreditNoteDetailReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.customer.invoicedetail.GetCreditNoteDetailCountTask"/>
+    </flow>
+
+    <flow name="Wfl-GetOverallFranchiseRankingReport">
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.ranking.franchiseranking.PrepareOverallFranchiseRankingReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.ranking.franchiseranking.GetOverallFranchiseRankingReportTask"/>
+    </flow>
+
+    <flow name="Wfl-GetOverallFranchiseRankingCount">
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.ranking.franchiseranking.PrepareOverallFranchiseRankingReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.ranking.franchiseranking.GetOverallFranchiseRankingCountTask"/>
+    </flow>
+
+    <flow name="Wfl-GetSalesRepRankingReport">
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.ranking.salesrepranking.PrepareSalesRepRankingReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.ranking.salesrepranking.GetSalesRepRankingReportTask"/>
+    </flow>
+
+    <flow name="Wfl-GetSalesRepRankingCount">
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.ranking.salesrepranking.PrepareSalesRepRankingReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.ranking.salesrepranking.GetSalesRepRankingCountTask"/>
+    </flow>
+
+    <flow name="Wfl-GetWebshipCustomerHistoryReport">
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.webship.customerhistory.DetermineWebshipCustomerHistoryCacheTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.webship.customerhistory.PrepareWebshipCustomerHistoryPeriodTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.webship.customerhistory.PrepareWebshipCustomerHistoryReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.webship.customerhistory.GetWebshipCustomerHistoryReportTask"/>
+    </flow>
+
+    <flow name="Wfl-GetWebshipCustomerHistoryCount">
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.webship.customerhistory.DetermineWebshipCustomerHistoryCacheTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.webship.customerhistory.PrepareWebshipCustomerHistoryPeriodTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.webship.customerhistory.PrepareWebshipCustomerHistoryReportTask"/>
+        <task type="task"
+              className="com.gms.xms.workflow.task.report.webship.customerhistory.GetWebshipCustomerHistoryCountTask"/>
+    </flow>
+</workflow>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ShipmentDetail">
+    <resultMap id="ShipmentDetail" type="com.gms.xms.txndb.vo.ShipmentDetailVo">
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="accessorialid" property="accessorialId"/>
+        <result column="amount" property="amount"/>
+        <result column="type" property="type"/>
+    </resultMap>
+
+    <resultMap id="ShipmentDetailAccsorial" type="com.gms.xms.txndb.vo.ShipmentDetailVo" extends="ShipmentDetail">
+        <!-- <association property="accessorial" javaType="com.gms.xms.txndb.vo.AccessorialVo" column="s.accessorialid"> <id column="a.accessorialid" property="accessorialId" /> <result column="a.code" property="code" /> <result column="a.description" property="description" /> </association> -->
+        <association property="accessorial" select="joinAccessorial" column="accessorialid"/>
+    </resultMap>
+
+
+    <resultMap id="accessorialId" type="com.gms.xms.txndb.vo.AccessorialVo">
+        <id column="accessorialid" property="accessorialId"/>
+        <result column="code" property="code"/>
+        <result column="description" property="description"/>
+
+    </resultMap>
+
+
+    <select id="allaccessorialofshipment" resultMap="ShipmentDetailAccsorial" parameterType="long">
+        select * from xms_tbl_shipment_detail where shipmentid=
+        #{shipmentId}
+    </select>
+
+    <select id="joinAccessorial" resultMap="accessorialId" parameterType="long">
+        select * from xms_tbl_accessorial where accessorialid =
+        #{accessorialId}
+    </select>
+
+    <insert id="insert" parameterType="ShipmentDetailVo">
+        insert into xms_tbl_shipment_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="shipmentId != null">
+                shipmentid,
+            </if>
+            <if test="accessorialId != null">
+                accessorialid,
+            </if>
+            <if test="amount != null">
+                amount,
+            </if>
+            <if test="type != null">
+                type,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="shipmentId != null">
+                #{shipmentId},
+            </if>
+            <if test="accessorialId != null">
+                #{accessorialId},
+            </if>
+            <if test="amount != null">
+                #{amount},
+            </if>
+            <if test="type != null">
+                #{type},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateAmount" parameterType="ShipmentDetailVo">
+        update xms_tbl_shipment_detail
+        <set>
+            <if test="amount != null">
+                amount = #{amount},
+            </if>
+        </set>
+        where shipmentid = #{shipmentId} and accessorialid = #{accessorialId}
+    </update>
+
+    <select id="updateAmount_SelectForLog" resultMap="ShipmentDetail">
+        select * from xms_tbl_shipment_detail
+        where shipmentid = #{shipmentId} and accessorialid = #{accessorialId}
+    </select>
+</mapper>

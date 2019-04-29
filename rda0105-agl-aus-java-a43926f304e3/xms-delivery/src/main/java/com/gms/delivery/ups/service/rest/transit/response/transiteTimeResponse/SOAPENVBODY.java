@@ -1,0 +1,15 @@
+package com.gms.delivery.ups.service.rest.transit.response.transiteTimeResponse;
+
+import java.util.List;
+
+public class SOAPENVBODY {
+
+	 private List<TNTTIMEINTRANSITRESPONSE> TNTTIMEINTRANSITRESPONSE;
+
+	    public void setTNTTIMEINTRANSITRESPONSE(List<TNTTIMEINTRANSITRESPONSE> TNTTIMEINTRANSITRESPONSE){
+	        this.TNTTIMEINTRANSITRESPONSE = TNTTIMEINTRANSITRESPONSE;
+	    }
+	    public List<TNTTIMEINTRANSITRESPONSE> getTNTTIMEINTRANSITRESPONSE(){
+	        return this.TNTTIMEINTRANSITRESPONSE;
+	    }
+}

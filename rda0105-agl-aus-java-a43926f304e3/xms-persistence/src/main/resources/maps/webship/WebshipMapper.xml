@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Webship">
+    <resultMap id="WebshipMap" type="WebshipVo">
+        <id column="webshipid" property="webshipId"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="name" property="name"/>
+        <result column="password" property="password"/>
+        <result column="create_date" property="createDate"/>
+        <result column="language" property="language"/>
+        <result column="allow_export_address_book" property="allowExportAddressBook"/>
+        <result column="isrequirechangepassword" property="isRequireChangePassword"/>
+        <result column="reset_password_status" property="resetPasswordStatus"/>
+        <result column="reset_password_code" property="resetPasswordCode"/>
+    </resultMap>
+
+    <resultMap id="WebshipLoginMap" type="WebshipLoginVo" extends="WebshipMap">
+        <result column="inactive" property="inactive"/>
+        <result column="webship_adminid" property="webshipAdminId"/>
+        <result column="admin_function" property="adminFunction"/>
+    </resultMap>
+
+    <resultMap id="WebshipDetailMap" type="WebshipDetailVo" extends="WebshipMap">
+        <result column="customer_name" property="customerName"/>
+        <result column="email" property="email"/>
+    </resultMap>
+
+    <select id="checkAdminFunction" parameterType="long" resultType="int">
+        select count(*) from xms_tbl_webship as ws
+        inner join
+        (select webship_adminid from xms_tbl_customer
+        where admin_function = 1
+        union
+        select webship_adminid from xms_tbl_franchise
+        where admin_function = 1
+        ) as c on c.webship_adminid = ws.webshipid
+        where ws.webshipid = #{webshipId}
+    </select>
+
+    <select id="checkLogin" parameterType="WebshipLoginVo" resultMap="WebshipLoginMap">
+        select * from xms_tbl_webship as ws
+        inner join (
+        select customer_code, inactive, webship_adminid, admin_function from xms_tbl_customer
+        union
+        select franchise_code as customer_code, inactive, webship_adminid, admin_function from xms_tbl_franchise
+        ) as t on t.customer_code = ws.customer_code
+        where (ws.customer_code = #{customerCode} or ws.name = #{name}) and (ws.password = #{password})
+        order by ws.customer_code, ws.name
+        limit 1
+    </select>
+
+    <select id="getWebshipLoginById" parameterType="long" resultMap="WebshipLoginMap">
+        select * from xms_tbl_webship as ws
+        inner join (
+        select customer_code, inactive, webship_adminid, admin_function from xms_tbl_customer
+        union
+        select franchise_code as customer_code, inactive, webship_adminid, admin_function from xms_tbl_franchise) as t
+        on t.customer_code = ws.customer_code
+        where (ws.webshipid=#{webshipId})
+    </select>
+
+    <select id="selectChildrenByFilter" parameterType="WebshipDetailFilter" resultMap="WebshipDetailMap">
+        select
+        ws.*,
+        ca.customer_name,
+        ca.email
+        from xms_tbl_webship as ws
+        inner join xms_tbl_customer_address as ca on ca.customer_code = ws.customer_code
+        where ws.customer_code like concat(left(#{customerCode},3),'%')
+        and ws.customer_code != #{customerCode}
+
+        <if test="name!=null and name!=''">
+            and (ws.customer_code like concat('%',#{name},'%') or ca.customer_name like concat('%',#{name},'%'))
+        </if>
+
+        and right(#{customerCode},5)='00001'
+        group by ws.customer_code
+
+        <if test="orderBy!=null and orderBy != ''">
+            order by ${orderBy}
+        </if>
+    </select>
+
+    <select id="selectByFilter" parameterType="com.gms.xms.filter.webship.WebshipFilter" resultMap="WebshipMap">
+        select * from xms_tbl_webship
+        where customer_code = #{customerCode}
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectWebshipByResetCode" parameterType="string" resultMap="WebshipMap">
+        select * from xms_tbl_webship
+        where
+        reset_password_code = #{resetPasswordCode}
+    </select>
+
+    <select id="countByFilter" parameterType="com.gms.xms.filter.webship.WebshipFilter" resultType="long">
+        select count(*) from xms_tbl_webship
+        where customer_code = #{customerCode}
+    </select>
+
+    <select id="selectById" parameterType="long" resultMap="WebshipMap">
+        select * from xms_tbl_webship
+        where webshipid = #{webshipId}
+    </select>
+
+    <select id="checkInfoResetPassword" resultMap="WebshipMap"
+            parameterType="com.gms.xms.txndb.vo.webship.login.WebshipResetFilter">
+        SELECT webship.* from xms_tbl_webship as webship LEFT JOIN xms_tbl_customer_address as address ON
+        webship.customer_code = address.customer_code
+        where webship.customer_code = #{customerCode} and webship.`name` = #{userName} and address.email = #{email}
+        limit 1
+    </select>
+
+    <select id="checkUser" resultType="int" parameterType="WebshipVo">
+        select count(*) from xms_tbl_webship
+        where customer_code = #{customerCode} and `name` = #{name}
+    </select>
+
+    <insert id="insert" parameterType="WebshipVo" useGeneratedKeys="true" keyProperty="webshipId">
+        insert into xms_tbl_webship
+        (webshipid, customer_code, name, password, create_date, language, allow_export_address_book,
+        isrequirechangepassword)
+        values (#{webshipId}, #{customerCode}, #{name}, #{password}, #{createDate}, #{language},
+        #{allowExportAddressBook}, #{isRequireChangePassword})
+    </insert>
+
+    <update id="changePassword" parameterType="WebshipVo">
+        UPDATE xms_tbl_webship
+        SET password = #{password}
+        , isrequirechangepassword = 0
+        WHERE webshipid = #{webshipId}
+    </update>
+
+    <select id="changePassword_SelectForLog" parameterType="WebshipVo" resultMap="WebshipMap">
+        select * from xms_tbl_webship
+        WHERE webshipid = #{webshipId}
+    </select>
+
+    <update id="update" parameterType="WebshipVo">
+        update xms_tbl_webship
+        <set>
+            <if test="customerCode!=null">
+                customer_code = #{customerCode},
+            </if>
+            <if test="name!=null and name!=''">
+                name = #{name},
+            </if>
+            <if test="password!=null and password!=''">
+                password = #{password},
+            </if>
+            <if test="createDate!=null">
+                create_date = #{createDate},
+            </if>
+            <if test="language!=null">
+                language = #{language},
+            </if>
+            <if test="allowExportAddressBook!=null">
+                allow_export_address_book = #{allowExportAddressBook},
+            </if>
+            <if test="isRequireChangePassword!=null">
+                isrequirechangepassword = #{isRequireChangePassword},
+            </if>
+            <if test="resetPasswordStatus != null">
+                reset_password_status = #{resetPasswordStatus},
+            </if>
+            <if test="resetPasswordCode != null">
+                reset_password_code = #{resetPasswordCode},
+            </if>
+            <if test="resetPasswordCode == null or resetPasswordCode == ''">
+                reset_password_code = null
+            </if>
+        </set>
+        where webshipid = #{webshipId}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="WebshipVo" resultMap="WebshipMap">
+        select * from xms_tbl_webship
+        where webshipid = #{webshipId}
+    </select>
+</mapper>

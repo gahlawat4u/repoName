@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="LoginLog">
+    <resultMap id="LoginLogMap" type="LoginLogVo">
+        <id column="id" property="id"/>
+        <result column="user_name" property="userName"/>
+        <result column="login_date" property="loginDate"/>
+        <result column="franchise_code" property="franchiseCode"/>
+        <result column="description" property="description"/>
+        <result column="ip_address" property="ipAddress"/>
+    </resultMap>
+    <select id="getLoginLogs" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsLoginLogFilter"
+            resultMap="LoginLogMap">
+        select * from xms_tbl_login_log
+        <where>
+            <if test="franchiseList!=null and franchiseList!=''">
+                and franchise_code in (${franchiseList})
+            </if>
+            <if test="startDate!=null and startDate!=''">
+                and login_date>=#{startDate}
+            </if>
+            <if test="endDate!=null and endDate!=''">
+                <![CDATA[ and login_date<date_add(#{endDate},interval 1 day) ]]>
+            </if>
+            <if test="loginType==0">
+                and description = 'Success'
+            </if>
+            <if test="loginType==1">
+                and description != 'Success'
+            </if>
+        </where>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="pageSize!=null and page!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+    <select id="countLoginLogs" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsLoginLogFilter"
+            resultType="long">
+        select count(*) from xms_tbl_login_log
+        <where>
+            <if test="franchiseList!=null and franchiseList!=''">
+                and franchise_code in (${franchiseList})
+            </if>
+            <if test="startDate!=null and startDate!=''">
+                and login_date>=#{startDate}
+            </if>
+            <if test="endDate!=null and endDate!=''">
+                <![CDATA[ and login_date<date_add(#{endDate},interval 1 day) ]]>
+            </if>
+            <if test="loginType==0">
+                and description = 'Success'
+            </if>
+            <if test="loginType==1">
+                and description != 'Success'
+            </if>
+        </where>
+    </select>
+    <select id="selectByFilter" parameterType="com.gms.xms.filter.admin.SystemStatsListFilter" resultMap="LoginLogMap">
+        SELECT
+        id,
+        user_name,
+        login_date,
+        franchise_code,
+        ip_address
+        FROM
+        xms_tbl_login_log
+        WHERE
+        1 = 1
+
+        <if test="fromDate != null and toDate != null">
+            AND login_date >= #{fromDate} AND login_date &lt; DATE_ADD(#{toDate},INTERVAL 1 DAY)
+        </if>
+        <if test="errorStatus != null">
+            AND description &lt;&gt; 'Success'
+        </if>
+        <if test="errorStatus == null">
+            AND description = 'Success'
+        </if>
+
+        AND franchise_code in
+        <foreach item="item" index="index" collection="franchiseInforVos" open="(" close=")" separator=",">
+            #{item.code}
+        </foreach>
+
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectByFilterCount" parameterType="com.gms.xms.filter.admin.SystemStatsListFilter" resultType="long">
+        SELECT
+        count(id)
+        FROM
+        xms_tbl_login_log
+        WHERE
+        1 = 1
+        <if test="fromDate != null and toDate != null">
+            AND login_date >= #{fromDate} AND login_date &lt; DATE_ADD(#{toDate},INTERVAL 1 DAY)
+        </if>
+        <if test="errorStatus != null">
+            AND description &lt;&gt; 'Success'
+        </if>
+        <if test="errorStatus == null">
+            AND description = 'Success'
+        </if>
+        AND franchise_code in
+        <foreach item="item" index="index" collection="franchiseInforVos" open="(" close=")" separator=",">
+            #{item.code}
+        </foreach>
+
+    </select>
+    <insert id="insertLog" parameterType="com.gms.xms.txndb.vo.admin.LoginLogVo" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into xms_tbl_login_log (
+        user_name,
+        login_date,
+        franchise_code,
+        ip_address,
+        description
+        )
+        values (
+        #{userName},
+        #{loginDate},
+        #{franchiseCode},
+        #{ipAddress},
+        #{description}
+        )
+    </insert>
+</mapper>

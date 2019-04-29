@@ -1,0 +1,515 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="WebshipQuoteLog">
+    <resultMap id="WebshipQuoteLogMap" type="WebshipQuoteLogVo">
+        <id column="quoteid" property="quoteId"/>
+        <result column="quote_number" property="quoteNumber"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="webshipid" property="webshipId"/>
+        <result column="quote_date" property="quoteDate"/>
+        <result column="senderaddressid" property="senderAddressId"/>
+        <result column="receiveraddressid" property="receiverAddressId"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="packageid" property="packageId"/>
+        <result column="contents" property="contents"/>
+        <result column="weight_unit" property="weightUnit"/>
+        <result column="dimension_unit" property="dimensionUnit"/>
+        <result column="no_of_pieces" property="noOfPieces"/>
+        <result column="withinsurance" property="withInsurance"/>
+        <result column="quote_status" property="quoteStatus"/>
+        <result column="base_charge" property="baseCharge"/>
+        <result column="residentialdelivery" property="residentialDelivery"/>
+        <result column="residentialpickup" property="residentialPickup"/>
+        <result column="non_standard_charge" property="nonStandardCharge"/>
+        <result column="manual_handling_surcharge" property="manualHandlingSurcharge"/>
+        <result column="total_charge" property="totalCharge"/>
+        <result column="ship_date" property="shipDate"/>
+        <result column="extra_service" property="extraService"/>
+        <result column="zone" property="zone"/>
+    </resultMap>
+    <resultMap type="QuoteJobVo" id="QuoteJobMap" extends="WebshipQuoteLogMap">
+        <association property="customerAddress" javaType="CustomerAddressVo">
+            <id column="customer_code" property="customerCode"/>
+            <result column="customer_name" property="customerName"/>
+        </association>
+        <association property="senderAddress" javaType="AddressVo">
+            <id column="senderaddressid" property="addressId"/>
+            <result column="sa_city" property="city"/>
+            <result column="sa_postalcode" property="postalCode"/>
+        </association>
+        <association property="receiverAddress" javaType="AddressVo">
+            <id column="receiveraddressid" property="addressId"/>
+            <result column="ra_city" property="city"/>
+            <result column="ra_postalcode" property="postalCode"/>
+        </association>
+        <association property="shipmentType" javaType="ShipmentTypeVo">
+            <id column="shipment_type_id" property="shipmentTypeId"/>
+            <result column="shipment_type_name" property="shipmentTypeName"/>
+        </association>
+        <association property="packageType" javaType="PackageVo">
+            <id column="packageid" property="packageId"/>
+            <result column="packagename" property="packageName"/>
+        </association>
+    </resultMap>
+
+    <resultMap type="QuoteJobVo" id="QuoteJobDetail" extends="WebshipQuoteLogMap">
+        <association property="customerAddress" javaType="CustomerAddressVo">
+            <id column="customer_code" property="customerCode"/>
+            <result column="customer_name" property="customerName"/>
+        </association>
+        <association property="senderAddress" javaType="AddressVo">
+            <id column="senderaddressid" property="addressId"/>
+            <result column="sda_companyname" property="companyName"/>
+            <result column="sda_contact_name" property="contactName"/>
+            <result column="sda_country" property="country"/>
+            <result column="sda_address" property="address"/>
+            <result column="sda_address2" property="address2"/>
+            <result column="sda_city" property="city"/>
+            <result column="sda_phone" property="phone"/>
+            <result column="sda_email" property="email"/>
+            <result column="sda_postal_code" property="postalCode"/>
+            <result column="sda_state" property="state"/>
+            <result column="sda_countryName" property="countryDetail.countryName"/>
+        </association>
+        <association property="receiverAddress" javaType="AddressVo">
+            <id column="receiveraddressid" property="addressId"/>
+            <result column="rca_companyname" property="companyName"/>
+            <result column="rca_contact_name" property="contactName"/>
+            <result column="rca_country" property="country"/>
+            <result column="rca_address" property="address"/>
+            <result column="rca_address2" property="address2"/>
+            <result column="rca_city" property="city"/>
+            <result column="rca_phone" property="phone"/>
+            <result column="rca_email" property="email"/>
+            <result column="rca_postal_code" property="postalCode"/>
+            <result column="rca_state" property="state"/>
+            <result column="rca_countryName" property="countryDetail.countryName"/>
+        </association>
+        <association property="shipmentType" javaType="ShipmentTypeVo">
+            <id column="shipment_type_id" property="shipmentTypeId"/>
+            <result column="shipment_type_name" property="shipmentTypeName"/>
+        </association>
+        <association property="packageType" javaType="PackageVo">
+            <id column="packageid" property="packageId"/>
+            <result column="packagename" property="packageName"/>
+        </association>
+        <collection property="quoteLogDetails" javaType="ArrayList" column="quoteid" ofType="WebshipQuoteLogDetailVo">
+            <result column="quoteid" property="quoteId"/>
+            <result column="accessorialid" property="accessorialId"/>
+            <result column="amount" property="amount"/>
+            <result column="type" property="type"/>
+            <association property="accessorial" javaType="AccessorialVo">
+                <result column="description" property="description"/>
+                <result column="code" property="code"/>
+            </association>
+        </collection>
+        <collection property="quotePieces" javaType="ArrayList" column="quoteid" ofType="QuotePieceVo">
+            <result column="quoteid" property="quoteId"/>
+            <result column="weight" property="weight"/>
+            <result column="dimension_l" property="dimensionL"/>
+            <result column="dimension_w" property="dimensionW"/>
+            <result column="dimension_h" property="dimensionH"/>
+            <result column="custom_value" property="customValue"/>
+            <result column="quantity" property="quantity"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectQuoteJobList" parameterType="QuoteJobFilter" resultMap="QuoteJobMap">
+        SELECT
+        wql.*,
+        ca.customer_name,
+        sa.city as sa_city,
+        sa.postal_code as sa_postalcode,
+        ra.city as ra_city,
+        ra.postal_code as ra_postalcode,
+        st.shipment_type_name,
+        p.packagename
+        FROM
+        xms_tbl_webship_quote_log AS wql
+        LEFT JOIN
+        xms_tbl_customer_address AS ca ON ca.customer_code = wql.customer_code
+        LEFT JOIN
+        xms_tbl_address AS sa ON sa.addressid = wql.senderaddressid
+        LEFT JOIN
+        xms_tbl_address AS ra ON ra.addressid = wql.receiveraddressid
+        LEFT JOIN
+        xms_tbl_shipment_type AS st ON st.shipment_type_id = wql.shipment_type_id
+        LEFT JOIN
+        xms_tbl_package AS p ON p.packageid = wql.packageid
+        WHERE
+        wql.customer_code = #{customerCode}
+        <if test="startDate != null">
+            <![CDATA[
+				AND date(wql.quote_date) >= #{startDate}
+			]]>
+        </if>
+        <if test="endDate != null">
+            <![CDATA[
+				AND date(wql.quote_date) <=#{endDate}
+			]]>
+        </if>
+        <if test="quoteNumber!=''">
+            AND wql.quote_number = #{quoteNumber}
+        </if>
+        ORDER BY wql.quote_date DESC
+        <if test="startRecord != null and recordSize != null">
+            LIMIT #{startRecord} , #{recordSize}
+        </if>
+    </select>
+    <select id="selectCountQuoteJobList" parameterType="QuoteJobFilter" resultType="long">
+        SELECT
+        count(*)
+        FROM
+        xms_tbl_webship_quote_log AS wql
+        LEFT JOIN
+        xms_tbl_customer_address AS ca ON ca.customer_code = wql.customer_code
+        LEFT JOIN
+        xms_tbl_address AS sa ON sa.addressid = wql.senderaddressid
+        LEFT JOIN
+        xms_tbl_address AS ra ON ra.addressid = wql.receiveraddressid
+        LEFT JOIN
+        xms_tbl_shipment_type AS st ON st.shipment_type_id = wql.shipment_type_id
+        LEFT JOIN
+        xms_tbl_package AS p ON p.packageid = wql.packageid
+        WHERE
+        wql.customer_code = #{customerCode}
+        AND wql.webshipid = #{webshipId}
+        <if test="startDate != null and endDate!= null">
+            AND wql.quote_date BETWEEN #{startDate} AND #{endDate}
+        </if>
+        <if test="quoteNumber!=''">
+            AND wql.quote_number = #{quoteNumber}
+        </if>
+    </select>
+    <select id="selectQuoteJobDetailById" parameterType="long" resultMap="QuoteJobDetail">
+        SELECT
+        qpd.quote_piece_id,
+        st.shipment_type_name,
+        a.description,
+        a.code,
+        wqld.*,
+        wql.*,
+        p.packagename,
+        qpd.*,
+        sda.companyname AS sda_companyname,
+        sda.contact_name AS sda_contact_name,
+        sda.country AS sda_country,
+        sda.address AS sda_address,
+        sda.address2 AS sda_address2,
+        sda.city sda_city,
+        sda.phone as sda_phone,
+        sda.email as sda_email,
+        sda.postal_code AS sda_postal_code,
+        sda.state AS sda_state,
+        csda.countryname AS sda_countryName,
+        rca.companyname AS rca_companyname,
+        rca.contact_name AS rca_contact_name,
+        rca.country AS rca_country,
+        rca.address AS rca_address,
+        rca.address2 AS rca_address2,
+        rca.city rca_city,
+        rca.phone rca_phone,
+        rca.email rca_email,
+        rca.postal_code AS rca_postal_code,
+        rca.state AS rca_state,
+        crca.countryname AS rca_countryName
+        FROM
+        (SELECT
+        *
+        FROM
+        xms_tbl_webship_quote_log
+        WHERE
+        quoteid = #{quoteId}) AS wql
+        LEFT JOIN
+        xms_tbl_shipment_type AS st ON st.shipment_type_id = wql.shipment_type_id
+        LEFT JOIN
+        xms_tbl_package AS p ON p.packageid = wql.packageid
+        LEFT JOIN
+        (SELECT
+        *, COUNT(*) AS quantity
+        FROM
+        (SELECT
+        `quote_piece_id`,
+        weight,
+        qp.quoteid,
+        dimension_l,
+        dimension_w,
+        dimension_h,
+        custom_value,
+        wql.weight_unit AS weightunit,
+        CONCAT(dimension_l, ' x ', dimension_w, ' x ', dimension_h, ' ', wql.dimension_unit, '(s) ', weight,
+        wql.weight_unit, '(s)') AS dim
+        FROM
+        xms_tbl_quote_piece AS qp
+        LEFT JOIN xms_tbl_webship_quote_log AS wql ON wql.quoteid = qp.quoteid
+        WHERE
+        wql.quoteid = #{quoteId}) AS tbl
+        GROUP BY dim
+        ORDER BY `quote_piece_id`) AS qpd ON qpd.quoteid = wql.quoteid
+        LEFT JOIN
+        xms_tbl_webship_quote_log_detail AS wqld ON wqld.quoteid = wql.quoteid
+        LEFT JOIN
+        xms_tbl_accessorial AS a ON a.accessorialid = wqld.accessorialid
+        LEFT JOIN
+        xms_tbl_address AS sda ON sda.addressid = wql.senderaddressid
+        LEFT JOIN
+        xms_tbl_address AS rca ON rca.addressid = wql.receiveraddressid
+        LEFT JOIN
+        xms_tbl_country AS csda ON csda.countryid = sda.country
+        LEFT JOIN
+        xms_tbl_country AS crca ON crca.countryid = rca.country
+        ORDER BY wql.quote_date DESC
+    </select>
+
+    <select id="WebshipQuoteLog_SelectWebshipQuoteLogByCustomer" parameterType="long" resultType="WebshipQuoteLogVo">
+        SELECT * FROM xms_tbl_webship_quote_log
+        <![CDATA[
+			WHERE quote_number <> '' AND customer_code = #{customerCode}
+		]]>
+        ORDER BY quote_date DESC LIMIT 1;
+    </select>
+
+    <select id="selectPreviousQuoteNumber" resultType="String" parameterType="long">
+        SELECT
+        quote_number
+        FROM
+        xms_tbl_webship_quote_log
+        WHERE
+        customer_code = #{customerCode}
+        ORDER BY quoteid DESC
+        LIMIT 1
+    </select>
+
+    <update id="update" parameterType="WebshipQuoteLogVo">
+        update xms_tbl_webship_quote_log
+        <set>
+            <if test="quoteNumber != null">
+                quote_number = #{quoteNumber},
+            </if>
+            <if test="customerCode != null">
+                customer_code = #{customerCode},
+            </if>
+            <if test="webshipId != null">
+                webshipid = #{webshipId},
+            </if>
+            <if test="quoteDate != null">
+                quote_date = #{quoteDate},
+            </if>
+            <if test="senderAddressId != null">
+                senderaddressid = #{senderAddressId},
+            </if>
+            <if test="receiverAddressId != null">
+                receiveraddressid = #{receiverAddressId},
+            </if>
+            <if test="shipmentTypeId != null">
+                shipment_type_id = #{shipmentTypeId},
+            </if>
+            <if test="packageId != null">
+                packageid = #{packageId},
+            </if>
+            <if test="contents != null">
+                contents = #{contents},
+            </if>
+            <if test="weightUnit != null">
+                weight_unit = #{weightUnit},
+            </if>
+            <if test="dimensionUnit != null">
+                dimension_unit = #{dimensionUnit},
+            </if>
+            <if test="noOfPieces != null">
+                no_of_pieces = #{noOfPieces},
+            </if>
+            <if test="withInsurance != null">
+                withinsurance = #{withInsurance},
+            </if>
+            <if test="quoteStatus != null">
+                quote_status = #{quoteStatus},
+            </if>
+            <if test="baseCharge != null">
+                base_charge = #{baseCharge},
+            </if>
+            <if test="residentialDelivery != null">
+                residentialdelivery = #{residentialDelivery},
+            </if>
+            <if test="residentialPickup != null">
+                residentialpickup = #{residentialPickup},
+            </if>
+            <if test="nonStandardCharge != null">
+                non_standard_charge = #{nonStandardCharge},
+            </if>
+            <if test="totalCharge != null">
+                total_charge = #{totalCharge},
+            </if>
+            <if test="shipDate != null">
+                ship_date = #{shipDate},
+            </if>
+            <if test="extraService != null">
+                extra_service = #{extraService},
+            </if>
+            <if test="zone != null">
+                zone = #{zone},
+            </if>
+            <if test="ipAddress != null">
+                ip_address = #{ipAddress},
+            </if>
+        </set>
+        where quoteid = #{quoteId}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="WebshipQuoteLogVo" resultMap="WebshipQuoteLogMap">
+        select * from xms_tbl_webship_quote_log
+        where quoteid = #{quoteId}
+    </select>
+
+    <insert id="insert" parameterType="WebshipQuoteLogVo" useGeneratedKeys="true" keyProperty="quoteId">
+        insert into xms_tbl_webship_quote_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="quoteNumber != null">
+                quote_number,
+            </if>
+            <if test="customerCode != null">
+                customer_code,
+            </if>
+            <if test="webshipId != null">
+                webshipid,
+            </if>
+            <if test="quoteDate != null">
+                quote_date,
+            </if>
+            <if test="senderAddressId != null">
+                senderaddressid,
+            </if>
+            <if test="receiverAddressId != null">
+                receiveraddressid,
+            </if>
+            <if test="shipmentTypeId != null">
+                shipment_type_id,
+            </if>
+            <if test="packageId != null">
+                packageid,
+            </if>
+            <if test="contents != null">
+                contents,
+            </if>
+            <if test="weightUnit != null">
+                weight_unit,
+            </if>
+            <if test="dimensionUnit != null">
+                dimension_unit,
+            </if>
+            <if test="noOfPieces != null">
+                no_of_pieces,
+            </if>
+            <if test="withInsurance != null">
+                withinsurance,
+            </if>
+            <if test="quoteStatus != null">
+                quote_status,
+            </if>
+            <if test="baseCharge != null">
+                base_charge,
+            </if>
+            <if test="residentialDelivery != null">
+                residentialdelivery,
+            </if>
+            <if test="residentialPickup != null">
+                residentialpickup,
+            </if>
+            <if test="nonStandardCharge != null">
+                non_standard_charge,
+            </if>
+            <if test="manualHandlingSurcharge != null">
+                manual_handling_surcharge,
+            </if>
+            <if test="totalCharge != null">
+                total_charge,
+            </if>
+            <if test="shipDate != null">
+                ship_date,
+            </if>
+            <if test="extraService != null">
+                extra_service,
+            </if>
+            <if test="zone != null">
+                zone,
+            </if>
+            <if test="ipAddress != null">
+                ip_address,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="quoteNumber != null">
+                #{quoteNumber},
+            </if>
+            <if test="customerCode != null">
+                #{customerCode},
+            </if>
+            <if test="webshipId != null">
+                #{webshipId},
+            </if>
+            <if test="quoteDate != null">
+                #{quoteDate},
+            </if>
+            <if test="senderAddressId != null">
+                #{senderAddressId},
+            </if>
+            <if test="receiverAddressId != null">
+                #{receiverAddressId},
+            </if>
+            <if test="shipmentTypeId != null">
+                #{shipmentTypeId},
+            </if>
+            <if test="packageId != null">
+                #{packageId},
+            </if>
+            <if test="contents != null">
+                #{contents},
+            </if>
+            <if test="weightUnit != null">
+                #{weightUnit},
+            </if>
+            <if test="dimensionUnit != null">
+                #{dimensionUnit},
+            </if>
+            <if test="noOfPieces != null">
+                #{noOfPieces},
+            </if>
+            <if test="withInsurance != null">
+                #{withInsurance},
+            </if>
+            <if test="quoteStatus != null">
+                #{quoteStatus},
+            </if>
+            <if test="baseCharge != null">
+                #{baseCharge},
+            </if>
+            <if test="residentialDelivery != null">
+                #{residentialDelivery},
+            </if>
+            <if test="residentialPickup != null">
+                #{residentialPickup},
+            </if>
+            <if test="nonStandardCharge != null">
+                #{nonStandardCharge},
+            </if>
+            <if test="manualHandlingSurcharge != null">
+                #{manualHandlingSurcharge},
+            </if>
+            <if test="totalCharge != null">
+                #{totalCharge},
+            </if>
+            <if test="shipDate != null">
+                #{shipDate},
+            </if>
+            <if test="extraService != null">
+                #{extraService},
+            </if>
+            <if test="zone != null">
+                #{zone},
+            </if>
+            <if test="ipAddress != null">
+                #{ipAddress},
+            </if>
+        </trim>
+    </insert>
+</mapper>

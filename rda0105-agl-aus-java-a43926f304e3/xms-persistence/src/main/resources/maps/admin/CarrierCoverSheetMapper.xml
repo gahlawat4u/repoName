@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CarrierCoverSheet">
+    <resultMap id="CarrierCoverSheetMap" type="CarrierCoverSheetVo">
+        <result column="carrierid" property="carrierId"/>
+        <result column="cover_sheetid" property="coverSheetId"/>
+        <result column="inbound_cover_sheetid" property="inboundCoverSheetId"/>
+    </resultMap>
+
+    <select id="selectByCarrierId" parameterType="int" resultMap="CarrierCoverSheetMap">
+        SELECT
+        *
+        FROM
+        xms_tbl_carrier_cover_sheet
+        WHERE
+        carrierid = #{carrierId}
+    </select>
+
+    <select id="selectCountByCoverSheetId" parameterType="long" resultType="int">
+        SELECT
+        COUNT(*)
+        FROM
+        xms_tbl_carrier_cover_sheet
+        WHERE
+        cover_sheetid = #{coverSheetId}
+        OR inbound_cover_sheetid = #{coverSheetId}
+    </select>
+
+    <insert id="insertCarrierCoverSheet" parameterType="CarrierCoverSheetVo">
+        insert into xms_tbl_carrier_cover_sheet
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            carrierId,
+            <if test="coverSheetId != null">
+                cover_sheetid,
+            </if>
+            <if test="inboundCoverSheetId != null">
+                inbound_cover_sheetid,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{carrierId},
+            <if test="coverSheetId != null">
+                #{coverSheetId},
+            </if>
+            <if test="inboundCoverSheetId != null">
+                #{inboundCoverSheetId},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateCarrierCoverSheet" parameterType="CarrierCoverSheetVo">
+        update xms_tbl_carrier_cover_sheet
+        <set>
+            <if test="coverSheetId != 0">
+                cover_sheetid = #{coverSheetId},
+            </if>
+            <if test="inboundCoverSheetId != 0">
+                inbound_cover_sheetid = #{inboundCoverSheetId},
+            </if>
+        </set>
+        where carrierid = #{carrierId}
+    </update>
+
+    <select id="updateCarrierCoverSheet_SelectForLog" parameterType="CarrierCoverSheetVo"
+            resultMap="CarrierCoverSheetMap">
+        SELECT * FROM xms_tbl_carrier_cover_sheet
+        where carrierid = #{carrierId}
+    </select>
+
+    <delete id="deleteCarrierCoverSheet" parameterType="int">
+        DELETE FROM xms_tbl_carrier_cover_sheet
+        WHERE carrierid = #{carrierId}
+    </delete>
+
+    <select id="deleteCarrierCoverSheet_SelectForLog" parameterType="int" resultMap="CarrierCoverSheetMap">
+        SELECT * FROM xms_tbl_carrier_cover_sheet
+        WHERE carrierid = #{carrierId}
+    </select>
+</mapper>

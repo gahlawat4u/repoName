@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Language">
+    <resultMap id="LanguageMap" type="LanguageVo">
+        <result column="language_id" property="languageId"/>
+        <result column="language_name" property="languageName"/>
+        <result column="encode_name" property="encodeName"/>
+    </resultMap>
+
+    <select id="selectLanguageNameByLanguageId" parameterType="int" resultType="string">
+        SELECT
+        `language_name`
+        FROM
+        `xms_tbl_language`
+        WHERE
+        `language_id` = #{languageId}
+    </select>
+
+    <select id="selectLanguageListWithCode" resultType="LanguageListVo">
+        SELECT
+        language_name as languageName, language_code as languageCode
+        FROM
+        xms_tbl_language_code
+        WHERE
+        language_code = 'en'
+        UNION SELECT DISTINCT
+        l.language_name as languageName, lc.language_code as languageCode
+        FROM
+        xms_tbl_language AS l
+        INNER JOIN
+        xms_tbl_language_code AS lc ON lc.language_name = l.language_name;
+    </select>
+</mapper>

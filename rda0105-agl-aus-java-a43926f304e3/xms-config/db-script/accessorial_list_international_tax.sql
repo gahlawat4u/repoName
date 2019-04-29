@@ -1,0 +1,2 @@
+INSERT INTO `xms_tbl_system_setting` (`setting_name`, `setting_value`, `description`, `user_level`, `allow_null`) VALUES ('International Tax Accessorial List', '234,469,502', 'International Tax Accessorial List', '1', '1');
+INSERT INTO `xms_tbl_system_setting` (`setting_name`, `setting_value`, `description`, `user_level`, `allow_null`) VALUES ('International Tax Accessorial', '10', 'International Tax Accessorial', '1', '1');

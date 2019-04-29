@@ -1,0 +1,2295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FranchisePayableTask">
+
+    <update id="reconcileInvoicePaymentAwbLevel" parameterType="FranchisePayableFilter"
+            statementType="CALLABLE">
+        { CALL recl_inv_payment_awb_level(#{startDate},
+        #{endDate}) }
+    </update>
+
+    <update id="reconcileFranchiseTaxAmount">
+        <![CDATA[
+		UPDATE xms_tbl_shipment_billing
+		SET franchise_tax_amount = ROUND(customer_tax_percent*franchise_cost/100,2)
+		WHERE customer_tax_amount<>0 AND franchise_tax_amount=0
+		]]>
+    </update>
+
+    <!-- Prepare data for new tables -->
+    <insert id="prepareDataForMSMarginV2" parameterType="FranchisePayableFilter">
+        INSERT INTO tmp_xms_tbl_ms_rpt_fran_pab_margin (
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        credits_franchise_cost,
+        credits_customer_cost,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share
+        )
+        <![CDATA[
+		SELECT 
+			#{rptTxnId},
+			franchise_code,
+			apply_date AS paymentDate,
+		    invoice_code AS invoiceNumber,
+			airbill_number AS airbillNumber,
+		    customer_code AS customerNumber,
+		    customer_name AS customerName,
+		    inter_domes AS internationalDomestic,
+		    cust_cost AS customerTotalExcGst,
+		    cust_tax AS customerTotalGst,
+		    fran_cost AS franchiseCostExcGst,
+		    fran_tax AS franchiseCostGst,
+		    prev_paid AS previouslyPaid,
+		    rev_paid AS paymentsReceived,
+		    IF(prev_paid+rev_paid>cust_cost+cust_tax,0.00,(cust_cost + cust_tax) - (prev_paid + rev_paid)) AS amountOutstanding,
+		    (total_fran_carrier_credit) AS creditsFranchiseCost,
+	    	(total_cust_carrier_credit+total_cust_credit)  AS creditsCustomerCost,
+	    	ROUND(cust_cost - fran_cost, 2) AS grossMarginExcGst,
+			ROUND(cust_tax - fran_tax, 2) AS grossMarginGst,
+		    ROUND(
+		    	IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost) <= 0,
+		    			IF( rev_paid - cur_cust_carrier_credit - cur_fran_carrier_credit >0 , 
+		    				0,
+		    				IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0,
+		    					0,
+		    					-1*((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))	
+							)
+						)* profit_share / 100,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)
+							)
+							-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))
+		    			) * profit_share / 100
+		    	), 2) AS profitShareExcGst,
+		    
+		    ROUND(
+		    	IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax) <= 0,
+						IF( rev_paid - cur_cust_carrier_credit - cur_fran_carrier_credit >0 , 
+		    				0,
+		    				IF( ((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))<=0,
+		    					0,
+		    					-1*((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))	
+							)
+						)* profit_share / 100,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)
+							)
+		    				-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))
+		    			) * profit_share / 100
+		    	), 2) AS profitShareGst,
+
+		    ROUND(
+				IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost) <= 0,
+						IF( rev_paid - cur_cust_carrier_credit - cur_fran_carrier_credit >0 , 
+		    				0,
+		    				IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0,
+		    					0,
+		    					-1*((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))	
+							)
+						)* profit_share / 100,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)
+							)
+							-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))
+		    			) * profit_share / 100
+		    	)
+		    	+ 
+				IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax) <= 0,
+						IF( rev_paid - cur_cust_carrier_credit - cur_fran_carrier_credit >0 , 
+		    				0,
+		    				IF( ((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))<=0,
+		    					0,
+		    					-1*((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))	
+							)
+						)* profit_share / 100,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)
+							)
+							-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))
+		    			) * profit_share / 100
+		    	), 2) AS totalProfitShare
+	    FROM tmp_xms_tbl_fran_pab_margin 
+	    WHERE rpt_txn_id = #{rptTxnId} 
+	    ]]>
+    </insert>
+
+    <insert id="prepareDataFor61DaysV2" parameterType="FranchisePayableFilter">
+        INSERT INTO tmp_xms_tbl_ms_rpt_fran_pab_61days (
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        credits_franchise_cost,
+        credits_customer_cost,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share,
+        previously_deducted_cost,
+        profit_share_on_late_fees,
+        repaid_carrier_deductions
+        )
+        <![CDATA[
+		SELECT 
+			#{rptTxnId},
+			franchise_code,
+			apply_date AS paymentDate,
+			invoice_code AS invoiceNumber,
+			airbill_number AS airbillNumber,
+			customer_code AS customerNumber,
+			customer_name AS customerName,
+			inter_domes AS internationalDomestic,
+			cust_cost AS customerTotalExcGst,
+			cust_tax AS customerTotalGst,
+			fran_cost AS franchiseCostExcGst,
+			fran_tax AS franchiseCostGst,
+			prev_paid AS previouslyPaid,
+			rev_paid AS paymentsReceived,
+			IF(prev_paid+rev_paid>cust_cost+cust_tax,0.00,(cust_cost + cust_tax) - (prev_paid + rev_paid)) AS amountOutstanding,
+			(total_fran_carrier_credit) AS creditsFranchiseCost,
+		    (total_cust_credit + total_cust_carrier_credit) AS creditsCustomerCost,
+		    ROUND(cust_cost - fran_cost, 2) AS grossMarginExcGst,
+			ROUND(cust_tax - fran_tax, 2) AS grossMarginGst,
+		    ROUND(
+		    	IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost) <= 0,
+		    			IF( rev_paid - cur_cust_carrier_credit - cur_fran_carrier_credit >0 , 
+		    				0,
+		    				IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0,
+		    					0,
+		    					-1*((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))	
+							)
+						)* profit_share / 100,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)	
+							)		    				
+		    				-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))
+		    			) * profit_share / 100
+		    	), 2) AS profitShareExcGst,
+		    
+		    ROUND(
+		    	IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax) <= 0,
+		    			IF( rev_paid - cur_cust_carrier_credit - cur_fran_carrier_credit >0 , 
+		    				0,
+		    				IF( ((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))<=0,
+		    					0,
+		    					-1*((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))	
+							)
+						)* profit_share / 100,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)	
+							)	
+		    				-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))
+		    				) * profit_share / 100
+		    	), 2) AS profitShareGst,
+
+		    ROUND(
+				IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost) <= 0,
+						IF( rev_paid - cur_cust_carrier_credit - cur_fran_carrier_credit >0 , 
+		    				0,
+		    				IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0,
+		    					0,
+		    					-1*((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))	
+							)
+						)* profit_share / 100,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)	
+							)			    				
+		    				-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))
+		    			) * profit_share / 100
+		    	)
+		    	+ 
+				IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax) <= 0,
+						IF( rev_paid - cur_cust_carrier_credit - cur_fran_carrier_credit >0 , 
+		    				0,
+		    				IF( ((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))<=0,
+		    					0,
+		    					-1*((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))	
+							)
+						)* profit_share / 100,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)
+							)	
+		    				-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))
+		    			) * profit_share / 100
+		    	), 2) AS totalProfitShare,
+			IF(#{startDate}<=invoice_date_6x,
+					IF(fran_cost+fran_tax - total_fran_carrier_credit_in_60d - real_payment_in_60d < 0,0,fran_cost+fran_tax - total_fran_carrier_credit_in_60d - real_payment_in_60d), 
+					IF(fran_cost+fran_tax - total_fran_carrier_credit_in_60d - real_payment_in_60d - real_payment_60d_startdate - total_cus_carrier_credit_60d_startdate<0,0,fran_cost+fran_tax - total_fran_carrier_credit_in_60d - real_payment_in_60d - real_payment_60d_startdate - total_cus_carrier_credit_60d_startdate)
+				)
+			AS previouslyDeductedCost, 
+		    ROUND(IF((prev_paid+rev_paid) - (cust_cost+cust_tax)>0,(prev_paid+rev_paid) - (cust_cost+cust_tax),0)*late_fee_share/100,2) AS profitShareOnLateFees,
+		    
+		    IF( rev_paid - cur_cust_credit -  IF(#{startDate}<=invoice_date_6x,
+					IF(fran_cost+fran_tax - total_fran_carrier_credit_in_60d - real_payment_in_60d < 0,0,fran_cost+fran_tax - total_fran_carrier_credit_in_60d - real_payment_in_60d), 
+					IF(fran_cost+fran_tax - total_fran_carrier_credit_in_60d - real_payment_in_60d - real_payment_60d_startdate - total_cus_carrier_credit_60d_startdate<0,0,fran_cost+fran_tax - total_fran_carrier_credit_in_60d - real_payment_in_60d - real_payment_60d_startdate - total_cus_carrier_credit_60d_startdate)
+				)> 0,
+	    	IF(#{startDate}<=invoice_date_6x,
+				IF(fran_cost+fran_tax - total_fran_carrier_credit_in_60d - real_payment_in_60d < 0,0,fran_cost+fran_tax - total_fran_carrier_credit_in_60d - real_payment_in_60d), 
+				IF(fran_cost+fran_tax - total_fran_carrier_credit_in_60d - real_payment_in_60d - real_payment_60d_startdate - total_cus_carrier_credit_60d_startdate<0,0,fran_cost+fran_tax - total_fran_carrier_credit_in_60d - real_payment_in_60d - real_payment_60d_startdate - total_cus_carrier_credit_60d_startdate)
+			),
+	    		rev_paid
+	    	) AS repaid_carrier_deductions
+		FROM tmp_xms_tbl_fran_pab_margin61 
+		WHERE rpt_txn_id = #{rptTxnId} 
+		]]>
+    </insert>
+
+    <insert id="prepareDataForCreditV2" parameterType="FranchisePayableFilter">
+        INSERT INTO tmp_xms_tbl_ms_rpt_fran_pab_credit (
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share,
+        new_margin_exc_gst,
+        new_margin_gst,
+        credits_franchise_cost_exc_gst,
+        credits_franchise_cost_gst,
+        credits_customer_cost_exc_gst,
+        credits_customer_cost_gst
+        )
+        <![CDATA[
+		SELECT 
+			#{rptTxnId},
+			franchise_code,
+			apply_date AS paymentDate,
+		    invoice_code AS invoiceNumber,
+			airbill_number AS airbillNumber,
+		    customer_code AS customerNumber,
+		    customer_name AS customerName,
+		    inter_domes AS internationalDomestic,
+		    cust_cost AS customerTotalExcGst,
+		    cust_tax AS customerTotalGst,
+		    fran_cost AS franchiseCostExcGst,
+		    fran_tax AS franchiseCostGst,
+		    prev_paid AS previouslyPaid,
+		    rev_paid AS paymentsReceived,
+		    IF(prev_paid+rev_paid>cust_cost+cust_tax,0.00,(cust_cost + cust_tax) - (prev_paid + rev_paid)) AS amountOutstanding,
+	    	ROUND(cust_cost - fran_cost, 2) AS grossMarginExcGst,
+			ROUND(cust_tax - fran_tax, 2) AS grossMarginGst,
+		    ROUND(
+		    	IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost) <= 0,
+		    			IF( rev_paid - cur_cust_carrier_credit - cur_fran_carrier_credit >0 , 
+		    				0,
+		    				IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0,
+		    					0,
+		    					-1*((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))	
+							)
+						)* profit_share / 100,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)
+							)
+							-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))
+		    			) * profit_share / 100
+		    	), 2) AS profitShareExcGst,
+		    
+		    ROUND(
+		    	IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax) <= 0,
+						IF( rev_paid - cur_cust_carrier_credit - cur_fran_carrier_credit >0 , 
+		    				0,
+		    				IF( ((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))<=0,
+		    					0,
+		    					-1*((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))	
+							)
+						)* profit_share / 100,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)
+							)
+		    				-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))
+		    			) * profit_share / 100
+		    	), 2) AS profitShareGst,
+
+		    ROUND(
+				IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost) <= 0,
+						IF( rev_paid - cur_cust_carrier_credit - cur_fran_carrier_credit >0 , 
+		    				0,
+		    				IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0,
+		    					0,
+		    					-1*((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))	
+							)
+						)* profit_share / 100,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)
+							)
+							-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))
+		    			) * profit_share / 100
+		    	)
+		    	+ 
+				IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax) <= 0,
+						IF( rev_paid - cur_cust_carrier_credit - cur_fran_carrier_credit >0 , 
+		    				0,
+		    				IF( ((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))<=0,
+		    					0,
+		    					-1*((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))	
+							)
+						)* profit_share / 100,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)
+							)
+							-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))
+		    			) * profit_share / 100
+		    	), 2) AS totalProfitShare,
+		    	
+		    ROUND(IF((cust_cost+cust_tax-total_cust_carrier_credit)-(fran_cost+fran_tax-total_fran_carrier_credit)-total_cust_credit<0,0
+		    	,((cust_cost+cust_tax-total_cust_carrier_credit)-(fran_cost+fran_tax-total_fran_carrier_credit)-total_cust_credit))/(1+cust_tax/cust_cost),2) AS newMarginExcGst,
+			
+			ROUND(IF((cust_cost+cust_tax-total_cust_carrier_credit)-(fran_cost+fran_tax-total_fran_carrier_credit)-total_cust_credit<0,0
+		    	,(cust_cost+cust_tax-total_cust_carrier_credit)-(fran_cost+fran_tax-total_fran_carrier_credit)-total_cust_credit)*cust_tax / (cust_cost +cust_tax),2) AS newMarginGst,
+		    	
+		    ROUND((total_fran_carrier_credit)/(1+cust_tax/cust_cost),2) AS credits_franchise_cost_exc_gst,
+		    ROUND((total_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax),2) AS credits_franchise_cost_gst,
+	    	ROUND((total_cust_carrier_credit+total_cust_credit)/(1+cust_tax/cust_cost),2) AS credits_customer_cost_exc_gst,
+	    	ROUND((total_cust_carrier_credit+total_cust_credit)*cust_tax / (cust_cost +cust_tax),2) AS credits_customer_cost_gst
+	    FROM tmp_xms_tbl_fran_pab_credit 
+	    WHERE rpt_txn_id = #{rptTxnId}
+	    ]]>
+    </insert>
+
+    <insert id="prepareDataForDeductV2" parameterType="FranchisePayableFilter">
+        INSERT INTO tmp_xms_tbl_ms_rpt_fran_pab_deduct (
+        rpt_txn_id,
+        franchise_code,
+        customer_name,
+        invoice_number,
+        airbill_number,
+        customer_payment,
+        customer_cost,
+        customer_tax,
+        franchise_cost,
+        franchise_tax,
+        franchise_charge
+        )
+        <![CDATA[
+		SELECT
+			#{rptTxnId},
+			franchise_code,
+			customer_name AS customerName,
+			invoice_code AS invoiceNumber,
+			airbill_number AS airbillNumber,
+			customer_payment AS customerPayment,
+			cust_cost AS customerCost,
+			cust_tax AS customerTax,
+			fran_cost AS franchiseCost,
+			fran_tax AS franchiseTax,
+			franchise_charge AS franchiseCharge
+		FROM tmp_xms_tbl_fran_pab_deduct
+		WHERE rpt_txn_id = #{rptTxnId} and franchise_charge>0
+	    ]]>
+    </insert>
+
+    <insert id="prepareDataForNonCentralV2" parameterType="FranchisePayableFilter">
+        INSERT INTO tmp_xms_tbl_ms_rpt_fran_pab_non_central (
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        credits_franchise_cost,
+        credits_customer_cost,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share
+        )
+        <![CDATA[
+		SELECT 
+			#{rptTxnId},
+			franchise_code,
+			apply_date AS paymentDate,
+		    invoice_code AS invoiceNumber,
+			airbill_number AS airbillNumber,
+		    customer_code AS customerNumber,
+		    customer_name AS customerName,
+		    inter_domes AS internationalDomestic,
+		    cust_cost AS customerTotalExcGst,
+		    cust_tax AS customerTotalGst,
+		    fran_cost AS franchiseCostExcGst,
+		    fran_tax AS franchiseCostGst,
+		    prev_paid AS previouslyPaid,
+		    rev_paid AS paymentsReceived,
+		    IF(prev_paid+rev_paid>cust_cost+cust_tax,0.00,(cust_cost + cust_tax) - (prev_paid + rev_paid)) AS amountOutstanding,
+	    	total_fran_carrier_credit AS creditsFranchiseCost,
+	    	(total_cust_carrier_credit+total_cust_credit)  AS creditsCustomerCost,
+	    	ROUND(cust_cost - fran_cost, 2) AS grossMarginExcGst,
+			ROUND(cust_tax - fran_tax, 2) AS grossMarginGst,
+		    ROUND(
+		    	IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost) <= 0,
+		    			IF( rev_paid - cur_cust_carrier_credit - cur_fran_carrier_credit >0 , 
+		    				0,
+		    				IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0,
+		    					0,
+		    					-1*((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))	
+							)
+						)* profit_share / 100,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)
+							)
+							-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))
+		    			) * profit_share / 100
+		    	), 2) AS profitShareExcGst,
+		    
+		    ROUND(
+		    	IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax) <= 0,0,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)
+							)
+		    				-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))
+		    				) * profit_share / 100
+		    	), 2) AS profitShareGst,
+
+		    ROUND(
+				IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost) <= 0,
+						IF( rev_paid - cur_cust_carrier_credit - cur_fran_carrier_credit >0 , 
+		    				0,
+		    				IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0,
+		    					0,
+		    					-1*((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))	
+							)
+						)* profit_share / 100,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)/(1 + cust_tax / cust_cost) - fran_cost + total_fran_carrier_credit/(1 + cust_tax / cust_cost)
+							)
+							-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))/(1 + cust_tax / cust_cost)  - fran_cost + (total_fran_carrier_credit-cur_fran_carrier_credit)/(1 + cust_tax / cust_cost))
+		    			) * profit_share / 100
+		    	)
+		    	+ 
+				IF( (prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax) <= 0,0,
+		    			IF( (prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax)<=0, 
+		    				(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax), 
+		    				
+		    				IF (
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)<0, 
+								0,
+								(prev_paid + rev_paid - total_cust_credit - total_cust_carrier_credit)*cust_tax / (cust_cost +cust_tax) - fran_tax + total_fran_carrier_credit*cust_tax / (cust_cost +cust_tax)
+							)
+							-
+		    				((prev_paid - (total_cust_credit-cur_cust_credit) - (total_cust_carrier_credit-cur_cust_carrier_credit))*cust_tax / (cust_cost +cust_tax)  - fran_tax + (total_fran_carrier_credit-cur_fran_carrier_credit)*cust_tax / (cust_cost +cust_tax))
+		    				) * profit_share / 100
+		    	), 2) AS totalProfitShare
+	    FROM tmp_xms_tbl_fran_pab_non_central 
+	    WHERE rpt_txn_id = #{rptTxnId}
+	    ]]>
+    </insert>
+
+    <insert id="prepareDataForOverpaymentV2" parameterType="FranchisePayableFilter">
+        INSERT INTO tmp_xms_tbl_ms_rpt_fran_pab_overpayment (
+        rpt_txn_id,
+        franchise_code,
+        origin_payment_date,
+        customer_number,
+        customer_name,
+        overpayment_type,
+        amount
+        )
+        <![CDATA[
+		SELECT
+			#{rptTxnId},
+			franchise_code,
+			payment_date AS originPaymentDate,
+			customer_code AS customerNumber,
+			customer_name AS customerName,
+			overpayment_type AS overpaymentType,
+			over_amount AS amount
+		FROM tmp_xms_tbl_fran_pab_overpayment 
+	    WHERE rpt_txn_id = #{rptTxnId}
+	    ]]>
+    </insert>
+    <!-- End of prepare data for new tables -->
+
+    <insert id="prepareDataForMarginAnd61Days" parameterType="FranchisePayableFilter">
+        <![CDATA[
+		INSERT INTO tmp_xms_tbl_fran_pab_margin_and_61days(
+			rpt_txn_id,
+			franchise_code,
+			apply_date,
+		    invoice_code,
+		    invoice_date,
+		    airbill_number,
+		    customer_code,
+		    customer_name,
+		    rev_paid,
+		    prev_paid,
+		    cust_cost,
+		    cust_tax,
+		    fran_cost,
+		    fran_tax,
+		    total_fran_carrier_credit,
+		    cur_fran_carrier_credit,
+		    total_cust_carrier_credit,
+		    cur_cust_carrier_credit,
+		  	total_cust_credit,
+		    cur_cust_credit,
+		    profit_share,
+		    late_fee_share,
+		    management_service_fee,
+		    inter_domes,
+		    pausing_day
+		    )
+		SELECT 
+			#{rptTxnId},
+			r.franchise_code,
+			r.apply_date,
+		    r.invoice_code,
+		    r.invoice_date,
+		    r.airbill_number,
+		    r.customer_code,
+		    r.customer_name,
+		    r.payment_received AS rev_paid,
+		    r.prev_paid,
+		    SUM(sb.customer_cost) AS cust_cost,
+		    SUM(sb.customer_tax_amount) AS cust_tax,
+		    SUM(sb.franchise_cost) AS fran_cost,
+		    SUM(sb.franchise_tax_amount) AS fran_tax,
+			IFNULL(
+				(SELECT SUM(ROUND(IF(ipd_.amount=0, (adj.franchise_amount + adj.gst_franchise_amount), (adj.franchise_amount + adj.gst_franchise_amount)*ipd_.amount/(adj.customer_amount+adj.gst_customer_amount)),2)) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date <= #{endDate}
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS total_fran_carrier_credit,
+			IFNULL(
+				(SELECT SUM(ROUND(IF(ipd_.amount=0, (adj.franchise_amount + adj.gst_franchise_amount), (adj.franchise_amount + adj.gst_franchise_amount)*ipd_.amount/(adj.customer_amount+adj.gst_customer_amount)),2)) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date BETWEEN #{startDate} AND #{endDate}
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS cur_fran_carrier_credit,
+			IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date <= #{endDate}
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS total_cust_carrier_credit,
+            IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date BETWEEN #{startDate} AND #{endDate}
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS cur_cust_carrier_credit,
+            IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date <= #{endDate}
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 1), 0)
+			AS total_cust_credit,
+			IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date BETWEEN #{startDate} AND #{endDate}
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 1), 0) AS cur_cust_credit,
+			r.profit_share,
+			IFNULL((SELECT setting_value FROM xms_tbl_system_setting
+					WHERE setting_name = 'Support Center List Profit Share %'),0) AS late_fee_share,
+			IFNULL((SELECT setting_value FROM xms_tbl_system_setting
+					WHERE setting_name = 'Management Service Fee Percentage'),0) AS management_service_fee,
+		    IF(sb.origin_countryid = sb.destination_countryid, 'Domestic', 'International') AS inter_domes,
+		    IFNULL((SELECT SUM(apd.pausing_day) FROM xms_tbl_airbill_pausing_deduct AS apd WHERE apd.airbill_number = r.airbill_number), 0 ) AS pausing_day
+		FROM
+			(SELECT
+				ip.apply_date as apply_date,
+				IF(c.franchise_code IS NULL,LEFT(i.customer_code,3),c.franchise_code) AS franchise_code,
+		        i.invoice_code,
+		        i.invoice_date,
+		        ipd.airbill_number,
+		        i.customer_code,
+		        ca.customer_name,
+		        SUM(ipd.amount) AS payment_received,
+		        IFNULL(
+					(SELECT SUM(ipd2.amount)
+		            FROM xms_tbl_invoice_payment_detail AS ipd2
+		            INNER JOIN xms_tbl_invoice_payment AS ip2 ON ip2.invoice_paymentid = ipd2.invoice_paymentid
+		            WHERE ipd2.airbill_number = ipd.airbill_number
+						AND ip2.apply_date < #{startDate}), 0) AS prev_paid,
+				IFNULL(
+					(SELECT profit_share
+		            FROM xms_tbl_franchise
+		            WHERE LEFT(franchise_code, 3) = c.franchise_code LIMIT 1), 0) AS profit_share
+			FROM xms_tbl_invoice_payment_detail AS ipd
+			INNER JOIN xms_tbl_invoice_payment AS ip ON ip.invoice_paymentid = ipd.invoice_paymentid
+			INNER JOIN xms_tbl_invoice AS i ON i.invoiceid = ip.invoiceid
+			INNER JOIN (select i_tmp.customer_code as customer_code, LEFT(i_tmp.customer_code,3) as franchise_code from  xms_tbl_invoice as i_tmp group by i_tmp.customer_code) AS c ON c.customer_code = i.customer_code
+			INNER JOIN xms_tbl_customer_address AS ca ON c.customer_code = ca.customer_code
+			WHERE ip.apply_date BETWEEN #{startDate} AND #{endDate}
+			]]>
+        AND c.franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        GROUP BY ipd.airbill_number) AS r
+        INNER JOIN xms_tbl_shipment_billing AS sb ON r.airbill_number = sb.airbill_number
+        WHERE sb.carrier IN (select service_id from xms_tbl_service where non_centralized = 0 and inactive = 0)
+        GROUP BY sb.airbill_number
+        ORDER BY apply_date, invoice_code, airbill_number
+    </insert>
+
+    <insert id="prepareDataForMargin" parameterType="FranchisePayableFilter">
+        <![CDATA[
+		INSERT INTO tmp_xms_tbl_fran_pab_margin(
+			rpt_txn_id,
+			franchise_code,
+			apply_date,
+		    invoice_code,
+		    invoice_date,
+		    airbill_number,
+		    customer_code,
+		    customer_name,
+		    rev_paid,
+		    prev_paid,
+		    cust_cost,
+		    cust_tax,
+		    fran_cost,
+		    fran_tax,
+		    total_fran_carrier_credit,
+		    cur_fran_carrier_credit,
+		    total_cust_carrier_credit,
+		    cur_cust_carrier_credit,
+		  	total_cust_credit,
+		    cur_cust_credit,
+		    profit_share,
+		    late_fee_share,
+		    management_service_fee,
+		    inter_domes,
+		    pausing_day
+		    )
+		SELECT
+			#{rptTxnId},
+			r.franchise_code,
+			r.apply_date,
+		    r.invoice_code,
+		    r.invoice_date,
+		    r.airbill_number,
+		    r.customer_code,
+		    r.customer_name,
+		    r.payment_received AS rev_paid,
+		    r.prev_paid,
+		    SUM(sb.customer_cost) AS cust_cost,
+		    SUM(sb.customer_tax_amount) AS cust_tax,
+		    SUM(sb.franchise_cost) AS fran_cost,
+		    SUM(sb.franchise_tax_amount) AS fran_tax,
+			IFNULL(
+				(SELECT SUM(ROUND(IF(ipd_.amount=0, (adj.franchise_amount + adj.gst_franchise_amount), (adj.franchise_amount + adj.gst_franchise_amount)*ipd_.amount/(adj.customer_amount+adj.gst_customer_amount)),2)) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date <= #{endDate}
+					AND ip_.apply_date < IFNULL(r.airbill_date6x, DATE_ADD(#{endDate}, INTERVAL 1 day ))
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS total_fran_carrier_credit,
+			IFNULL(
+				(SELECT SUM(ROUND(IF(ipd_.amount=0, (adj.franchise_amount + adj.gst_franchise_amount), (adj.franchise_amount + adj.gst_franchise_amount)*ipd_.amount/(adj.customer_amount+adj.gst_customer_amount)),2)) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date BETWEEN #{startDate} AND #{endDate}
+					AND ip_.apply_date < IFNULL(r.airbill_date6x, DATE_ADD(#{endDate}, INTERVAL 1 day ))
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS cur_fran_carrier_credit,
+			IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date <= #{endDate}
+					AND ip_.apply_date < IFNULL(r.airbill_date6x, DATE_ADD(#{endDate}, INTERVAL 1 day ))
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS total_cust_carrier_credit,
+            IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date BETWEEN #{startDate} AND #{endDate}
+					AND ip_.apply_date < IFNULL(r.airbill_date6x, DATE_ADD(#{endDate}, INTERVAL 1 day ))
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS cur_cust_carrier_credit,
+            IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date <= #{endDate}
+					AND ip_.apply_date < IFNULL(r.airbill_date6x, DATE_ADD(#{endDate}, INTERVAL 1 day ))
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 1), 0)
+			AS total_cust_credit,
+			IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date BETWEEN #{startDate} AND #{endDate}
+					AND ip_.apply_date < IFNULL(r.airbill_date6x, DATE_ADD(#{endDate}, INTERVAL 1 day ))
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 1), 0) AS cur_cust_credit,
+			r.profit_share,
+			IFNULL((SELECT setting_value FROM xms_tbl_system_setting
+					WHERE setting_name = 'Support Center List Profit Share %'),0) AS late_fee_share,
+			IFNULL((SELECT setting_value FROM xms_tbl_system_setting
+					WHERE setting_name = 'Management Service Fee Percentage'),0) AS management_service_fee,
+		    IF(sb.origin_countryid = sb.destination_countryid, 'Domestic', 'International') AS inter_domes,
+		    IFNULL((SELECT SUM(apd.pausing_day) FROM xms_tbl_airbill_pausing_deduct AS apd WHERE apd.airbill_number = r.airbill_number), 0 ) AS pausing_day
+		FROM
+			(SELECT
+				ip.apply_date as apply_date,
+				IF(c.franchise_code IS NULL,LEFT(i.customer_code,3),c.franchise_code) AS franchise_code,
+		        i.invoice_code,
+		        i.invoice_date,
+		        ipd.airbill_number,
+		        i.customer_code,
+		        ca.customer_name,
+		        SUM(ipd.amount) AS payment_received,
+		        IFNULL(
+					(SELECT SUM(ipd2.amount)
+		            FROM xms_tbl_invoice_payment_detail AS ipd2
+		            INNER JOIN xms_tbl_invoice_payment AS ip2 ON ip2.invoice_paymentid = ipd2.invoice_paymentid
+		            WHERE ipd2.airbill_number = ipd.airbill_number
+						AND ip2.apply_date < #{startDate}), 0) AS prev_paid,
+				IFNULL(
+					(SELECT profit_share
+		            FROM xms_tbl_franchise
+		            WHERE LEFT(franchise_code, 3) = c.franchise_code LIMIT 1), 0) AS profit_share,
+		        awb61.awb_date6x AS airbill_date6x
+			FROM xms_tbl_invoice_payment_detail AS ipd
+			INNER JOIN xms_tbl_invoice_payment AS ip ON ip.invoice_paymentid = ipd.invoice_paymentid
+			INNER JOIN xms_tbl_invoice AS i ON i.invoiceid = ip.invoiceid
+			INNER JOIN (select i_tmp.customer_code as customer_code, LEFT(i_tmp.customer_code,3) as franchise_code from  xms_tbl_invoice as i_tmp group by i_tmp.customer_code) AS c ON c.customer_code = i.customer_code
+			INNER JOIN xms_tbl_customer_address AS ca ON c.customer_code = ca.customer_code
+			LEFT JOIN
+					(
+						SELECT ma61.airbill_number , DATE_ADD(ma61.invoice_date, INTERVAL IFNULL(apd.pausing_day,0)+60 DAY) AS  awb_date6x FROM
+						(SELECT * FROM tmp_xms_tbl_fran_pab_margin_and_61days tmp_ma61 WHERE tmp_ma61.rpt_txn_id =  #{rptTxnId} GROUP BY tmp_ma61.airbill_number) ma61
+						LEFT JOIN (SELECT * FROM xms_tbl_airbill_pausing_deduct tmp_apd GROUP BY tmp_apd.airbill_number) apd on apd.airbill_number = ma61.airbill_number
+						WHERE
+						(SELECT
+									count(*)
+								FROM
+									xms_tbl_airbill_adjustment AS aa_tmp
+								WHERE
+										aa_tmp.start_pausing_date is not null
+										and aa_tmp.start_pausing_date <= DATE_ADD(ma61.invoice_date, INTERVAL IFNULL(apd.pausing_day,0)+ 60 DAY)
+										AND aa_tmp.airbill_number = ma61.airbill_number
+										AND aa_tmp.credit_type = 0
+										AND aa_tmp.status in (1 , 2)) = 0
+						) AS awb61 ON awb61.airbill_number = ipd.airbill_number
+			WHERE ip.apply_date BETWEEN #{startDate} AND #{endDate}
+				AND ip.apply_date < IFNULL(awb61.awb_date6x, DATE_ADD(#{endDate}, INTERVAL 1 day ))
+			]]>
+        AND c.franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        GROUP BY ipd.airbill_number) AS r
+        INNER JOIN xms_tbl_shipment_billing AS sb ON r.airbill_number = sb.airbill_number
+        WHERE sb.carrier IN (select service_id from xms_tbl_service where non_centralized = 0 and inactive = 0)
+        GROUP BY sb.airbill_number
+        ORDER BY apply_date, invoice_code, airbill_number
+    </insert>
+
+    <insert id="prepareDataForMargin61" parameterType="FranchisePayableFilter">
+        <![CDATA[
+		INSERT INTO tmp_xms_tbl_fran_pab_margin61(
+			rpt_txn_id,
+			franchise_code,
+			apply_date,
+		    invoice_code,
+		    invoice_date,
+		    airbill_number,
+		    customer_code,
+		    customer_name,
+		    rev_paid,
+		    prev_paid,
+		    cust_cost,
+		    cust_tax,
+		    fran_cost,
+		    fran_tax,
+		    total_fran_carrier_credit,
+		    cur_fran_carrier_credit,
+		    total_cust_carrier_credit,
+		    cur_cust_carrier_credit,
+		  	total_cust_credit,
+		    cur_cust_credit,
+		    profit_share,
+		    late_fee_share,
+		    management_service_fee,
+		    inter_domes,
+		    pausing_day,
+		    invoice_date_6x,
+		    real_payment_in_60d,
+		    total_fran_carrier_credit_in_60d,
+		    real_payment_60d_startdate,
+		    total_cus_carrier_credit_60d_startdate
+		    )
+		SELECT
+			#{rptTxnId},
+			r.franchise_code,
+			r.apply_date,
+		    r.invoice_code,
+		    r.invoice_date,
+		    r.airbill_number,
+		    r.customer_code,
+		    r.customer_name,
+		    r.payment_received AS rev_paid,
+		    r.prev_paid,
+		    SUM(sb.customer_cost) AS cust_cost,
+		    SUM(sb.customer_tax_amount) AS cust_tax,
+		    SUM(sb.franchise_cost) AS fran_cost,
+		    SUM(sb.franchise_tax_amount) AS fran_tax,
+			IFNULL(
+				(SELECT SUM(ROUND(IF(ipd_.amount=0, (adj.franchise_amount + adj.gst_franchise_amount), (adj.franchise_amount + adj.gst_franchise_amount)*ipd_.amount/(adj.customer_amount+adj.gst_customer_amount)),2)) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date <= #{endDate}
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS total_fran_carrier_credit,
+			IFNULL(
+				(SELECT SUM(ROUND(IF(ipd_.amount=0, (adj.franchise_amount + adj.gst_franchise_amount), (adj.franchise_amount + adj.gst_franchise_amount)*ipd_.amount/(adj.customer_amount+adj.gst_customer_amount)),2)) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date BETWEEN #{startDate} AND #{endDate}
+					AND ip_.apply_date >= IFNULL(r.airbill_date6x, DATE_ADD(#{endDate}, INTERVAL 1 day ))
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS cur_fran_carrier_credit,
+			IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date <= #{endDate}
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS total_cust_carrier_credit,
+            IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date BETWEEN #{startDate} AND #{endDate}
+					AND ip_.apply_date >= IFNULL(r.airbill_date6x, DATE_ADD(#{endDate}, INTERVAL 1 day ))
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS cur_cust_carrier_credit,
+            IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date <= #{endDate}
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 1), 0)
+			AS total_cust_credit,
+			IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date BETWEEN #{startDate} AND #{endDate}
+					AND ip_.apply_date >= IFNULL(r.airbill_date6x, DATE_ADD(#{endDate}, INTERVAL 1 day ))
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 1), 0) AS cur_cust_credit,
+			r.profit_share,
+			IFNULL((SELECT setting_value FROM xms_tbl_system_setting
+					WHERE setting_name = 'Support Center List Profit Share %'),0) AS late_fee_share,
+			IFNULL((SELECT setting_value FROM xms_tbl_system_setting
+					WHERE setting_name = 'Management Service Fee Percentage'),0) AS management_service_fee,
+		    IF(sb.origin_countryid = sb.destination_countryid, 'Domestic', 'International') AS inter_domes,
+		    IFNULL((SELECT SUM(apd.pausing_day) FROM xms_tbl_airbill_pausing_deduct AS apd WHERE apd.airbill_number = r.airbill_number), 0 ) AS pausing_day,
+
+		    r.airbill_date6x AS invoice_date_6x,
+		    IFNULL((SELECT
+	                    SUM(ipd_.amount)
+	                FROM
+	                    xms_tbl_invoice_payment_detail AS ipd_
+	                INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+	                WHERE
+	                    ipd_.airbill_number = r.airbill_number
+						AND not exists (select cus_paymentid from xms_tbl_credit_note_detail cnd where cnd.cus_paymentid =  ip_.cus_paymentid)
+						AND ip_.apply_date < r.airbill_date6x), 0) AS real_payment_in_60d,
+
+	            IFNULL((SELECT
+	                    SUM(ROUND(IF(ipd_.amount = 0, (adj.franchise_amount + adj.gst_franchise_amount), (adj.franchise_amount + adj.gst_franchise_amount) * ipd_.amount / (adj.customer_amount + adj.gst_customer_amount)), 2))
+	                FROM
+	                    xms_tbl_invoice_payment_detail AS ipd_
+	                INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+	                INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+	                INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+	                INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+	                WHERE
+	                    ip_.apply_date < r.airbill_date6x
+	                    AND r.airbill_date6x is not null
+						AND ipd_.airbill_number = r.airbill_number
+						AND adj.credit_type = 0), 0) AS total_fran_carrier_credit_in_60d,
+
+				IFNULL((SELECT
+	                    SUM(ipd_.amount)
+	                FROM
+	                    xms_tbl_invoice_payment_detail AS ipd_
+	                INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+	                WHERE
+	                    ipd_.airbill_number = r.airbill_number
+						AND not exists (select cus_paymentid from xms_tbl_credit_note_detail cnd where cnd.cus_paymentid =  ip_.cus_paymentid)
+						AND r.airbill_date6x is not null
+						AND ip_.apply_date >= r.airbill_date6x
+						AND	ip_.apply_date < #{startDate}
+						), 0) AS real_payment_60d_startdate,
+				IFNULL(
+					(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+					INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+					INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+					INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+					INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+					WHERE ip_.apply_date < #{startDate}
+						AND r.airbill_date6x is not null
+						AND ip_.apply_date >= r.airbill_date6x
+						AND ipd_.airbill_number = r.airbill_number
+						AND adj.credit_type = 0), 0)
+				AS total_cus_carrier_credit_60d_startdate
+		FROM
+			(SELECT
+				ip.apply_date as apply_date,
+				IF(c.franchise_code IS NULL,LEFT(i.customer_code,3),c.franchise_code) AS franchise_code,
+		        i.invoice_code,
+		        i.invoice_date,
+		        ipd.airbill_number,
+		        i.customer_code,
+		        ca.customer_name,
+		        SUM(ipd.amount) AS payment_received,
+		        IFNULL(
+					(SELECT SUM(ipd2.amount)
+		            FROM xms_tbl_invoice_payment_detail AS ipd2
+		            INNER JOIN xms_tbl_invoice_payment AS ip2 ON ip2.invoice_paymentid = ipd2.invoice_paymentid
+		            WHERE ipd2.airbill_number = ipd.airbill_number
+						AND ip2.apply_date < IF(#{startDate}>IFNULL(awb61.awb_date6x, DATE_ADD(#{endDate}, INTERVAL 1 day )),
+													#{startDate},
+													IFNULL(awb61.awb_date6x, DATE_ADD(#{endDate}, INTERVAL 1 day ))
+												)
+
+					), 0) AS prev_paid,
+				IFNULL(
+					(SELECT profit_share
+		            FROM xms_tbl_franchise
+		            WHERE LEFT(franchise_code, 3) = c.franchise_code LIMIT 1), 0) AS profit_share,
+		    	awb61.awb_date6x AS airbill_date6x
+			FROM xms_tbl_invoice_payment_detail AS ipd
+			INNER JOIN xms_tbl_invoice_payment AS ip ON ip.invoice_paymentid = ipd.invoice_paymentid
+			INNER JOIN xms_tbl_invoice AS i ON i.invoiceid = ip.invoiceid
+			INNER JOIN (select i_tmp.customer_code as customer_code, LEFT(i_tmp.customer_code,3) as franchise_code from  xms_tbl_invoice as i_tmp group by i_tmp.customer_code) AS c ON c.customer_code = i.customer_code
+			INNER JOIN xms_tbl_customer_address AS ca ON c.customer_code = ca.customer_code
+			LEFT JOIN
+					(
+						SELECT ma61.airbill_number , DATE_ADD(ma61.invoice_date, INTERVAL IFNULL(apd.pausing_day,0)+60 DAY) AS  awb_date6x FROM
+						(SELECT * FROM tmp_xms_tbl_fran_pab_margin_and_61days tmp_ma61 WHERE tmp_ma61.rpt_txn_id =  #{rptTxnId} GROUP BY tmp_ma61.airbill_number) ma61
+						LEFT JOIN (SELECT * FROM xms_tbl_airbill_pausing_deduct tmp_apd GROUP BY tmp_apd.airbill_number) apd on apd.airbill_number = ma61.airbill_number
+						WHERE
+						(SELECT
+									count(*)
+								FROM
+									xms_tbl_airbill_adjustment AS aa_tmp
+								WHERE
+										aa_tmp.start_pausing_date is not null
+										and aa_tmp.start_pausing_date <= DATE_ADD(ma61.invoice_date, INTERVAL IFNULL(apd.pausing_day,0)+ 60 DAY)
+										AND aa_tmp.airbill_number = ma61.airbill_number
+										AND aa_tmp.credit_type = 0
+										AND aa_tmp.status in (1 , 2)) = 0
+						) AS awb61 ON awb61.airbill_number = ipd.airbill_number
+			WHERE ip.apply_date BETWEEN #{startDate} AND #{endDate}
+				AND ip.apply_date >= IFNULL(awb61.awb_date6x, DATE_ADD(#{endDate}, INTERVAL 1 day ))
+			]]>
+        AND c.franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        GROUP BY ipd.airbill_number) AS r
+        INNER JOIN xms_tbl_shipment_billing AS sb ON r.airbill_number = sb.airbill_number
+        WHERE sb.carrier IN (select service_id from xms_tbl_service where non_centralized = 0 and inactive = 0)
+        GROUP BY sb.airbill_number
+        ORDER BY apply_date, invoice_code, airbill_number
+    </insert>
+
+    <!-- insert id="prepareDataForDeduct" parameterType="FranchisePayableFilter">
+        <![CDATA[
+        INSERT INTO tmp_xms_tbl_fran_pab_deduct(
+            rpt_txn_id,
+            franchise_code,
+            customer_code,
+            customer_name,
+            invoice_code,
+            invoice_date,
+            invoice_date_61,
+            airbill_number,
+            customer_payment,
+            cust_cost,
+            cust_tax,
+            fran_cost,
+            fran_tax,
+            franchise_charge
+        )
+        SELECT
+            #{rptTxnId},
+            franchise_code,
+            customer_code,
+            customer_name,
+            invoice_code,
+            r.invoice_date,
+            DATE_ADD(r.invoice_date, INTERVAL (IFNULL((SELECT
+                SUM(apd.pausing_day)
+            FROM
+                xms_tbl_airbill_pausing_deduct AS apd
+            WHERE
+                apd.airbill_number = r.airbill_number), 0) + 60) DAY),
+            r.airbill_number,
+            payment_in_60d,
+            SUM(sb.customer_cost),
+            SUM(sb.customer_tax_amount),
+            SUM(sb.franchise_cost),
+            SUM(sb.franchise_tax_amount),
+            IF (payment_in_60d<SUM(sb.franchise_cost+sb.franchise_tax_amount),SUM(sb.franchise_cost+sb.franchise_tax_amount)-payment_in_60d,0)
+        FROM
+            (SELECT
+                i.invoiceid,
+                IF(c.franchise_code IS NULL,LEFT(i.customer_code,3),c.franchise_code) AS franchise_code,
+                i.customer_code,
+                i.invoice_code,
+                i.invoice_date,
+                si.airbill_number,
+                ca.customer_name,
+                SUM(IFNULL(ipd.amount,0)) AS customer_payment,
+                IFNULL((
+                    SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+                    INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+                    WHERE ipd_.airbill_number = si.airbill_number AND ip_.apply_date <= DATE_ADD(i.invoice_date,INTERVAL (IFNULL((SELECT SUM(apd.pausing_day) FROM xms_tbl_airbill_pausing_deduct AS apd WHERE apd.airbill_number = si.airbill_number),0)+60) DAY))
+                    ,0) AS payment_in_60d
+            FROM xms_tbl_invoice AS i
+            INNER JOIN xms_tbl_shipment_invoice AS si ON si.invoiceid = i.invoiceid
+            INNER JOIN (select i_tmp.customer_code as customer_code, LEFT(i_tmp.customer_code,3) as franchise_code from  xms_tbl_invoice as i_tmp group by i_tmp.customer_code) AS c ON c.customer_code = i.customer_code
+            INNER JOIN xms_tbl_customer_address AS ca ON ca.customer_code = i.customer_code
+            LEFT OUTER JOIN xms_tbl_invoice_payment_detail AS ipd ON ipd.airbill_number = si.airbill_number
+            LEFT OUTER JOIN xms_tbl_invoice_payment AS ip ON ip.invoice_paymentid = ipd.invoice_paymentid
+            WHERE DATE_ADD(i.invoice_date,INTERVAL (IFNULL((SELECT SUM(apd.pausing_day) FROM xms_tbl_airbill_pausing_deduct AS apd WHERE apd.airbill_number = si.airbill_number),0)+60) DAY) BETWEEN #{startDate} AND #{endDate}
+            ]]>
+                AND c.franchise_code IN
+            <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+                #{franchiseCode}
+            </foreach>
+            GROUP BY si.airbill_number) AS r
+        INNER JOIN xms_tbl_shipment_billing AS sb ON sb.airbill_number = r.airbill_number
+        GROUP BY r.airbill_number
+        ORDER BY customer_name, invoice_code, r.airbill_number
+    </insert-->
+
+    <insert id="prepareDataForDeduct" parameterType="FranchisePayableFilter">
+        <![CDATA[
+		INSERT INTO tmp_xms_tbl_fran_pab_deduct(
+			rpt_txn_id,
+			franchise_code,
+			customer_code,
+			customer_name,
+			invoice_code,
+			invoice_date,
+			invoice_date_61,
+			airbill_number,
+			customer_payment,
+			cust_cost,
+			cust_tax,
+			fran_cost,
+			fran_tax,
+			franchise_charge
+		)
+		SELECT
+			#{rptTxnId},
+			franchise_code,
+		    customer_code,
+		    customer_name,
+		    invoice_code,
+		    invoice_date,
+		    invoice_date6x,
+		    airbill_number,
+		    payment_receive,
+		    customer_cost,
+		    customer_tax_amount,
+		    franchise_cost,
+		    franchise_tax_amount,(
+			IF(
+				 ((franchise_cost + franchise_tax_amount) - (total_fran_carrier_credit - cur_fran_carrier_credit))
+				- (
+				IF ((customer_cost + customer_tax_amount - (total_cust_carrier_credit - cur_cust_carrier_credit) - (franchise_cost+ franchise_tax_amount - (total_fran_carrier_credit - cur_fran_carrier_credit)))<0,total_cust_credit - cur_cust_credit,
+					IF(total_cust_credit - cur_cust_credit - (customer_cost + customer_tax_amount - (total_cust_carrier_credit - cur_cust_carrier_credit) - (franchise_cost+ franchise_tax_amount - (total_fran_carrier_credit - cur_fran_carrier_credit)))<0, 0, total_cust_credit - cur_cust_credit - (customer_cost + customer_tax_amount - (total_cust_carrier_credit - cur_cust_carrier_credit) - (franchise_cost+ franchise_tax_amount - (total_fran_carrier_credit - cur_fran_carrier_credit))))
+				)
+				+ payment_in_60d - 	(total_cust_carrier_credit - cur_cust_carrier_credit) - (total_cust_credit-cur_cust_credit)
+				)<0,0,
+					((franchise_cost + franchise_tax_amount) - (total_fran_carrier_credit - cur_fran_carrier_credit))
+					- (
+					IF ((customer_cost + customer_tax_amount - (total_cust_carrier_credit - cur_cust_carrier_credit) - (franchise_cost+ franchise_tax_amount - (total_fran_carrier_credit - cur_fran_carrier_credit)))<0,total_cust_credit - cur_cust_credit,
+						IF(total_cust_credit - cur_cust_credit - (customer_cost + customer_tax_amount - (total_cust_carrier_credit - cur_cust_carrier_credit) - (franchise_cost+ franchise_tax_amount - (total_fran_carrier_credit - cur_fran_carrier_credit)))<0, 0, total_cust_credit - cur_cust_credit - (customer_cost + customer_tax_amount - (total_cust_carrier_credit - cur_cust_carrier_credit) - (franchise_cost+ franchise_tax_amount - (total_fran_carrier_credit - cur_fran_carrier_credit))))
+					)
+					+ payment_in_60d - 	(total_cust_carrier_credit - cur_cust_carrier_credit) - (total_cust_credit-cur_cust_credit)
+					)
+
+				)
+			)AS franchise_charge
+		FROM
+		(SELECT
+		    franchise_code,
+		    customer_code,
+		    customer_name,
+		    invoice_code,
+		    r.invoice_date AS invoice_date,
+		    DATE_ADD(r.invoice_date,
+		        INTERVAL (IFNULL((SELECT
+		                        SUM(apd.pausing_day)
+		                    FROM
+		                        xms_tbl_airbill_pausing_deduct AS apd
+		                    WHERE
+		                        apd.airbill_number = r.airbill_number),
+		                0) + 60) DAY) AS invoice_date6x,
+		    r.airbill_number,
+		    payment_in_60d,
+			payment_receive,
+		    SUM(sb.customer_cost) AS customer_cost,
+		    SUM(sb.customer_tax_amount) AS customer_tax_amount,
+		    SUM(sb.franchise_cost) AS franchise_cost,
+		    SUM(sb.franchise_tax_amount) AS franchise_tax_amount,
+		    total_fran_carrier_credit AS total_fran_carrier_credit,
+			cur_fran_carrier_credit AS cur_fran_carrier_credit,
+			total_cust_carrier_credit AS total_cust_carrier_credit,
+			cur_cust_carrier_credit AS cur_cust_carrier_credit,
+			total_cust_credit AS total_cust_credit,
+			cur_cust_credit AS cur_cust_credit
+		FROM
+		    (SELECT
+		        i.invoiceid,
+		            IF(c.franchise_code IS NULL, LEFT(i.customer_code, 3), c.franchise_code) AS franchise_code,
+		            i.customer_code,
+		            i.invoice_code,
+		            i.invoice_date,
+		            si.airbill_number,
+		            ca.customer_name,
+		            SUM(IFNULL(ipd.amount, 0)) AS customer_payment,
+		            IFNULL((SELECT
+		                    SUM(ipd_.amount)
+		                FROM
+		                    xms_tbl_invoice_payment_detail AS ipd_
+		                INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+		                WHERE
+		                    ipd_.airbill_number = si.airbill_number
+		                        AND ip_.apply_date < DATE_ADD(i.invoice_date, INTERVAL (IFNULL((SELECT
+		                            SUM(apd.pausing_day)
+		                        FROM
+		                            xms_tbl_airbill_pausing_deduct AS apd
+		                        WHERE
+		                            apd.airbill_number = si.airbill_number), 0) + 60) DAY)), 0) AS payment_in_60d,
+					IFNULL((SELECT
+		                    SUM(ipd_.amount)
+		                FROM
+		                    xms_tbl_invoice_payment_detail AS ipd_
+		                INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+		                WHERE
+		                    ipd_.airbill_number = si.airbill_number
+		                        AND ip_.apply_date BETWEEN #{startDate} AND  #{endDate}), 0) AS payment_receive,
+		            IFNULL((SELECT
+		                    SUM(ROUND(IF(ipd_.amount = 0, (adj.franchise_amount + adj.gst_franchise_amount), (adj.franchise_amount + adj.gst_franchise_amount) * ipd_.amount / (adj.customer_amount + adj.gst_customer_amount)), 2))
+		                FROM
+		                    xms_tbl_invoice_payment_detail AS ipd_
+		                INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+		                INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+		                INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+		                INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+		                WHERE
+		                    ip_.apply_date <=  #{endDate}
+		                        AND ipd_.airbill_number = si.airbill_number
+		                        AND adj.credit_type = 0), 0) AS total_fran_carrier_credit,
+		            IFNULL((SELECT
+		                    SUM(ROUND(IF(ipd_.amount = 0, (adj.franchise_amount + adj.gst_franchise_amount), (adj.franchise_amount + adj.gst_franchise_amount) * ipd_.amount / (adj.customer_amount + adj.gst_customer_amount)), 2))
+		                FROM
+		                    xms_tbl_invoice_payment_detail AS ipd_
+		                INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+		                INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+		                INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+		                INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+		                WHERE
+		                    ip_.apply_date BETWEEN DATE_ADD(i.invoice_date, INTERVAL (IFNULL((SELECT
+		                            SUM(apd.pausing_day)
+		                        FROM
+		                            xms_tbl_airbill_pausing_deduct AS apd
+		                        WHERE
+		                            apd.airbill_number = si.airbill_number), 0) + 60) DAY) AND  #{endDate}
+		                        AND ipd_.airbill_number = si.airbill_number
+		                        AND adj.credit_type = 0), 0) AS cur_fran_carrier_credit,
+		            IFNULL((SELECT
+		                    SUM(ipd_.amount)
+		                FROM
+		                    xms_tbl_invoice_payment_detail AS ipd_
+		                INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+		                INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+		                INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+		                INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+		                WHERE
+		                    ip_.apply_date <=  #{endDate}
+		                        AND ipd_.airbill_number = si.airbill_number
+		                        AND adj.credit_type = 0), 0) AS total_cust_carrier_credit,
+		            IFNULL((SELECT
+		                    SUM(ipd_.amount)
+		                FROM
+		                    xms_tbl_invoice_payment_detail AS ipd_
+		                INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+		                INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+		                INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+		                INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+		                WHERE
+		                    ip_.apply_date BETWEEN DATE_ADD(i.invoice_date, INTERVAL (IFNULL((SELECT
+		                            SUM(apd.pausing_day)
+		                        FROM
+		                            xms_tbl_airbill_pausing_deduct AS apd
+		                        WHERE
+		                            apd.airbill_number = si.airbill_number), 0) + 60) DAY) AND  #{endDate}
+		                        AND ipd_.airbill_number = si.airbill_number
+		                        AND adj.credit_type = 0), 0) AS cur_cust_carrier_credit,
+		            IFNULL((SELECT
+		                    SUM(ipd_.amount)
+		                FROM
+		                    xms_tbl_invoice_payment_detail AS ipd_
+		                INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+		                INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+		                INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+		                INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+		                WHERE
+		                    ip_.apply_date <=  #{endDate}
+		                        AND ipd_.airbill_number = si.airbill_number
+		                        AND adj.credit_type = 1), 0) AS total_cust_credit,
+		            IFNULL((SELECT
+		                    SUM(ipd_.amount)
+		                FROM
+		                    xms_tbl_invoice_payment_detail AS ipd_
+		                INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+		                INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+		                INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+		                INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+		                WHERE
+		                    ip_.apply_date BETWEEN DATE_ADD(i.invoice_date, INTERVAL (IFNULL((SELECT
+		                            SUM(apd.pausing_day)
+		                        FROM
+		                            xms_tbl_airbill_pausing_deduct AS apd
+		                        WHERE
+		                            apd.airbill_number = si.airbill_number), 0) + 60) DAY) AND  #{endDate}
+		                        AND ipd_.airbill_number = si.airbill_number
+		                        AND adj.credit_type = 1), 0) AS cur_cust_credit
+		    FROM
+		        xms_tbl_invoice AS i
+		    INNER JOIN xms_tbl_shipment_invoice AS si ON si.invoiceid = i.invoiceid
+		    INNER JOIN (select i_tmp.customer_code as customer_code, LEFT(i_tmp.customer_code,3) as franchise_code from  xms_tbl_invoice as i_tmp group by i_tmp.customer_code) AS c ON c.customer_code = i.customer_code
+		    INNER JOIN xms_tbl_customer_address AS ca ON ca.customer_code = i.customer_code
+		    LEFT OUTER JOIN xms_tbl_invoice_payment_detail AS ipd ON ipd.airbill_number = si.airbill_number
+		    LEFT OUTER JOIN xms_tbl_invoice_payment AS ip ON ip.invoice_paymentid = ipd.invoice_paymentid
+		    WHERE
+		        DATE_ADD(i.invoice_date, INTERVAL (IFNULL((SELECT
+		                SUM(apd.pausing_day)
+		            FROM
+		                xms_tbl_airbill_pausing_deduct AS apd
+		            WHERE
+		                apd.airbill_number = si.airbill_number), 0) + 60) DAY) BETWEEN #{startDate} AND  #{endDate}
+						AND
+						(SELECT count(*) FROM xms_tbl_airbill_adjustment AS aa
+						WHERE aa.start_pausing_date <= DATE_ADD(i.invoice_date, INTERVAL (IFNULL((SELECT
+								SUM(apd.pausing_day)
+								FROM
+									xms_tbl_airbill_pausing_deduct AS apd
+								WHERE
+									apd.airbill_number = si.airbill_number), 0) + 60) DAY)
+						AND aa.credit_type = 0
+						AND aa.airbill_number = si.airbill_number
+						AND aa.airbill_number is not null AND aa.status in (1,2)
+						) = 0
+
+		            ]]>
+        AND c.franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        GROUP BY si.airbill_number) AS r
+        INNER JOIN xms_tbl_shipment_billing AS sb ON sb.airbill_number = r.airbill_number
+        GROUP BY r.airbill_number ) AS result
+        ORDER BY customer_name, invoice_code, airbill_number
+    </insert>
+
+    <insert id="prepareDataForNonCentral" parameterType="FranchisePayableFilter">
+        <![CDATA[
+		INSERT INTO tmp_xms_tbl_fran_pab_non_central(
+			rpt_txn_id,
+			franchise_code,
+			apply_date,
+			invoice_code,
+			invoice_date,
+			airbill_number,
+			customer_code,
+			customer_name,
+			rev_paid,
+			prev_paid,
+			cust_cost,
+			cust_tax,
+			fran_cost,
+			fran_tax,
+			total_fran_carrier_credit,
+			cur_fran_carrier_credit,
+			total_cust_carrier_credit,
+			cur_cust_carrier_credit,
+			total_cust_credit,
+			cur_cust_credit,
+			profit_share,
+			late_fee_share,
+			management_service_fee,
+			inter_domes
+		)
+		SELECT
+			#{rptTxnId},
+			r.franchise_code,
+			r.apply_date,
+		    r.invoice_code,
+		    r.invoice_date,
+		    r.airbill_number,
+		    r.customer_code,
+		    r.customer_name,
+		    r.payment_received AS rev_paid,
+		    r.prev_paid,
+		    SUM(sb.customer_cost) AS cust_cost,
+		    SUM(sb.customer_tax_amount) AS cust_tax,
+		    SUM(sb.franchise_cost) AS fran_cost,
+		    SUM(sb.franchise_tax_amount) AS fran_tax,
+			IFNULL(
+				(SELECT SUM(ROUND(IF(ipd_.amount=0, (adj.franchise_amount + adj.gst_franchise_amount), (adj.franchise_amount + adj.gst_franchise_amount)*ipd_.amount/(adj.customer_amount+adj.gst_customer_amount)),2)) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date <= #{endDate}
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS total_fran_carrier_credit,
+			IFNULL(
+				(SELECT SUM(ROUND(IF(ipd_.amount=0, (adj.franchise_amount + adj.gst_franchise_amount), (adj.franchise_amount + adj.gst_franchise_amount)*ipd_.amount/(adj.customer_amount+adj.gst_customer_amount)),2)) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date BETWEEN #{startDate} AND #{endDate}
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS cur_fran_carrier_credit,
+			IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date <= #{endDate}
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS total_cust_carrier_credit,
+            IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date BETWEEN #{startDate} AND #{endDate}
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 0), 0)
+			AS cur_cust_carrier_credit,
+            IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date <= #{endDate}
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 1), 0)
+			AS total_cust_credit,
+			IFNULL(
+				(SELECT SUM(ipd_.amount) FROM xms_tbl_invoice_payment_detail AS ipd_
+				INNER JOIN xms_tbl_invoice_payment AS ip_ ON ip_.invoice_paymentid = ipd_.invoice_paymentid
+				INNER JOIN xms_tbl_customer_payment AS cp_ ON cp_.cus_paymentid = ip_.cus_paymentid
+				INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.cus_paymentid = cp_.cus_paymentid
+				INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+				WHERE ip_.apply_date BETWEEN #{startDate} AND #{endDate}
+					AND ipd_.airbill_number = r.airbill_number
+					AND adj.credit_type = 1), 0) AS cur_cust_credit,
+			r.profit_share,
+			IFNULL((SELECT setting_value FROM xms_tbl_system_setting
+					WHERE setting_name = 'Support Center List Profit Share %'),0) AS late_fee_share,
+			IFNULL((SELECT setting_value FROM xms_tbl_system_setting
+					WHERE setting_name = 'Management Service Fee Percentage'),0) AS management_service_fee,
+		    IF(sb.origin_countryid = sb.destination_countryid, 'Domestic', 'International') AS inter_domes
+		FROM
+			(SELECT
+				ip.apply_date,
+				IF(c.franchise_code IS NULL,LEFT(i.customer_code,3),c.franchise_code) AS franchise_code,
+		        i.invoice_code,
+		        i.invoice_date,
+		        ipd.airbill_number,
+		        i.customer_code,
+		        ca.customer_name,
+		        SUM(ipd.amount) AS payment_received,
+		        IFNULL(
+					(SELECT SUM(ipd2.amount)
+		            FROM xms_tbl_invoice_payment_detail AS ipd2
+		            INNER JOIN xms_tbl_invoice_payment AS ip2 ON ip2.invoice_paymentid = ipd2.invoice_paymentid
+		            WHERE ipd2.airbill_number = ipd.airbill_number
+						AND ip2.apply_date < #{startDate}), 0) AS prev_paid,
+				IFNULL(
+					(SELECT profit_share
+		            FROM xms_tbl_franchise
+		            WHERE LEFT(franchise_code, 3) = c.franchise_code LIMIT 1), 0) AS profit_share
+			FROM xms_tbl_invoice_payment_detail AS ipd
+			INNER JOIN xms_tbl_invoice_payment AS ip ON ip.invoice_paymentid = ipd.invoice_paymentid
+			INNER JOIN xms_tbl_invoice AS i ON i.invoiceid = ip.invoiceid
+			INNER JOIN (select i_tmp.customer_code as customer_code, LEFT(i_tmp.customer_code,3) as franchise_code from  xms_tbl_invoice as i_tmp group by i_tmp.customer_code) AS c ON c.customer_code = i.customer_code
+			INNER JOIN xms_tbl_customer_address AS ca ON c.customer_code = ca.customer_code
+			WHERE ip.apply_date BETWEEN #{startDate} AND #{endDate}
+			]]>
+        AND c.franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        GROUP BY ipd.airbill_number) AS r
+        INNER JOIN xms_tbl_shipment_billing AS sb ON r.airbill_number = sb.airbill_number
+        WHERE sb.carrier IN (select service_id from xms_tbl_service where non_centralized = 1 and inactive = 0)
+        GROUP BY sb.airbill_number
+        ORDER BY apply_date, invoice_code, airbill_number
+    </insert>
+
+    <insert id="prepareDataForCredit" parameterType="FranchisePayableFilter">
+        <![CDATA[
+		INSERT INTO tmp_xms_tbl_fran_pab_credit(
+			rpt_txn_id,
+			franchise_code,
+			apply_date,
+			invoice_code,
+			invoice_date,
+			airbill_number,
+			customer_code,
+			customer_name,
+			rev_paid,
+			prev_paid,
+			cust_cost,
+			cust_tax,
+			fran_cost,
+			fran_tax,
+			total_cust_credit,
+			cur_cust_credit,
+			total_cust_carrier_credit,
+			cur_cust_carrier_credit,
+			total_fran_carrier_credit,
+			cur_fran_carrier_credit,
+			profit_share,
+			late_fee_share,
+			management_service_fee,
+			inter_domes
+		)
+		SELECT  
+			#{rptTxnId},
+			franchise_code,
+			apply_date,
+		    invoice_code,
+		    invoice_date,
+		    airbill_number,
+		    customer_code,
+		    customer_name,
+		    rev_paid,
+		    prev_paid,
+		    cust_cost,
+		    cust_tax,
+		    fran_cost,
+		    fran_tax,
+		    total_cust_credit,
+		    cur_cust_credit,
+		    total_cust_carrier_credit,
+		    cur_cust_carrier_credit,
+		    total_fran_carrier_credit,
+		    cur_fran_carrier_credit,
+		    profit_share,
+		    late_fee_share,
+		    management_service_fee,
+		    inter_domes
+		FROM tmp_xms_tbl_fran_pab_margin_and_61days
+		WHERE rpt_txn_id = #{rptTxnId} AND (cur_cust_carrier_credit<>0 OR cur_fran_carrier_credit<>0 OR cur_cust_credit<>0)
+		]]>
+    </insert>
+
+    <insert id="prepareDataForOverpayment" parameterType="FranchisePayableFilter">
+        <![CDATA[
+		INSERT INTO tmp_xms_tbl_fran_pab_overpayment(
+			rpt_txn_id,
+			franchise_code,
+			payment_date,
+			customer_code,
+			customer_name,
+			over_amount,
+			overpayment_type
+		)
+		SELECT 
+			#{rptTxnId},
+			LEFT(cp.customer_code,3) AS franchise_code,
+			DATE(cp.payment_date), 
+			cp.customer_code, 
+			ca.customer_name, 
+			SUM(op.over_amount), 
+			CASE ad.credit_type 
+				WHEN 1 THEN 'Credit Note' 
+    			WHEN 0 THEN 'Carrier Credit Note' 
+    			ELSE 'Customer Payment' 
+			END AS overpayment_type
+		FROM xms_tbl_overpayment as op
+		INNER JOIN xms_tbl_customer_payment as cp on cp.cus_paymentid = op.cus_paymentid
+		INNER JOIN xms_tbl_customer_address as ca on ca.customer_code = cp.customer_code
+		LEFT OUTER JOIN xms_tbl_credit_note_detail as cd on cd.cus_paymentid = cp.cus_paymentid
+		LEFT OUTER JOIN xms_tbl_airbill_adjustment ad on ad.adjustmentid = cd.adjustmentid
+		WHERE cp.payment_date BETWEEN #{startDate} AND #{endDate}
+		]]>
+        AND LEFT(cp.customer_code,3) IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        GROUP BY payment_date, customer_code, customer_name, overpayment_type
+        ORDER BY payment_date, customer_code, customer_name, overpayment_type
+    </insert>
+
+    <!-- BEGIN copy data from the frozen to temporary tables v2 -->
+    <insert id="copyFrozenMarginByRptTxnIdV2" parameterType="String">
+        INSERT INTO tmp_xms_tbl_ms_rpt_fran_pab_margin(
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        credits_franchise_cost,
+        credits_customer_cost,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share
+        )
+        SELECT
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        credits_franchise_cost,
+        credits_customer_cost,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share
+        FROM xms_tbl_ms_rpt_fran_pab_margin
+        WHERE rpt_txn_id = #{rptTxnId}
+    </insert>
+
+    <insert id="copyFrozen61DaysByRptTxnIdV2" parameterType="String">
+        INSERT INTO tmp_xms_tbl_ms_rpt_fran_pab_61days(
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        credits_franchise_cost,
+        credits_customer_cost,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share,
+        previously_deducted_cost,
+        profit_share_on_late_fees,
+        repaid_carrier_deductions
+        )
+        SELECT
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        credits_franchise_cost,
+        credits_customer_cost,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share,
+        previously_deducted_cost,
+        profit_share_on_late_fees,
+        repaid_carrier_deductions
+        FROM xms_tbl_ms_rpt_fran_pab_61days
+        WHERE rpt_txn_id = #{rptTxnId}
+    </insert>
+
+    <insert id="copyFrozenCreditByRptTxnIdV2" parameterType="String">
+        INSERT INTO tmp_xms_tbl_ms_rpt_fran_pab_credit(
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share,
+        new_margin_exc_gst,
+        new_margin_gst,
+        credits_franchise_cost_exc_gst,
+        credits_franchise_cost_gst,
+        credits_customer_cost_exc_gst,
+        credits_customer_cost_gst
+        )
+        SELECT
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share,
+        new_margin_exc_gst,
+        new_margin_gst,
+        credits_franchise_cost_exc_gst,
+        credits_franchise_cost_gst,
+        credits_customer_cost_exc_gst,
+        credits_customer_cost_gst
+        FROM xms_tbl_ms_rpt_fran_pab_credit
+        WHERE rpt_txn_id = #{rptTxnId}
+    </insert>
+
+    <insert id="copyFrozenDeductByRptTxnIdV2" parameterType="String">
+        INSERT INTO tmp_xms_tbl_ms_rpt_fran_pab_deduct(
+        rpt_txn_id,
+        franchise_code,
+        customer_name,
+        invoice_number,
+        airbill_number,
+        customer_payment,
+        customer_cost,
+        customer_tax,
+        franchise_cost,
+        franchise_tax,
+        franchise_charge
+        )
+        SELECT
+        rpt_txn_id,
+        franchise_code,
+        customer_name,
+        invoice_number,
+        airbill_number,
+        customer_payment,
+        customer_cost,
+        customer_tax,
+        franchise_cost,
+        franchise_tax,
+        franchise_charge
+        FROM xms_tbl_ms_rpt_fran_pab_deduct
+        WHERE rpt_txn_id = #{rptTxnId}
+    </insert>
+
+    <insert id="copyFrozenNonCentralByRptTxnIdV2" parameterType="String">
+        INSERT INTO tmp_xms_tbl_ms_rpt_fran_pab_non_central(
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        credits_franchise_cost,
+        credits_customer_cost,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share
+        )
+        SELECT
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        credits_franchise_cost,
+        credits_customer_cost,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share
+        FROM xms_tbl_ms_rpt_fran_pab_non_central
+        WHERE rpt_txn_id = #{rptTxnId}
+    </insert>
+
+    <insert id="copyFrozenOverpaymentByRptTxnIdV2" parameterType="String">
+        INSERT INTO tmp_xms_tbl_ms_rpt_fran_pab_overpayment(
+        rpt_txn_id,
+        franchise_code,
+        origin_payment_date,
+        customer_number,
+        customer_name,
+        overpayment_type,
+        amount
+        )
+        SELECT
+        rpt_txn_id,
+        franchise_code,
+        origin_payment_date,
+        customer_number,
+        customer_name,
+        overpayment_type,
+        amount
+        FROM xms_tbl_ms_rpt_fran_pab_overpayment
+        WHERE rpt_txn_id = #{rptTxnId}
+    </insert>
+    <!-- END copy data from the frozen to temporary tables v2 -->
+
+    <!-- Use to copy data from live to the frozen tables v2 -->
+    <insert id="copy61DaysToFrozenV2" parameterType="String">
+        INSERT INTO xms_tbl_ms_rpt_fran_pab_61days(
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        credits_franchise_cost,
+        credits_customer_cost,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share,
+        previously_deducted_cost,
+        profit_share_on_late_fees,
+        repaid_carrier_deductions
+        )
+        SELECT
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        credits_franchise_cost,
+        credits_customer_cost,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share,
+        previously_deducted_cost,
+        profit_share_on_late_fees,
+        repaid_carrier_deductions
+        FROM tmp_xms_tbl_ms_rpt_fran_pab_61days
+        WHERE rpt_txn_id = #{rptTxnId}
+    </insert>
+
+    <insert id="copyMarginToFrozenV2" parameterType="String">
+        INSERT INTO xms_tbl_ms_rpt_fran_pab_margin(
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        credits_franchise_cost,
+        credits_customer_cost,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share
+        )
+        SELECT
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        credits_franchise_cost,
+        credits_customer_cost,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share
+        FROM tmp_xms_tbl_ms_rpt_fran_pab_margin
+        WHERE rpt_txn_id = #{rptTxnId}
+    </insert>
+
+    <insert id="copyCreditToFrozenV2" parameterType="String">
+        INSERT INTO xms_tbl_ms_rpt_fran_pab_credit(
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share,
+        new_margin_exc_gst,
+        new_margin_gst,
+        credits_franchise_cost_exc_gst,
+        credits_franchise_cost_gst,
+        credits_customer_cost_exc_gst,
+        credits_customer_cost_gst
+        )
+        SELECT
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share,
+        new_margin_exc_gst,
+        new_margin_gst,
+        credits_franchise_cost_exc_gst,
+        credits_franchise_cost_gst,
+        credits_customer_cost_exc_gst,
+        credits_customer_cost_gst
+        FROM tmp_xms_tbl_ms_rpt_fran_pab_credit
+        WHERE rpt_txn_id = #{rptTxnId}
+    </insert>
+
+    <insert id="copyDeductToFrozenV2" parameterType="String">
+        INSERT INTO xms_tbl_ms_rpt_fran_pab_deduct(
+        rpt_txn_id,
+        franchise_code,
+        customer_name,
+        invoice_number,
+        airbill_number,
+        customer_payment,
+        customer_cost,
+        customer_tax,
+        franchise_cost,
+        franchise_tax,
+        franchise_charge
+        )
+        SELECT
+        rpt_txn_id,
+        franchise_code,
+        customer_name,
+        invoice_number,
+        airbill_number,
+        customer_payment,
+        customer_cost,
+        customer_tax,
+        franchise_cost,
+        franchise_tax,
+        franchise_charge
+        FROM tmp_xms_tbl_ms_rpt_fran_pab_deduct
+        WHERE rpt_txn_id = #{rptTxnId}
+    </insert>
+
+    <insert id="copyNonCentralToFrozenV2" parameterType="String">
+        INSERT INTO xms_tbl_ms_rpt_fran_pab_non_central(
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        credits_franchise_cost,
+        credits_customer_cost,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share
+        )
+        SELECT
+        rpt_txn_id,
+        franchise_code,
+        payment_date,
+        invoice_number,
+        airbill_number,
+        customer_number,
+        customer_name,
+        international_domestic,
+        customer_total_exc_gst,
+        customer_total_gst,
+        franchise_cost_exc_gst,
+        franchise_cost_gst,
+        previously_paid,
+        payments_received,
+        amount_outstanding,
+        credits_franchise_cost,
+        credits_customer_cost,
+        gross_margin_exc_gst,
+        gross_margin_gst,
+        profit_share_exc_gst,
+        profit_share_gst,
+        total_profit_share
+        FROM tmp_xms_tbl_ms_rpt_fran_pab_non_central
+        WHERE rpt_txn_id = #{rptTxnId}
+    </insert>
+
+    <insert id="copyOverpaymentToFrozenV2" parameterType="String">
+        INSERT INTO xms_tbl_ms_rpt_fran_pab_overpayment(
+        rpt_txn_id,
+        franchise_code,
+        origin_payment_date,
+        customer_number,
+        customer_name,
+        overpayment_type,
+        amount
+        )
+        SELECT
+        rpt_txn_id,
+        franchise_code,
+        origin_payment_date,
+        customer_number,
+        customer_name,
+        overpayment_type,
+        amount
+        FROM tmp_xms_tbl_ms_rpt_fran_pab_overpayment
+        WHERE rpt_txn_id = #{rptTxnId}
+    </insert>
+    <!-- END of use to copy data from live to the frozen tables v2 -->
+</mapper>

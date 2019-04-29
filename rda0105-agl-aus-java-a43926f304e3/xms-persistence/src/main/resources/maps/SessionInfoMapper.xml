@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="SessionInfo">
+
+    <select id="getBySessionId" resultType="SessionInfoVo"
+            parameterType="String">
+        select *
+        from xms_tbl_session_info
+        where session_id = #{sessionId} limit 0,1
+    </select>
+
+    <insert id="insert" parameterType="SessionInfoVo">
+        INSERT INTO `xms_tbl_session_info`
+        (
+        `session_id`,
+        `content`)
+        VALUES
+        (
+        'Test',
+        'Test Content');
+
+    </insert>
+</mapper>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="SalesRepSettings">
+    <resultMap id="SalesRepSettingsMap" type="SalesRepSettingVo" extends="SalesRep.SalesRepMap">
+        <association property="user" javaType="UserVo">
+            <result column="u_user_id" property="userId"/>
+            <result column="u_user_code" property="userCode"/>
+            <result column="u_user_name" property="userName"/>
+            <result column="u_display_name" property="displayName"/>
+        </association>
+        <collection property="salesRepServices" ofType="SalesRepPayoutGoalVo" javaType="ArrayList">
+            <result column="srs_sales_rep_id" property="salesRepId"/>
+            <result column="srs_service_id" property="serviceId"/>
+            <result column="srs_goal" property="goal"/>
+            <result column="srs_payout" property="payout"/>
+            <association property="service" javaType="ServiceVo">
+                <result column="sv_service_id" property="serviceId"/>
+                <result column="sv_service_name" property="serviceName"/>
+            </association>
+        </collection>
+    </resultMap>
+
+    <select id="getSalesRepSettingsByFilter"
+            parameterType="com.gms.xms.filter.admin.payables.salesrep.SalesRepSettingFilter"
+            resultMap="SalesRepSettingsMap">
+        select
+        r.*,
+        srs.sales_rep_id as srs_sales_rep_id,
+        srs.serviceid as srs_service_id,
+        cast(srs.goal as decimal(20,0)) as srs_goal,
+        srs.payout as srs_payout,
+        sv.service_id as sv_service_id,
+        sv.service_name as sv_service_name
+        from
+        (select
+        sr.*,
+        u.userid as u_user_id,
+        u.user_code as u_user_code,
+        u.user_name as u_user_name,
+        u.display_name as u_display_name
+        from xms_tbl_sales_rep as sr
+        left join xms_tbl_user as u on sr.userid=u.userid
+        where left(u.user_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sr.sales_rep_id = #{userId}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+        ) as r
+        left join xms_tbl_sales_rep_service as srs on srs.sales_rep_id = r.sales_rep_id
+        left join xms_tbl_service as sv on sv.service_id = srs.serviceid
+    </select>
+
+    <select id="countSalesRepSettingsByFilter"
+            parameterType="com.gms.xms.filter.admin.payables.salesrep.SalesRepSettingFilter" resultType="long">
+        select
+        count(*)
+        from xms_tbl_sales_rep as sr
+        left join xms_tbl_user as u on sr.userid=u.userid
+        where left(u.user_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sr.sales_rep_id = #{userId}
+        </if>
+    </select>
+
+    <select id="getSalesRepSettingsBySaleRepId" parameterType="long" resultMap="SalesRepSettingsMap">
+        select
+        sr.*,
+        u.userid as u_user_id,
+        u.user_code as u_user_code,
+        u.user_name as u_user_name,
+        u.display_name as u_display_name,
+        ifnull(srs.sales_rep_id,sr.sales_rep_id) as srs_sales_rep_id,
+        ifnull(srs.serviceid,sv.service_id) as srs_service_id,
+        cast(srs.goal as decimal(20,0)) as srs_goal,
+        srs.payout as srs_payout,
+        sv.service_id as sv_service_id,
+        sv.service_name as sv_service_name
+        from xms_tbl_sales_rep as sr
+        left join xms_tbl_user as u on sr.userid=u.userid
+        inner join xms_tbl_service as sv on (1=1)
+        left join xms_tbl_sales_rep_service as srs on srs.sales_rep_id = sr.sales_rep_id and srs.serviceid =
+        sv.service_id
+        where sr.sales_rep_id = #{saleRepId}
+        and sv.inactive=0
+    </select>
+
+    <select id="getNewSalesRepSettingByUserId" parameterType="long" resultMap="SalesRepSettingsMap">
+        select
+        sr.*,
+        u.userid as u_user_id,
+        u.user_code as u_user_code,
+        u.user_name as u_user_name,
+        u.display_name as u_display_name,
+        ifnull(srs.sales_rep_id,sr.sales_rep_id) as srs_sales_rep_id,
+        ifnull(srs.serviceid,sv.service_id) as srs_service_id,
+        cast(srs.goal as decimal(20,0)) as srs_goal,
+        srs.payout as srs_payout,
+        sv.service_id as sv_service_id,
+        sv.service_name as sv_service_name
+        from xms_tbl_user as u
+        left join xms_tbl_sales_rep as sr on sr.userid=u.userid
+        inner join xms_tbl_service as sv on (1=1)
+        left join xms_tbl_sales_rep_service as srs on srs.sales_rep_id = sr.sales_rep_id and srs.serviceid =
+        sv.service_id
+        where u.userid = #{_parameter} and sr.sales_rep_id is null
+        and sv.inactive=0
+    </select>
+</mapper>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FranchisePayableSCOverpayment">
+    <resultMap id="FranchisePayableSCOverpaymentMap" type="FranchisePayableSCOverpaymentVo">
+        <result column="origin_payment_date" property="originPaymentDate"/>
+        <result column="customer_number" property="customerNumber"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="overpayment_type" property="overpaymentType"/>
+        <result column="amount" property="amount"/>
+    </resultMap>
+
+    <!-- Over payment (Margin Share) -->
+    <select id="getOverpayment" parameterType="FranchisePayableFilter" resultMap="FranchisePayableSCOverpaymentMap">
+        <![CDATA[
+		SELECT * FROM tmp_xms_tbl_sc_rpt_fran_pab_overpayment 
+	    WHERE rpt_txn_id = #{rptTxnId}
+	    ]]>
+        AND franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        ORDER BY origin_payment_date, customer_number, customer_name, overpayment_type
+        <if test="startRecord!=null and recordSize!=null">
+            LIMIT #{startRecord}, #{recordSize}
+        </if>
+    </select>
+
+    <select id="getOverpaymentTotal" parameterType="FranchisePayableFilter"
+            resultMap="FranchisePayableSCOverpaymentMap">
+        <![CDATA[
+		SELECT
+			SUM(amount) AS amount
+		FROM tmp_xms_tbl_sc_rpt_fran_pab_overpayment 
+	    WHERE rpt_txn_id = #{rptTxnId}
+	    ]]>
+        AND franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+
+    <select id="getOverpaymentRecordCount" parameterType="FranchisePayableFilter" resultType="int">
+        <![CDATA[
+		SELECT COUNT(*) FROM tmp_xms_tbl_sc_rpt_fran_pab_overpayment
+		WHERE rpt_txn_id = #{rptTxnId}
+		]]>
+        AND franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+</mapper>

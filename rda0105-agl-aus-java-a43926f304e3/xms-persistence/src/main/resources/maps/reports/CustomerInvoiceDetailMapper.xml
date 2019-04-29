@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerInvoiceDetail">
+    <resultMap id="CustomerInvoiceDetailMap" type="CustomerInvoiceDetailVo">
+        <result column="invoiceid" property="invoiceId"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="invoice_amount" property="invoiceAmount"/>
+        <result column="invoice_credit" property="invoiceCredit"/>
+        <result column="net_amount" property="netAmount"/>
+        <result column="gst" property="gst"/>
+        <result column="credit_gst" property="creditGst"/>
+        <result column="net_gst" property="netGst"/>
+        <result column="total" property="total"/>
+    </resultMap>
+
+    <select id="getInvoiceDetailReport"
+            parameterType="com.gms.xms.filter.reports.customer.invoicedetail.CustomerInvoiceDetailFilter"
+            resultMap="CustomerInvoiceDetailMap">
+        select * from tmp_customer_invoice_detail_report
+        where rpt_txn_id = #{rptTxnId}
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="sumInvoiceDetailReport"
+            parameterType="com.gms.xms.filter.reports.customer.invoicedetail.CustomerInvoiceDetailFilter"
+            resultMap="CustomerInvoiceDetailMap">
+        select
+        sum(invoice_amount) as invoice_amount,
+        sum(invoice_credit) as invoice_credit,
+        sum(net_amount) as net_amount,
+        sum(gst) as gst,
+        sum(credit_gst) as credit_gst,
+        sum(net_gst) as net_gst,
+        sum(total) as total
+        from tmp_customer_invoice_detail_report
+        where rpt_txn_id = #{rptTxnId}
+    </select>
+
+    <select id="checkInvoiceDetailReport"
+            parameterType="com.gms.xms.filter.reports.customer.invoicedetail.CustomerInvoiceDetailFilter"
+            resultType="long">
+        select count(*) from tmp_customer_invoice_detail_report
+        where rpt_txn_id = #{rptTxnId}
+    </select>
+
+    <insert id="prepareInvoiceDetailReport"
+            parameterType="com.gms.xms.filter.reports.customer.invoicedetail.CustomerInvoiceDetailFilter">
+        <![CDATA[
+		insert into tmp_customer_invoice_detail_report (
+			rpt_txn_id,
+			invoiceid,
+			invoice_code,
+			customer_name,
+			invoice_date,
+			invoice_amount,
+			invoice_credit,
+			net_amount,
+			gst,
+			credit_gst,
+			net_gst,
+			total
+		)
+		select
+			#{rptTxnId},
+			i.invoiceid,
+		    i.invoice_code,
+		    ca.customer_name,
+		    i.invoice_date,
+		    ifnull(am.amount,0) as invoice_amount,
+		    ifnull(cre.credit_amount,0) as invoice_credit,
+		    ifnull(am.amount,0)-ifnull(cre.credit_amount,0) as net_amount,
+		    ifnull(am.gst,0) as gst,
+		    ifnull(cre.credit_gst,0) as credit_gst,
+		    ifnull(am.gst,0)-ifnull(cre.credit_gst,0) as net_gst,
+		    ifnull(am.amount,0)+ifnull(am.gst,0) as total
+		from xms_tbl_invoice as i
+		inner join xms_tbl_customer_address as ca on ca.customer_code = i.customer_code
+		left join 
+			(select 
+				si.invoiceid, 
+		        sum(sb.customer_cost) as amount,
+		        sum(sb.customer_tax_amount) as gst
+			from xms_tbl_shipment_invoice as si
+			inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+		    group by si.invoiceid
+		    ) as am on am.invoiceid = i.invoiceid
+		left join 
+			(select 
+				cn.invoice_code,
+				sum(adj.customer_amount) as credit_amount,
+				sum(adj.gst_customer_amount) as credit_gst
+			from xms_tbl_credit_note as cn
+			inner join xms_tbl_credit_note_detail as cnd on cnd.credit_note_id = cn.credit_note_id
+		    inner join xms_tbl_airbill_adjustment as adj on adj.adjustmentid = cnd.adjustmentid
+			inner join xms_tbl_customer_payment as cp on cp.cus_paymentid = cnd.cus_paymentid
+			where cn.status != 0 and adj.status = 4
+		    group by cn.invoice_code
+		    ) as cre on cre.invoice_code = i.invoice_code
+		where left(i.customer_code,3) in (${franchiseList})
+			and i.invoice_date between #{startDate} and #{endDate}
+		group by i.invoiceid
+		]]>
+    </insert>
+</mapper>

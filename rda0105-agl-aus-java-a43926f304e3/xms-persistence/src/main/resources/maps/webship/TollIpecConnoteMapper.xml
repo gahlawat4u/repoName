@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="TollIpecConnote">
+    <resultMap id="TollIpecConnoteMap" type="TollIpecConnoteVo">
+        <id column="connote_id" property="connoteId"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="conn_number" property="connNumber"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <resultMap id="TollShipmentMap" type="TollShipmentVo" extends="ShipmentMapper.ShipmentMapper">
+        <result column="manifest_status" property="manifestStatus"/>
+        <result column="special_instructions" property="specialInstructions"/>
+    </resultMap>
+
+    <select id="selectConnumberByShipmentId" resultType="String"
+            parameterType="com.gms.xms.filter.webship.TollIpecConnoteFilter">
+        select conn_number from xms_tbl_toll_ipec_connote
+        where shipmentid = #{shipmentId}
+        order by connote_id desc
+        limit 1
+    </select>
+
+    <insert id="insertTollIpecConnote" parameterType="com.gms.xms.filter.webship.TollIpecConnoteFilter">
+        insert into xms_tbl_toll_ipec_connote (shipmentid,conn_number,status)
+        select
+        #{shipmentId} as shipmentid,
+        if(conn_number >= #{connEnd},concat(upper(#{connPrefix}),lpad('1', length(#{connEnd}),
+        '0')),concat(upper(#{connPrefix}),lpad(conn_number + 1, length(#{connEnd}), '0'))) as conn_number,
+        0 as status
+        from
+        (select
+        ifnull(conn_number, #{connEnd}) as conn_number
+        from
+        (select
+        substring(conn_number, 8) as conn_number
+        from xms_tbl_toll_ipec_connote
+        order by connote_id desc
+        limit 1
+        ) as maxconn
+        union
+        select #{connEnd}
+        ) asconn
+        limit 1
+    </insert>
+
+    <update id="updateTollIpecConnoteGenManifest" parameterType="String">
+        UPDATE xms_tbl_toll_ipec_connote SET status=2 WHERE shipmentid = #{shipmentId}
+    </update>
+
+    <delete id="deleteByShipmentId" parameterType="long">
+        delete from xms_tbl_toll_ipec_connote
+        where shipmentid = #{shipmentId}
+    </delete>
+
+    <select id="deleteByShipmentId_SelectForLog" parameterType="long" resultMap="TollIpecConnoteMap">
+        select * from xms_tbl_toll_ipec_connote
+        where shipmentid = #{shipmentId}
+    </select>
+
+    <select id="getTollIpecShipmentByCustomerGenerateList" parameterType="long" resultMap="TollShipmentMap">
+        select sm.*, a.status as manifest_status, sc.special_instructions
+        from xms_tbl_toll_ipec_connote as a
+        left join xms_tbl_schedule_collection as sc on sc.shipmentid = a.shipmentid
+        inner join xms_tbl_shipment as sm on a.shipmentid = sm.shipmentid and sm.customer_code=#{customerCode}
+        inner join xms_tbl_shipment_type as st on sm.shipment_type_id = st.shipment_type_id
+        where st.serviceid = 59 and a.status in ( 0)  and sm.customer_code = #{customerCode} 	and sm.shipmentid not in ( SELECT shipmentid FROM xms_tbl_batch_processing_detail)
+    </select>
+
+    <select id="countTollIpecConnoteInfo" parameterType="String" resultType="long">
+        select count(sm.shipmentid)
+        from xms_tbl_toll_ipec_connote as a
+        left join xms_tbl_schedule_collection as sc on sc.shipmentid = a.shipmentid
+        inner join xms_tbl_shipment as sm on a.shipmentid = sm.shipmentid and sm.customer_code=#{customerCode}
+        inner join xms_tbl_shipment_type as st on sm.shipment_type_id = st.shipment_type_id
+        where st.serviceid = 59 and a.status in ( 0)  and sm.customer_code = #{customerCode} 	and sm.shipmentid not in ( SELECT shipmentid FROM xms_tbl_batch_processing_detail)
+    </select>
+
+</mapper>

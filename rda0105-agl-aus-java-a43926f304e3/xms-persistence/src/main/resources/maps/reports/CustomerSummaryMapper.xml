@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerSummary">
+    <select id="selectByFilter" parameterType="CustomerSummaryFilter" resultType="map">
+        select
+        s.customer_code,
+        ca.customer_name,
+        u.display_name as sales_rep_name,
+        <if test="excludeDuty">
+            <if test="excludeGst">
+                sum(cust_cost-cust_sc_cost) as cust_cost,
+                sum(fran_cost-fran_sc_cost) as fran_cost,
+                sum(carrier_cost-carrier_sc_cost) as carrier_cost,
+                sum((cust_cost-cust_sc_cost)-(fran_cost-fran_sc_cost)) as gross_margin,
+                sum((cust_cost-cust_sc_cost)-(fran_cost-fran_sc_cost))*100/sum(cust_cost-cust_sc_cost) as
+                gross_margin_pct,
+                <foreach item="carrier" collection="carriers">
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),cust_cost-cust_sc_cost,0)) as
+                    cust_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),fran_cost-fran_sc_cost,0)) as
+                    fran_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in
+                    (${serviceList}),carrier_cost-carrier_sc_cost,0)) as carrier_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in
+                    (${serviceList}),(cust_cost-cust_sc_cost)-(fran_cost-fran_sc_cost),0)) as gross_margin_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),shipment_count,0)) as
+                    shipment_count_${carrier},
+                </foreach>
+                sum((cust_cost-cust_sc_cost)-(fran_cost-fran_sc_cost))/sum(shipment_count) as avg_margin_per_awb,
+            </if>
+            <if test="!excludeGst">
+                sum(cust_cost+cust_tax-cust_sc_cost-cust_sc_tax) as cust_cost,
+                sum(fran_cost+fran_tax-fran_sc_cost-fran_sc_tax) as fran_cost,
+                sum(carrier_cost+carrier_tax-carrier_sc_cost-carrier_sc_tax) as carrier_cost,
+                sum((cust_cost+cust_tax-cust_sc_cost-cust_sc_tax)-(fran_cost+fran_tax-fran_sc_cost-fran_sc_tax)) as
+                gross_margin,
+                sum((cust_cost+cust_tax-cust_sc_cost-cust_sc_tax)-(fran_cost+fran_cost-fran_sc_cost-fran_sc_tax))*100/sum(cust_cost+cust_tax-cust_sc_cost-cust_sc_tax)
+                as gross_margin_pct,
+                <foreach item="carrier" collection="carriers">
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in
+                    (${serviceList}),cust_cost+cust_tax-cust_sc_cost-cust_sc_tax,0)) as cust_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in
+                    (${serviceList}),fran_cost+fran_tax-fran_sc_cost-fran_sc_tax,0)) as fran_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in
+                    (${serviceList}),carrier_cost+carrier_tax-carrier_sc_cost-carrier_sc_tax,0)) as
+                    carrier_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in
+                    (${serviceList}),(cust_cost+cust_tax-cust_sc_cost-cust_sc_tax)-(fran_cost+fran_tax-fran_sc_cost-fran_sc_tax),0))
+                    as gross_margin_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),shipment_count,0)) as
+                    shipment_count_${carrier},
+                </foreach>
+                sum((cust_cost+cust_tax-cust_sc_cost-cust_sc_tax)-(fran_cost+fran_tax-fran_sc_cost-fran_sc_tax))/sum(shipment_count)
+                as avg_margin_per_awb,
+            </if>
+        </if>
+        <if test="!excludeDuty">
+            <if test="excludeGst">
+                sum(cust_cost) as cust_cost,
+                sum(fran_cost) as fran_cost,
+                sum(carrier_cost) as carrier_cost,
+                sum(cust_cost-fran_cost) as gross_margin,
+                sum(cust_cost-fran_cost)*100/sum(cust_cost) as gross_margin_pct,
+                <foreach item="carrier" collection="carriers">
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),cust_cost,0)) as
+                    cust_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),fran_cost,0)) as
+                    fran_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),carrier_cost,0)) as
+                    carrier_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),cust_cost-fran_cost,0)) as
+                    gross_margin_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),shipment_count,0)) as
+                    shipment_count_${carrier},
+                </foreach>
+                sum(cust_cost-fran_cost)/sum(shipment_count) as avg_margin_per_awb,
+            </if>
+            <if test="!excludeGst">
+                sum(cust_cost+cust_tax) as cust_cost,
+                sum(fran_cost+fran_tax) as fran_cost,
+                sum(carrier_cost+carrier_tax) as carrier_cost,
+                sum(cust_cost+cust_tax-fran_cost-fran_tax) as gross_margin,
+                sum(cust_cost+cust_tax-fran_cost-fran_tax)*100/sum(cust_cost+cust_tax) as gross_margin_pct,
+                <foreach item="carrier" collection="carriers">
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),cust_cost+cust_tax,0)) as
+                    cust_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),fran_cost+fran_tax,0)) as
+                    fran_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),carrier_cost+carrier_tax,0))
+                    as carrier_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in
+                    (${serviceList}),cust_cost+cust_tax-fran_cost-fran_tax,0)) as gross_margin_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),shipment_count,0)) as
+                    shipment_count_${carrier},
+                </foreach>
+                sum(cust_cost+cust_tax-fran_cost-fran_tax)/sum(shipment_count) as avg_margin_per_awb,
+            </if>
+        </if>
+        sum(cust_bc_cost) as cust_bc_cost,
+        sum(fran_bc_cost) as fran_bc_cost,
+        sum(carrier_bc_cost) as carrier_bc_cost,
+        sum(cust_bc_cost-fran_bc_cost) as margin_on_bc,
+        sum(shipment_count) as total_shipment_count
+        from tmp_xms_tbl_customer_summary as s
+        inner join xms_tbl_customer_address as ca on ca.customer_code = s.customer_code
+        inner join xms_tbl_user as u on u.userid = s.sales_rep_id
+        where s.rpt_txn_id = #{rptTxnId}
+        group by s.customer_code
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countByFilter" parameterType="CustomerSummaryFilter" resultType="long">
+        select count(*) from
+        (select customer_code from tmp_xms_tbl_customer_summary
+        where rpt_txn_id = #{rptTxnId}
+        group by customer_code) as r
+    </select>
+
+    <select id="sumByFilter" parameterType="CustomerSummaryFilter" resultType="map">
+        select
+        <if test="excludeDuty">
+            <if test="excludeGst">
+                sum(cust_cost-cust_sc_cost) as cust_cost,
+                sum(fran_cost-fran_sc_cost) as fran_cost,
+                sum(carrier_cost-carrier_sc_cost) as carrier_cost,
+                sum((cust_cost-cust_sc_cost)-(fran_cost-fran_sc_cost)) as gross_margin,
+                sum((cust_cost-cust_sc_cost)-(fran_cost-fran_sc_cost))*100/sum(cust_cost-cust_sc_cost) as
+                gross_margin_pct,
+                <foreach item="carrier" collection="carriers">
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),cust_cost-cust_sc_cost,0)) as
+                    cust_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),fran_cost-fran_sc_cost,0)) as
+                    fran_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in
+                    (${serviceList}),carrier_cost-carrier_sc_cost,0)) as carrier_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in
+                    (${serviceList}),(cust_cost-cust_sc_cost)-(fran_cost-fran_sc_cost),0)) as gross_margin_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),shipment_count,0)) as
+                    shipment_count_${carrier},
+                </foreach>
+                sum((cust_cost-cust_sc_cost)-(fran_cost-fran_sc_cost))/sum(shipment_count) as avg_margin_per_awb,
+            </if>
+            <if test="!excludeGst">
+                sum(cust_cost+cust_tax-cust_sc_cost-cust_sc_tax) as cust_cost,
+                sum(fran_cost+fran_tax-fran_sc_cost-fran_sc_tax) as fran_cost,
+                sum(carrier_cost+carrier_tax-carrier_sc_cost-carrier_sc_tax) as carrier_cost,
+                sum((cust_cost+cust_tax-cust_sc_cost-cust_sc_tax)-(fran_cost+fran_tax-fran_sc_cost-fran_sc_tax)) as
+                gross_margin,
+                sum((cust_cost+cust_tax-cust_sc_cost-cust_sc_tax)-(fran_cost+fran_cost-fran_sc_cost-fran_sc_tax))*100/sum(cust_cost+cust_tax-cust_sc_cost-cust_sc_tax)
+                as gross_margin_pct,
+                <foreach item="carrier" collection="carriers">
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in
+                    (${serviceList}),cust_cost+cust_tax-cust_sc_cost-cust_sc_tax,0)) as cust_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in
+                    (${serviceList}),fran_cost+fran_tax-fran_sc_cost-fran_sc_tax,0)) as fran_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in
+                    (${serviceList}),carrier_cost+carrier_tax-carrier_sc_cost-carrier_sc_tax,0)) as
+                    carrier_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in
+                    (${serviceList}),(cust_cost+cust_tax-cust_sc_cost-cust_sc_tax)-(fran_cost+fran_tax-fran_sc_cost-fran_sc_tax),0))
+                    as gross_margin_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),shipment_count,0)) as
+                    shipment_count_${carrier},
+                </foreach>
+                sum((cust_cost+cust_tax-cust_sc_cost-cust_sc_tax)-(fran_cost+fran_tax-fran_sc_cost-fran_sc_tax))/sum(shipment_count)
+                as avg_margin_per_awb,
+            </if>
+        </if>
+        <if test="!excludeDuty">
+            <if test="excludeGst">
+                sum(cust_cost) as cust_cost,
+                sum(fran_cost) as fran_cost,
+                sum(carrier_cost) as carrier_cost,
+                sum(cust_cost-fran_cost) as gross_margin,
+                sum(cust_cost-fran_cost)*100/sum(cust_cost) as gross_margin_pct,
+                <foreach item="carrier" collection="carriers">
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),cust_cost,0)) as
+                    cust_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),fran_cost,0)) as
+                    fran_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),carrier_cost,0)) as
+                    carrier_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),cust_cost-fran_cost,0)) as
+                    gross_margin_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),shipment_count,0)) as
+                    shipment_count_${carrier},
+                </foreach>
+                sum(cust_cost-fran_cost)/sum(shipment_count) as avg_margin_per_awb,
+            </if>
+            <if test="!excludeGst">
+                sum(cust_cost+cust_tax) as cust_cost,
+                sum(fran_cost+fran_tax) as fran_cost,
+                sum(carrier_cost+carrier_tax) as carrier_cost,
+                sum(cust_cost+cust_tax-fran_cost-fran_tax) as gross_margin,
+                sum(cust_cost+cust_tax-fran_cost-fran_tax)*100/sum(cust_cost+cust_tax) as gross_margin_pct,
+                <foreach item="carrier" collection="carriers">
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),cust_cost+cust_tax,0)) as
+                    cust_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),fran_cost+fran_tax,0)) as
+                    fran_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),carrier_cost+carrier_tax,0))
+                    as carrier_cost_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in
+                    (${serviceList}),cust_cost+cust_tax-fran_cost-fran_tax,0)) as gross_margin_${carrier},
+                    sum(if(carrier_id=#{carrier} and shipment_type_id in (${serviceList}),shipment_count,0)) as
+                    shipment_count_${carrier},
+                </foreach>
+                sum(cust_cost+cust_tax-fran_cost-fran_tax)/sum(shipment_count) as avg_margin_per_awb,
+            </if>
+        </if>
+        sum(cust_bc_cost) as cust_bc_cost,
+        sum(fran_bc_cost) as fran_bc_cost,
+        sum(carrier_bc_cost) as carrier_bc_cost,
+        sum(cust_bc_cost-fran_bc_cost) as margin_on_bc,
+        sum(shipment_count) as total_shipment_count
+        from tmp_xms_tbl_customer_summary
+        where rpt_txn_id = #{rptTxnId}
+    </select>
+
+    <insert id="prepareDataForCustomerSummary" parameterType="CustomerSummaryFilter">
+        <![CDATA[
+		insert into tmp_xms_tbl_customer_summary
+		select 
+			#{rptTxnId},
+			sm.customer_code,
+		    sm.sales_rep_id,
+		    sm.carrier,
+		    sm.shipment_type_id,
+		    sum(sbb.customer_cost) as cust_cost,
+		    sum(sbb.customer_tax_amount) as cust_tax,
+		    sum(sbb.franchise_cost) as fran_cost,
+		    sum(sbb.franchise_tax_amount) as fran_tax,
+		    sum(sbb.carrier_cost) as carrier_cost,
+		    sum(sbb.tax_amount) as carrier_tax,
+		    sum(if(sbb.accessorial_count=0,1,0)) as shipment_count,
+		    sum(if(sbb.accessorial_count=0,sbb.customer_cost,0)) as cust_bc_cost,
+			sum(if(sbb.accessorial_count=0,sbb.customer_tax_amount,0)) as cust_bc_tax,
+			sum(if(sbb.accessorial_count=0,sbb.franchise_cost,0)) as fran_bc_cost,
+			sum(if(sbb.accessorial_count=0,sbb.franchise_tax_amount,0)) as fran_bc_tax,
+			sum(if(sbb.accessorial_count=0,sbb.carrier_cost,0)) as carrier_bc_cost,
+			sum(if(sbb.accessorial_count=0,sbb.tax_amount,0)) as carrier_bc_tax,
+			sum(if(sbb.accessorial_count!=0
+				and (sbb.display_description like '%Duties%' 
+					or sbb.display_description like '%Duty%'
+					or sbb.display_description like '%Tax%'
+					or sbb.display_description like '%Custom%')
+				,sbb.customer_cost,0)) as cust_sc_cost,
+			sum(if(sbb.accessorial_count!=0
+				and (sbb.display_description like '%Duties%' 
+					or sbb.display_description like '%Duty%'
+					or sbb.display_description like '%Tax%'
+					or sbb.display_description like '%Custom%')
+				,sbb.customer_tax_amount,0)) as cust_sc_tax,
+			sum(if(sbb.accessorial_count!=0
+				and (sbb.display_description like '%Duties%' 
+					or sbb.display_description like '%Duty%'
+					or sbb.display_description like '%Tax%'
+					or sbb.display_description like '%Custom%')
+				,sbb.franchise_cost,0)) as fran_sc_cost,
+			sum(if(sbb.accessorial_count!=0
+				and (sbb.display_description like '%Duties%' 
+					or sbb.display_description like '%Duty%'
+					or sbb.display_description like '%Tax%'
+					or sbb.display_description like '%Custom%')
+				,sbb.franchise_tax_amount,0)) as fran_sc_tax,
+			sum(if(sbb.accessorial_count!=0
+				and (sbb.display_description like '%Duties%' 
+					or sbb.display_description like '%Duty%'
+					or sbb.display_description like '%Tax%'
+					or sbb.display_description like '%Custom%')
+				,sbb.carrier_cost,0)) as carrier_sc_cost,
+			sum(if(sbb.accessorial_count!=0
+				and (sbb.display_description like '%Duties%' 
+					or sbb.display_description like '%Duty%'
+					or sbb.display_description like '%Tax%'
+					or sbb.display_description like '%Custom%')
+				,sbb.tax_amount,0)) as carrier_sc_tax
+		from
+			(select 
+				i.customer_code, 
+				sb.shipmentid, 
+				sb.airbill_number,
+		        c.sales_rep_id,
+		        ifnull(st.shipment_type_id,0) as shipment_type_id,
+		        sb.carrier
+			from 
+				(select customer_code, franchise_code, sales_rep_id from xms_tbl_customer
+				where franchise_code in (${franchiseList})
+			]]>
+        <if test="saleRepId!=null and saleRepId!=''">
+            and sales_rep_id = #{saleRepId}
+        </if>
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code as customer_code, left(franchise_code,3) as franchise_code, sales_rep_id from
+        xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="saleRepId!=null and saleRepId!=''">
+            and sales_rep_id = #{saleRepId}
+        </if>
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        <![CDATA[
+				) as c
+			inner join xms_tbl_invoice as i on i.customer_code = c.customer_code
+			inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+			inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number and sb.accessorial_count=0
+			left join xms_tbl_shipment_type as st on st.shipment_type_name = sb.description and st.serviceid = sb.carrier
+			where i.invoice_date>=date(#{startDate, jdbcType=DATE}) and i.invoice_date<date_add(date(#{endDate, jdbcType=DATE}),interval 1 day)
+			group by customer_code, shipmentid, airbill_number
+		    ) as sm
+		inner join xms_tbl_shipment_billing as sbb on sbb.shipmentid = sm.shipmentid and sbb.airbill_number = sm.airbill_number
+		group by sm.customer_code, sm.carrier, sm.shipment_type_id
+		]]>
+    </insert>
+</mapper>

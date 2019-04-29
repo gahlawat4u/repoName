@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="User">
+    <resultMap id="UserResultMap" type="UserVo">
+        <id column="userid" property="userId"/>
+        <result column="user_code" property="userCode"/>
+        <result column="user_name" property="userName"/>
+        <result column="password" property="password"/>
+        <result column="user_level_id" property="userLevelId"/>
+        <result column="display_name" property="displayName"/>
+        <result column="email" property="email"/>
+        <result column="phone" property="phone"/>
+        <result column="fax" property="fax"/>
+        <result column="isrequirechangepassword" property="isRequireChangePassword"/>
+        <result column="iscollector" property="isCollector"/>
+        <result column="last_change" property="lastChange"/>
+        <result column="parent_user_id" property="parentUserId"/>
+        <result column="language" property="language"/>
+        <result column="target_phone_call" property="targetPhoneCall"/>
+        <result column="overdue_day" property="overdueDay"/>
+        <result column="target_success" property="targetSuccess"/>
+        <result column="user_level_code" property="userLevelCode"/>
+    </resultMap>
+    <select id="checkLogin" parameterType="UserVo" resultMap="UserResultMap">
+        select * from xms_tbl_user
+        where user_code = #{userCode} and user_name = #{userName} and password = #{password}
+        limit 1
+    </select>
+    <select id="getUserById" resultMap="UserResultMap" parameterType="string">
+        select * from xms_tbl_user as u
+        inner join xms_tbl_user_level as ul on ul.user_level_id = u.user_level_id
+        where u.userid = #{userId}
+    </select>
+
+    <select id="getCollectors" resultMap="UserResultMap">
+        select userid, user_code, user_name, display_name from xms_tbl_user
+        where iscollector = 1 order by display_name
+    </select>
+
+    <select id="getCollectorsByFranchises" resultMap="UserResultMap" parameterType="string">
+        select userid, user_code, user_name, display_name from xms_tbl_user
+        where iscollector = 1 and left(user_code,3) in (${_parameter})
+        order by display_name
+    </select>
+
+    <select id="getSaleRepsByFranchises" resultMap="UserResultMap" parameterType="string">
+        select userid, user_code, user_name, display_name from xms_tbl_user
+        where left(user_code,3) in (${_parameter})
+        order by display_name
+    </select>
+
+    <select id="getSaleReps" resultMap="UserResultMap" parameterType="list">
+        select userid, user_code, user_name, display_name from xms_tbl_user
+        where left(user_code,3) in
+        <foreach item="franchiseCode" index="index" collection="list" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        order by display_name
+    </select>
+
+    <select id="selectByFilter" resultMap="UserResultMap"
+            parameterType="com.gms.xms.filter.account.users.manage.UserFilter">
+        select u.*, ul.user_level_code from xms_tbl_user as u
+        inner join xms_tbl_user_level as ul on ul.user_level_id = u.user_level_id
+        where left(u.user_code,3) in (${franchiseList})
+        and ul.user_level_code >= (select ul1.user_level_code from xms_tbl_user_level as ul1
+        inner join xms_tbl_user as u1 on u1.user_level_id = ul1.user_level_id
+        where u1.userid = #{userId})
+        <if test="userCode!=null and userCode!=''">
+            and left(u.user_code,3) LIKE '${userCode}%'
+        </if>
+        <if test="userLevelId!=null">
+            and u.user_level_id = #{userLevelId}
+        </if>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countByFilter" parameterType="com.gms.xms.filter.account.users.manage.UserFilter" resultType="long">
+        select count(*) from xms_tbl_user as u
+        inner join xms_tbl_user_level as ul on ul.user_level_id = u.user_level_id
+        where left(u.user_code,3) in (${franchiseList})
+        and ul.user_level_code >= (select ul1.user_level_code from xms_tbl_user_level as ul1
+        inner join xms_tbl_user as u1 on u1.user_level_id = ul1.user_level_id
+        where u1.userid = #{userId})
+        <if test="userCode!=null and userCode!=''">
+            and left(u.user_code,3) LIKE '${userCode}%'
+        </if>
+        <if test="userLevelId!=null">
+            and u.user_level_id = #{userLevelId}
+        </if>
+    </select>
+
+    <insert id="insert" parameterType="UserVo" useGeneratedKeys="true" keyProperty="userId">
+        insert into xms_tbl_user
+        (user_code, user_name, password, user_level_id, display_name, email, phone, fax, isrequirechangepassword,
+        iscollector, language, target_phone_call, overdue_day, target_success, last_change)
+        values (#{userCode}, #{userName}, #{password}, #{userLevelId}, #{displayName}, #{email}, #{phone}, #{fax},
+        #{isRequireChangePassword},
+        #{isCollector}, #{language}, #{targetPhoneCall}, #{overdueDay}, #{targetSuccess}, #{lastChange})
+    </insert>
+
+    <update id="update" parameterType="UserVo">
+        update xms_tbl_user
+        <set>
+            <if test="userCode!=null and userCode!=''">
+                user_code = #{userCode},
+            </if>
+            <if test="userName!=null and userName!=''">
+                user_name = #{userName},
+            </if>
+            <if test="password!=null and password!=''">
+                password = #{password},
+            </if>
+            <if test="userLevelId!=null">
+                user_level_id = #{userLevelId},
+            </if>
+            <if test="displayName!=null and displayName!=''">
+                display_name = #{displayName},
+            </if>
+            <if test="email!=null and email!=''">
+                email = #{email},
+            </if>
+            <if test="phone!=null and phone!=''">
+                phone = #{phone},
+            </if>
+            <if test="fax!=null and fax!=''">
+                fax = #{fax},
+            </if>
+            <if test="isCollector!=null">
+                iscollector = #{isCollector},
+            </if>
+            <if test="isRequireChangePassword!=null">
+                isrequirechangepassword = #{isRequireChangePassword},
+            </if>
+            <if test="language!=null">
+                language = #{language},
+            </if>
+            <if test="lastChange!=null">
+                last_change = #{lastChange},
+            </if>
+            <if test="parentUserId!=null">
+                parent_user_id = #{parentUserId},
+            </if>
+            <if test="targetPhoneCall!=null">
+                target_phone_call = #{targetPhoneCall},
+            </if>
+            <if test="overdueDay!=null">
+                overdue_day = #{overdueDay},
+            </if>
+            <if test="targetSuccess!=null">
+                target_success = #{targetSuccess},
+            </if>
+        </set>
+        where userid = #{userId}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="UserVo" resultMap="UserResultMap">
+        select * from xms_tbl_user
+        where userid = #{userId}
+    </select>
+
+
+    <delete id="deleteById" parameterType="long">
+        delete from xms_tbl_user
+        where userid = #{userId}
+    </delete>
+
+    <select id="deleteById_SelectForLog" parameterType="long" resultMap="UserResultMap">
+        select * from xms_tbl_user
+        where userid = #{userId}
+    </select>
+
+    <select id="getRemainingSaleRepsByFranchises" resultMap="UserResultMap" parameterType="string">
+        select
+        u.*
+        from xms_tbl_user as u
+        inner join
+        (select distinct sales_rep_id from xms_tbl_customer
+        where sales_rep_id!=0 and sales_rep_id not in (select userid from xms_tbl_sales_rep)
+        union
+        select distinct sales_rep_id from xms_tbl_franchise
+        where sales_rep_id!=0 and sales_rep_id not in (select userid from xms_tbl_sales_rep)
+        ) as sr on sr.sales_rep_id = u.userid
+        where left(u.user_code,3) in (${_parameter})
+        order by u.user_code, u.display_name
+    </select>
+    <select id="getExistingSalesReps" resultMap="UserResultMap"
+            parameterType="com.gms.xms.filter.admin.payables.salesrep.SalesRepSettingFilter">
+        select
+        u.*
+        from xms_tbl_user as u
+        inner join
+        (select distinct sales_rep_id from xms_tbl_customer
+        where sales_rep_id!=0 and sales_rep_id not in (select userid from xms_tbl_sales_rep)
+        union
+        select distinct sales_rep_id from xms_tbl_franchise
+        where sales_rep_id!=0 and sales_rep_id not in (select userid from xms_tbl_sales_rep)
+        ) as sr on sr.sales_rep_id = u.userid
+        <if test="userLevel==6">
+            and sr.sales_rep_id = #{userId}
+        </if>
+        where left(u.user_code,3) in (${franchiseList})
+        order by u.user_code, u.display_name
+    </select>
+    <select id="getGenerateReportUsers" resultMap="UserResultMap" parameterType="string">
+        <![CDATA[
+		select 
+			u.*
+		from xms_tbl_sales_rep as sr 
+		left join xms_tbl_user as u on sr.userid=u.userid 
+		where date(sr.hire_date)<= curdate() 
+			and (sr.terminate_date > curdate() or date(sr.terminate_date)='0000-00-00' or sr.terminate_date is null) 
+		    and left(u.user_code,3) in (${_parameter})
+		order by left(u.user_code,3), u.display_name
+		]]>
+    </select>
+    <select id="getGenerateReportSalesReps" resultMap="UserResultMap"
+            parameterType="com.gms.xms.filter.admin.payables.salesrep.SalesRepSettingFilter">
+        <![CDATA[
+		select 
+			u.*
+		from xms_tbl_sales_rep as sr 
+		left join xms_tbl_user as u on sr.userid=u.userid 
+		where date(sr.hire_date)<= curdate() 
+			and (sr.terminate_date > curdate() or date(sr.terminate_date)='0000-00-00' or sr.terminate_date is null) 
+		    and left(u.user_code,3) in (${franchiseList})
+		]]>
+        <if test="userLevel==6">
+            and sr.sales_rep_id = #{userId}
+        </if>
+        order by u.user_code, u.display_name
+    </select>
+    <select id="getByParentId" parameterType="long" resultType="long">
+        <bind name="parentUserId" value="_parameter"/>
+        select userid from xms_tbl_user
+        where parent_user_id = #{parentUserId}
+    </select>
+</mapper>

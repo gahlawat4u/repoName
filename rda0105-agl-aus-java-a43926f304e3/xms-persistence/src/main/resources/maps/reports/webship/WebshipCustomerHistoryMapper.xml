@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="WebshipCustomerHistory">
+    <select id="getWebshipCustomerHistoryReport"
+            parameterType="com.gms.xms.filter.reports.webship.WebshipCustomerHistoryFilter" resultType="map">
+        select
+        customer_code,
+        customer_name,
+        sale_rep_name,
+        <foreach item="period" collection="periodList" open="" close="" separator="," index="i">
+            sum(if(period = #{period,jdbcType=DATE}, shipment_count, 0)) as d_${i+1}
+        </foreach>
+        from tmp_webship_customer_history_report
+        where rpt_txn_id = #{rptTxnId}
+        group by customer_code
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countWebshipCustomerHistoryReport"
+            parameterType="com.gms.xms.filter.reports.webship.WebshipCustomerHistoryFilter" resultType="long">
+        select
+        count(*)
+        from
+        (select
+        rpt_txn_id,
+        customer_code
+        from tmp_webship_customer_history_report
+        where rpt_txn_id = #{rptTxnId}
+        group by customer_code) as r
+    </select>
+
+    <select id="checkWebshipCustomerHistoryReport"
+            parameterType="com.gms.xms.filter.reports.webship.WebshipCustomerHistoryFilter" resultType="long">
+        select
+        count(*)
+        from tmp_webship_customer_history_period
+        where rpt_txn_id = #{rptTxnId}
+    </select>
+
+    <insert id="prepareWebshipCustomerHistoryPeriod"
+            parameterType="com.gms.xms.filter.reports.webship.WebshipCustomerHistoryFilter">
+        insert into tmp_webship_customer_history_period
+        (
+        rpt_txn_id,
+        period
+        )
+        values
+        <foreach item="period" collection="periodList" open="" close="" separator=",">
+            (#{rptTxnId},#{period,jdbcType=DATE})
+        </foreach>
+    </insert>
+
+    <insert id="prepareWebshipCustomerHistoryReport"
+            parameterType="com.gms.xms.filter.reports.webship.WebshipCustomerHistoryFilter">
+        <![CDATA[
+		insert into tmp_webship_customer_history_report
+		(
+			rpt_txn_id,
+			customer_code,
+			customer_name,
+			sale_rep_name,
+			period,
+			shipment_count
+		)
+		select 
+			#{rptTxnId},
+			c.customer_code,
+			ca.customer_name,
+			u.display_name as sale_rep_name,
+			p.period,
+			ifnull(sm.shipment_count,0) as shipment_count
+		from
+			(select 
+				sm.customer_code
+			from xms_tbl_shipment as sm
+			left join xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+			where sm.status=0 and sm.webshipid!=0
+				and sm.create_date >= #{startDate,jdbcType=DATE} and sm.create_date < date_add(#{endDate,jdbcType=DATE},interval 1 day)
+				and left(sm.customer_code,3) in (${franchiseList})
+		]]>
+        <if test="carrierId!=null and carrierId!=''">
+            and st.serviceid = #{carrierId}
+        </if>
+        <if test="serviceId!=null and serviceId!=''">
+            and st.shipment_type_id = #{serviceId}
+        </if>
+        <![CDATA[
+			group by customer_code
+			) as c
+		cross join 
+			(select period from tmp_webship_customer_history_period
+			where rpt_txn_id = #{rptTxnId}
+			) as p
+		inner join xms_tbl_customer_address as ca on ca.customer_code = c.customer_code
+		inner join xms_tbl_customer as s on s.customer_code = c.customer_code
+		inner join xms_tbl_user as u on u.userid = s.sales_rep_id
+		left join 
+			(select 
+				sm.customer_code,
+		]]>
+        <if test="periodType==1">
+            date(sm.create_date) as period,
+        </if>
+        <if test="periodType==2">
+            date_sub(date(sm.create_date),interval weekday(sm.create_date) day) as period,
+        </if>
+        <![CDATA[
+				count(*) as shipment_count
+			from xms_tbl_shipment as sm 
+			left join xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+			where sm.status=0 and sm. webshipid!=0
+				and sm.create_date >= #{startDate,jdbcType=DATE} and sm.create_date < date_add(#{endDate,jdbcType=DATE},interval 1 day)
+				and left(sm.customer_code,3) in (${franchiseList})
+		]]>
+        <if test="carrierId!=null and carrierId!=''">
+            and st.serviceid = #{carrierId}
+        </if>
+        <if test="serviceId!=null and serviceId!=''">
+            and st.shipment_type_id = #{serviceId}
+        </if>
+        group by customer_code, period
+        ) as sm on sm.customer_code = c.customer_code and sm.period = p.period
+        order by customer_code, period
+    </insert>
+</mapper>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="DhlCountry">
+    <resultMap id="DhlCountry" type="DhlCountryVo">
+        <id column="dhl_countryid" property="dhlCountryId"/>
+        <result column="dhl_ap_code" property="dhlApCode"/>
+        <result column="dhl_ap_zone" property="dhlApZone"/>
+        <result column="dhl_countryname" property="dhlCountryName"/>
+        <result column="dhl_region" property="dhlRegion"/>
+        <result column="dhl_timezone" property="dhlTimeZone"/>
+        <result column="is_elevated_risk" property="isElevatedRisk"/>
+        <result column="is_restricted_destination" property="isRestrictedDestination"/>
+    </resultMap>
+    <select id="selectAll" resultMap="DhlCountry" parameterType="com.gms.xms.filter.admin.SystemStatsListFilter">
+        SELECT * from xms_tbl_dhl_country
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectCountAll" resultType="long" parameterType="com.gms.xms.filter.admin.SystemStatsListFilter">
+        SELECT count(*) from xms_tbl_dhl_country
+    </select>
+
+    <select id="selectDhlCountryByCountryName" parameterType="String" resultMap="DhlCountry">
+        SELECT
+        *
+        FROM
+        xms_tbl_dhl_country
+        WHERE
+        dhl_countryname = #{dhlCountryName}
+    </select>
+
+    <insert id="insert" parameterType="DhlCountryVo">
+        INSERT INTO `xms_tbl_dhl_country` (`dhl_countryid`, `dhl_ap_code`, `dhl_ap_zone`, `dhl_countryname`,
+        `dhl_region`, `dhl_timezone`) VALUES (NULL, #{dhlApCode}, '0', #{dhlCountryName}, #{dhlRegion}, #{dhlTimeZone});
+    </insert>
+
+    <update id="update" parameterType="DhlCountryVo">
+        UPDATE xms_tbl_dhl_country SET dhl_ap_code=#{dhlApCode}, `dhl_region`=#{dhlRegion},`dhl_timezone`=
+        #{dhlTimeZone} WHERE dhl_countryname=#{dhlCountryName}
+    </update>
+
+    <select id="selectDhlCountryByDhlCountryId" parameterType="long" resultMap="DhlCountry">
+        select * from xms_tbl_dhl_country
+        where dhl_countryid = #{dhlCountryId}
+    </select>
+
+    <select id="selectDhlCountryByCountryCode" parameterType="string" resultMap="DhlCountry">
+        select dc.* from xms_tbl_dhl_country dc
+        inner join xms_tbl_country c on dc.dhl_ap_code = c.countrycode
+        where c.countrycode = #{countryCode}
+        limit 1
+    </select>
+
+    <select id="selectDhlCountryByApCode" parameterType="string" resultMap="DhlCountry">
+        select * from xms_tbl_dhl_country
+        where dhl_ap_code = #{dhlApCode}
+        limit 1
+    </select>
+
+    <select id="selectDhlCountryByName" parameterType="string" resultMap="DhlCountry">
+        select * from xms_tbl_dhl_country
+        where dhl_countryname = #{dhlCountryName}
+        limit 1
+    </select>
+    <select id="getDhlCountryZones" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsFilter"
+            resultMap="DhlCountry">
+        select * from xms_tbl_dhl_country
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="pageSize!=null and page!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+    <select id="countDhlCountryZones" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsFilter"
+            resultType="long">
+        select count(*) from xms_tbl_dhl_country
+    </select>
+</mapper>

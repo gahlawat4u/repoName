@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="EmailAddressInfo">
+    <resultMap id="EmailAddressInfoMap" type="com.gms.xms.dto.email.EmailAddressInfoVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="email" property="email"/>
+        <result column="phone" property="phone"/>
+        <result column="franchise_code" property="franchiseCode"/>
+        <result column="franchise_name" property="franchiseName"/>
+        <result column="franchise_email" property="franchiseEmail"/>
+        <result column="franchise_phone" property="franchisePhone"/>
+    </resultMap>
+
+    <select id="getEmailAddressInfoByCustCode" parameterType="string" resultMap="EmailAddressInfoMap">
+        select
+        c.customer_code,
+        c.customer_name,
+        c.email,
+        c.phone,
+        f.customer_code as franchise_code,
+        f.customer_name as franchise_name,
+        f.email as franchise_email,
+        f.phone as franchise_phone
+        from xms_tbl_customer_address as c
+        left join xms_tbl_customer_address as f on f.customer_code = concat(left(c.customer_code,3),'00001')
+        where c.customer_code = #{customerCode}
+    </select>
+
+    <select id="getAdminEmailListByName" parameterType="string" resultType="string">
+        select distinct email from xms_tbl_admin_email as a
+        inner join xms_tbl_admin_email_setting as e on a.id = e.admin_email_id
+        inner join xms_tbl_email_setting as s on s.id = e.email_setting_id
+        where s.name = #{name}
+        and e.status = 1
+    </select>
+</mapper>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Startrack">
+    <resultMap id="StartrackZoneMap" type="StartrackZoneVo">
+        <result column="startrack_zone_id" property="startrackZoneId"/>
+        <result column="post_code" property="postCode"/>
+        <result column="city_name" property="cityName"/>
+        <result column="direct_zone" property="directZone"/>
+        <result column="ofwd_zone" property="ofwdZone"/>
+        <result column="origin_location" property="originLocation"/>
+    </resultMap>
+
+    <select id="selectStartrackZone" parameterType="StartrackZoneVo" resultMap="StartrackZoneMap">
+        select
+        *
+        from
+        xms_tbl_startrack_zone
+        where origin_location = #{originLocation}
+        and post_code = #{postCode}
+        and city_name = #{cityName}
+    </select>
+</mapper>

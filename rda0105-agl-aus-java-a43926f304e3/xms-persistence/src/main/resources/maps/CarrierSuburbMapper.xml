@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CarrierSuburb">
+    <resultMap id="CarrierSuburbMap" type="CarrierSuburbVo">
+        <result column="suburb_name" property="suburbName"/>
+        <result column="state_code" property="stateCode"/>
+        <result column="post_code" property="postCode"/>
+        <result column="carrier" property="carrier"/>
+        <result column="primary_port" property="primaryPort"/>
+        <result column="secondary_port" property="secondaryPort"/>
+        <result column="country_flag" property="countryFlag"/>
+    </resultMap>
+    <select id="selectCountrCarrierSuburbBySuburdNameAndPostCode" resultType="int" parameterType="CarrierSuburbFilter">
+        select count(*) from xms_tbl_carrier_suburb
+        where suburb_name = #{suburbName} and post_code = #{postCode}
+    </select>
+    <select id="getTntSuburbs" resultMap="CarrierSuburbMap"
+            parameterType="com.gms.xms.filter.admin.systemstats.SysStatsFilter">
+        select * from xms_tbl_carrier_suburb
+        where carrier = 3
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+    <select id="countTntSuburbs" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsFilter" resultType="long">
+        select count(*) from xms_tbl_carrier_suburb
+        where carrier = 3
+    </select>
+    <insert id="insertCarrierSuburb" parameterType="CarrierSuburbVo">
+        insert into xms_tbl_carrier_suburb (suburb_name, state_code, post_code, carrier, primary_port, secondary_port,
+        country_flag)
+        values (#{suburbName}, #{stateCode}, #{postCode}, #{carrier}, #{primaryPort}, #{secondaryPort}, #{countryFlag})
+    </insert>
+</mapper>

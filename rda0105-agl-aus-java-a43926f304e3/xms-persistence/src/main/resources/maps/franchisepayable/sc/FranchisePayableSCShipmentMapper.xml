@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FranchisePayableSCShipment">
+    <resultMap id="FranchisePayableSCShipmentMap" type="FranchisePayableSCShipmentVo">
+        <result column="import_date" property="importDate"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="is_domestic" property="isDomestic"/>
+        <result column="is_taxable_shipment" property="isTaxableShipment"/>
+        <result column="cust_cost" property="custCost"/>
+        <result column="cust_tax" property="custTax"/>
+        <result column="cust_marginable" property="custMarginable"/>
+        <result column="cust_marginable_tax" property="custMarginableTax"/>
+        <result column="fran_cost" property="franCost"/>
+        <result column="fran_tax" property="franTax"/>
+        <result column="gross_margin" property="grossMargin"/>
+        <result column="gross_margin_tax" property="grossMarginTax"/>
+        <result column="fran_credit" property="franCredit"/>
+        <result column="cust_credit" property="custCredit"/>
+        <result column="management_fee" property="managementFee"/>
+        <result column="marketing_fee" property="marketingFee"/>
+        <result column="profit_share" property="profitShare"/>
+    </resultMap>
+
+    <resultMap id="FranchisePayableSCShipmentTotalMap" type="FranchisePayableSCShipmentTotalVo">
+        <result column="cust_cost" property="custCost"/>
+        <result column="cust_tax" property="custTax"/>
+        <result column="cust_marginable" property="custMarginable"/>
+        <result column="cust_marginable_tax" property="custMarginableTax"/>
+        <result column="fran_cost" property="franCost"/>
+        <result column="fran_tax" property="franTax"/>
+        <result column="gross_margin" property="grossMargin"/>
+        <result column="gross_margin_tax" property="grossMarginTax"/>
+        <result column="fran_credit" property="franCredit"/>
+        <result column="cust_credit" property="custCredit"/>
+        <result column="management_fee" property="managementFee"/>
+        <result column="marketing_fee" property="marketingFee"/>
+        <result column="profit_share" property="profitShare"/>
+        <result column="taxable_shipment_count" property="taxableShipmentCount"/>
+        <result column="non_taxable_shipment_count" property="nonTaxableShipmentCount"/>
+    </resultMap>
+
+    <!-- Shipment details (Service Charge) -->
+    <select id="getShipmentDetails" parameterType="FranchisePayableFilter" resultMap="FranchisePayableSCShipmentMap">
+        SELECT * FROM tmp_xms_tbl_fran_rab_shipment_detail
+        WHERE rpt_txn_id = #{rptTxnId}
+        and left(customer_code,3) in
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        <if test="startRecord!=null and recordSize!=null">
+            LIMIT #{startRecord}, #{recordSize}
+        </if>
+    </select>
+
+    <select id="getShipmentDetailsTotal" parameterType="FranchisePayableFilter"
+            resultMap="FranchisePayableSCShipmentTotalMap">
+        SELECT
+        SUM(cust_cost) AS cust_cost,
+        SUM(cust_tax) AS cust_tax,
+        SUM(cust_marginable) AS cust_marginable,
+        SUM(cust_marginable_tax) AS cust_marginable_tax,
+        SUM(fran_cost) AS fran_cost,
+        SUM(fran_tax) AS fran_tax,
+        SUM(gross_margin) AS gross_margin,
+        SUM(gross_margin_tax) AS gross_margin_tax,
+        SUM(fran_credit) AS fran_credit,
+        SUM(cust_credit) AS cust_credit,
+        SUM(management_fee) AS management_fee,
+        SUM(marketing_fee) AS marketing_fee,
+        SUM(profit_share) AS profit_share,
+        SUM(if(is_taxable_shipment=1,1,0)) as taxable_shipment_count,
+        SUM(if(is_taxable_shipment=0,1,0)) as non_taxable_shipment_count
+        FROM tmp_xms_tbl_fran_rab_shipment_detail
+        WHERE rpt_txn_id = #{rptTxnId}
+        and left(customer_code,3) in
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+
+    <select id="getShipmentDetailsRecordCount" parameterType="FranchisePayableFilter" resultType="long">
+        SELECT COUNT(*) FROM tmp_xms_tbl_fran_rab_shipment_detail
+        WHERE rpt_txn_id = #{rptTxnId}
+        and left(customer_code,3) in
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+
+    <select id="getTaxableShipmentDetailsTotal" parameterType="FranchisePayableFilter"
+            resultMap="FranchisePayableSCShipmentMap">
+        SELECT
+        SUM(cust_cost) AS cust_cost,
+        SUM(cust_tax) AS cust_tax,
+        SUM(cust_marginable) AS cust_marginable,
+        SUM(cust_marginable_tax) AS cust_marginable_tax,
+        SUM(fran_cost) AS fran_cost,
+        SUM(fran_tax) AS fran_tax,
+        SUM(gross_margin) AS gross_margin,
+        SUM(gross_margin_tax) AS gross_margin_tax,
+        SUM(fran_credit) AS fran_credit,
+        SUM(cust_credit) AS cust_credit,
+        SUM(management_fee) AS management_fee,
+        SUM(marketing_fee) AS marketing_fee,
+        SUM(profit_share) AS profit_share
+        FROM tmp_xms_tbl_fran_rab_shipment_detail
+        WHERE rpt_txn_id = #{rptTxnId} and is_taxable_shipment = 1
+        and left(customer_code,3) in
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+
+    <select id="getNonTaxableShipmentDetailsTotal" parameterType="FranchisePayableFilter"
+            resultMap="FranchisePayableSCShipmentMap">
+        SELECT
+        SUM(cust_cost) AS cust_cost,
+        SUM(cust_tax) AS cust_tax,
+        SUM(cust_marginable) AS cust_marginable,
+        SUM(cust_marginable_tax) AS cust_marginable_tax,
+        SUM(fran_cost) AS fran_cost,
+        SUM(fran_tax) AS fran_tax,
+        SUM(gross_margin) AS gross_margin,
+        SUM(gross_margin_tax) AS gross_margin_tax,
+        SUM(fran_credit) AS fran_credit,
+        SUM(cust_credit) AS cust_credit,
+        SUM(management_fee) AS management_fee,
+        SUM(marketing_fee) AS marketing_fee,
+        SUM(profit_share) AS profit_share
+        FROM tmp_xms_tbl_fran_rab_shipment_detail
+        WHERE rpt_txn_id = #{rptTxnId} and is_taxable_shipment = 0
+        and left(customer_code,3) in
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+</mapper>

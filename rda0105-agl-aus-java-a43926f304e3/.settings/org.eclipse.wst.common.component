@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="xms">
+        <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/xms-cache/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/xms-common/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/xms-delivery/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/xms-dto/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/xms-persistence/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/xms-test/src/test/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/xms-weblib/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/xms-workflow/src/main/java"/>
+        <property name="context-root" value="xms"/>
+        <property name="java-output-path" value="/xms/bin"/>
+    </wb-module>
+</project-modules>

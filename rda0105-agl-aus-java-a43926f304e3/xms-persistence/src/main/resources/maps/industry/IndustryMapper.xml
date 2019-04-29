@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Industry">
+    <resultMap id="IndustryMap" type="IndustryVo">
+        <id column="industry_id" property="industryId"/>
+        <result column="industry_name" property="industryName"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="IndustryMap">
+        select industry_id, industry_name from xms_tbl_industry
+        where industry_id!=0
+        order by industry_name
+    </select>
+    <select id="selectByFilter" parameterType="com.gms.xms.filter.admin.IndustryFilter"
+            resultMap="IndustryMap">
+        select
+        t.industry_id,
+        t.industry_name
+        from xms_tbl_industry as t
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countByFilter" parameterType="com.gms.xms.filter.admin.IndustryFilter"
+            resultType="long">
+        select count(*) from xms_tbl_industry as t
+    </select>
+    <insert id="insert" parameterType="IndustryVo"
+            useGeneratedKeys="true" keyProperty="industryId">
+        insert into xms_tbl_industry (
+        industry_name)
+        values (#{industryName})
+    </insert>
+
+    <update id="update" parameterType="IndustryVo">
+        update xms_tbl_industry
+        <set>
+            <if test="industryName != null">
+                industry_name = #{industryName}
+            </if>
+        </set>
+        <where>
+            industry_id = #{industryId}
+        </where>
+    </update>
+
+    <select id="update_SelectForLog" parameterType="IndustryVo" resultMap="IndustryMap">
+        select * from xms_tbl_industry
+        <where>
+            industry_id = #{industryId}
+        </where>
+    </select>
+
+    <delete id="delete" parameterType="integer">
+        delete from xms_tbl_industry
+        where industry_id = #{industryId}
+    </delete>
+
+    <select id="delete_SelectForLog" parameterType="integer" resultMap="IndustryMap">
+        select * from xms_tbl_industry
+        where industry_id = #{industryId}
+    </select>
+
+    <select id="countIndustryByName" resultType="long" parameterType="IndustryVo">
+        select count(*) FROM xms_tbl_industry
+        WHERE industry_name = #{industryName}
+        <if test="industryId != null">and industry_id != #{industryId}
+        </if>
+    </select>
+</mapper>

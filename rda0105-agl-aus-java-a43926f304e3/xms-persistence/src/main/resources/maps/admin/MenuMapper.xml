@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Menu">
+    <resultMap id="MenuMap" type="MenuVo">
+        <id column="menuid" property="menuId"/>
+        <result column="menuname" property="menuName"/>
+        <result column="parentid" property="parentId"/>
+        <result column="srno" property="srNo"/>
+        <result column="user_level_id" property="userLevelId"/>
+        <result column="other_level" property="otherLevel"/>
+        <result column="show_collector" property="showCollector"/>
+        <result column="hidden" property="hidden"/>
+        <result column="url" property="url"/>
+        <result column="localizationid" property="localizationId"/>
+    </resultMap>
+    <select id="selectAllMenu" resultMap="MenuMap">
+        select * from xms_tbl_menu
+    </select>
+    <select id="getMenusByParentId" parameterType="int" resultMap="MenuMap">
+        <bind name="parentId" value="_parameter"/>
+        select * from xms_tbl_menu
+        where parentid = #{parentId}
+        order by srno
+    </select>
+    <select id="selectAllMenuById" resultMap="MenuMap" parameterType="com.gms.xms.filter.admin.MenuFilter">
+        SELECT * from xms_tbl_menu where parentid = #{menuId}
+    </select>
+    <select id="selectMenuDetailById" resultMap="MenuMap" parameterType="com.gms.xms.filter.admin.MenuFilter">
+        SELECT * FROM xms_tbl_menu where menuid = #{menuId}
+    </select>
+    <update id="update" parameterType="MenuVo">
+        update xms_tbl_menu
+        <set>
+            <if test="menuName != null">menuname = #{menuName},</if>
+            <if test="parentId != null">parentid = #{parentId},</if>
+            <if test="srNo != null">srno = #{srNo},</if>
+            <if test="userLevelId != null">user_level_id = #{userLevelId},</if>
+            <if test="otherLevel != null">other_level = #{otherLevel},</if>
+            <if test="showCollector != null">show_collector = #{showCollector},</if>
+            <if test="hidden != null">hidden = #{hidden},</if>
+            <if test="url != null">url = #{url},</if>
+            <if test="localizationId != null">localizationid = #{localizationId},</if>
+        </set>
+        WHERE menuid = #{menuId}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="MenuVo" resultMap="MenuMap">
+        select * from xms_tbl_menu
+        WHERE menuid = #{menuId}
+    </select>
+
+    <select id="selectAvailMenuItemByParentId" resultMap="MenuMap" parameterType="MenuVo">
+        <![CDATA[
+		SELECT 
+		    *
+		FROM
+		    xms_tbl_menu
+		WHERE
+		    parentId = #{parentId} and hidden = 0
+		        AND ( (show_collector = #{showCollector} and show_collector = 1)
+		        OR (user_level_id >= #{userLevelId})
+		        OR (other_level LIKE CONCAT('%', ',', #{otherLevel})
+		        OR other_level LIKE CONCAT(#{otherLevel}, ',', '%')
+		        OR other_level LIKE CONCAT('%,', #{otherLevel}, ',%')
+		        OR other_level = #{otherLevel}))
+		ORDER BY srno asc
+		]]>
+    </select>
+
+</mapper> 

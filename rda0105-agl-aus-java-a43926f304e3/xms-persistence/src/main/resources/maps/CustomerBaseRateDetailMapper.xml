@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerBaseRateDetail">
+    <resultMap id="CustomerBaseRateDetailMap" type="CustomerBaseRateDetailVo">
+        <id column="customer_base_rate_id" property="customerBaseRateId"/>
+        <result column="zone" property="zone"/>
+        <result column="rate" property="rate"/>
+    </resultMap>
+
+    <delete id="delete" parameterType="long">
+        delete from xms_tbl_customer_base_rate_detail where customer_base_rate_id = #{customerBaseRateId}
+    </delete>
+
+    <select id="delete_SelectForLog" parameterType="long" resultMap="CustomerBaseRateDetailMap">
+        select * from xms_tbl_customer_base_rate_detail where customer_base_rate_id = #{customerBaseRateId}
+    </select>
+
+    <delete id="deleteByCustomerCode" parameterType="string">
+        delete from xms_tbl_customer_base_rate_detail
+        where customer_base_rate_id
+        in
+        (select customer_base_rate_id from xms_tbl_customer_base_rate
+        where customer_code = #{customerCode}
+        )
+    </delete>
+
+    <select id="deleteByCustomerCode_SelectForLog" parameterType="string" resultMap="CustomerBaseRateDetailMap">
+        select * from xms_tbl_customer_base_rate_detail
+        where customer_base_rate_id
+        in
+        (select customer_base_rate_id from xms_tbl_customer_base_rate
+        where customer_code = #{customerCode}
+        )
+    </select>
+
+    <update id="update" parameterType="CustomerBaseRateDetailVo">
+        update xms_tbl_customer_base_rate_detail
+        <set>
+            <if test="zone != null and  zone != ''">
+                zone = #{zone}
+            </if>
+            <if test="rate != null and  rate != ''">
+                rate = #{rate}
+            </if>
+        </set>
+        <where>
+            <if test="customerBaseRateId != null and  customerBaseRateId != ''">
+                and customer_base_rate_id = #{customer_base_rate_id}
+            </if>
+            <if test="zone != null and  zone != ''">
+                and zone = #{zone}
+            </if>
+        </where>
+    </update>
+
+    <select id="update_SelectForLog" parameterType="CustomerBaseRateDetailVo" resultMap="CustomerBaseRateDetailMap">
+        select xms_tbl_customer_base_rate_detail
+        <where>
+            <if test="customerBaseRateId != null and  customerBaseRateId != ''">
+                and customer_base_rate_id = #{customer_base_rate_id}
+            </if>
+            <if test="zone != null and  zone != ''">
+                and zone = #{zone}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="CustomerBaseRateVo">
+        insert into xms_tbl_customer_base_rate_detail (
+        customer_base_rate_id,
+        zone,
+        rate
+        )
+        values (
+        #{customerBaseRateId},
+        #{zone},
+        #{rate}
+        )
+    </insert>
+</mapper>

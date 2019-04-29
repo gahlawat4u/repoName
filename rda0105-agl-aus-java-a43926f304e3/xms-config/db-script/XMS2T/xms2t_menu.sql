@@ -1,0 +1,2 @@
+INSERT INTO `xms_tbl_system_setting` (`setting_name`, `setting_value`, `description`, `user_level`, `allow_null`) VALUES ('XMS 1.0 URL', 'http://localhost/xms_au_dev/', 'XMS 1.0 URL', '1', '1');
+INSERT INTO `xms_tbl_system_setting` (`setting_name`, `setting_value`, `description`, `user_level`, `allow_null`) VALUES ('XMS 2.0 Live Menu', 'N', 'XMS 2.0 Live Menu', '1', '1');

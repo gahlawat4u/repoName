@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="InvoicePayment">
+    <resultMap id="InvoicePaymentMap" type="com.gms.xms.txndb.vo.InvoicePaymentVo">
+        <id column="invoice_paymentid" property="invoicePaymentId" jdbcType="BIGINT"/>
+        <result column="invoiceid" property="invoiceId" jdbcType="BIGINT"/>
+        <result column="amount" property="amount" jdbcType="DECIMAL"/>
+        <result column="late_fee" property="lateFee" jdbcType="DECIMAL"/>
+        <result column="cus_paymentid" property="cusPaymentId" jdbcType="BIGINT"/>
+        <result column="reverse_flag" property="reverseFlag" jdbcType="TINYINT"/>
+        <result column="revinvoice_paymentid" property="revInvoicePaymentId" jdbcType="BIGINT"/>
+        <result column="apply_date" property="applyDate" jdbcType="DATE"/>
+    </resultMap>
+
+    <resultMap id="InvoicePaymentWithCanReverseStatusMap" type="com.gms.xms.txndb.vo.InvoicePaymentVo">
+        <id column="invoice_paymentid" property="invoicePaymentId"/>
+        <result column="invoiceid" property="invoiceId"/>
+        <result column="amount" property="amount"/>
+        <result column="late_fee" property="lateFee"/>
+        <result column="cus_paymentid" property="cusPaymentId"/>
+        <result column="reverse_flag" property="reverseFlag"/>
+        <result column="revinvoice_paymentid" property="revInvoicePaymentId"/>
+        <result column="apply_date" property="applyDate"/>
+        <result column="can_reverse" property="canReverse"/>
+    </resultMap>
+
+    <resultMap id="InvoicePaymentWithNoteMap" type="com.gms.xms.txndb.vo.InvoicePaymentVo" extends="InvoicePaymentMap">
+        <result column="can_reverse" property="canReverse"/>
+        <association property="customerPayment" javaType="CustomerPaymentVo">
+            <result column="cus_paymentid" property="cusPaymentId"/>
+            <result column="cheque" property="cheque"/>
+            <result column="payment_date" property="paymentDate"/>
+            <collection property="notes" ofType="NoteVo" javaType="ArrayList">
+                <id column="noteid" property="noteId"/>
+                <id column="note" property="note"/>
+                <id column="follow_up_date" property="followUpDate"/>
+            </collection>
+        </association>
+    </resultMap>
+
+    <select id="selectByCusPaymentId" parameterType="long" resultType="InvoicePaymentVo">
+        SELECT invoice_paymentid as invoicePaymentId FROM xms_tbl_invoice_payment
+        where cus_paymentid = #{cusPaymentId}
+    </select>
+
+    <select id="getInvoicePaymentById" parameterType="long" resultMap="InvoicePaymentWithCanReverseStatusMap">
+        select
+        ip.*,
+        ifnull(rev.reverse_count,0)=0 and ip.revinvoice_paymentid=0 as can_reverse
+        from xms_tbl_invoice_payment as ip
+        left join
+        (select count(*) as reverse_count from xms_tbl_invoice_payment
+        where revinvoice_paymentid = #{invoicePaymentId}
+        ) as rev on (1=1)
+        where ip.invoice_paymentid = #{invoicePaymentId}
+    </select>
+
+    <select id="selectByInvoiceCode" parameterType="String" resultMap="InvoicePaymentWithNoteMap">
+        select
+        ip.invoice_paymentid,
+        ip.amount,
+        ip.apply_date,
+        (select ifnull(count(*),0)=0 from xms_tbl_invoice_payment
+        where revinvoice_paymentid = ip.invoice_paymentid
+        ) and ip.revinvoice_paymentid=0
+        as can_reverse,
+        cp.cus_paymentid,
+        cp.cheque,
+        cp.payment_date,
+        n.noteid,
+        n.note,
+        n.follow_up_date
+        from xms_tbl_invoice_payment as ip
+        inner join xms_tbl_invoice as i on i.invoiceid = ip.invoiceid
+        inner join xms_tbl_customer_payment as cp on cp.cus_paymentid = ip.cus_paymentid
+        left join xms_tbl_note as n on n.paymentid = cp.cus_paymentid
+        where i.invoice_code = #{invoiceCode}
+    </select>
+
+    <select id="selectPaymentByInvoiceId" parameterType="long" resultMap="InvoicePaymentMap">
+        select
+        *
+        from xms_tbl_invoice_payment
+        where invoiceid = #{invoiceId}
+    </select>
+
+    <insert id="insert" parameterType="InvoicePaymentVo" useGeneratedKeys="true" keyProperty="invoicePaymentId">
+        insert into xms_tbl_invoice_payment (invoiceid, amount, late_fee, cus_paymentid, reverse_flag,
+        revinvoice_paymentid, apply_date)
+        values (#{invoiceId}, #{amount}, #{lateFee}, #{cusPaymentId}, #{reverseFlag}, #{revInvoicePaymentId},
+        #{applyDate})
+    </insert>
+
+    <update id="update" parameterType="InvoicePaymentVo">
+        update xms_tbl_invoice_payment
+        <set>
+            <if test="invoiceId!=null">
+                invoiceid = #{invoiceId},
+            </if>
+            <if test="amount!=null">
+                amount = #{amount},
+            </if>
+            <if test="lateFee!=null">
+                late_fee = #{lateFee},
+            </if>
+            <if test="cusPaymentId!=null">
+                cus_paymentid = #{cusPaymentId},
+            </if>
+            <if test="reverseFlag!=null">
+                reverse_flag = #{reverseFlag},
+            </if>
+            <if test="revInvoicePaymentId!=null">
+                revinvoice_paymentid = #{revInvoicePaymentId},
+            </if>
+            <if test="applyDate!=null">
+                apply_date = #{applyDate},
+            </if>
+        </set>
+        where invoice_paymentid = #{invoicePaymentId}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="InvoicePaymentVo" resultMap="InvoicePaymentMap">
+        select * from xms_tbl_invoice_payment
+        where invoice_paymentid = #{invoicePaymentId}
+    </select>
+
+    <delete id="deleteById" parameterType="long">
+        delete from xms_tbl_invoice_payment
+        where invoice_paymentid = #{invoicePaymentId}
+    </delete>
+
+    <select id="deleteById_SelectForLog" parameterType="long" resultMap="InvoicePaymentMap">
+        select * from xms_tbl_invoice_payment
+        where invoice_paymentid = #{invoicePaymentId}
+    </select>
+
+</mapper>

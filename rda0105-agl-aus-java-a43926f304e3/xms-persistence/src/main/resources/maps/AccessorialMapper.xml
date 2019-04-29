@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Accessorial">
+    <resultMap id="AccessorialMap" type="com.gms.xms.txndb.vo.AccessorialVo">
+        <id column="accessorialid" property="accessorialId"/>
+        <result column="code" property="code"/>
+        <result column="description" property="description"/>
+        <result column="modified_date" property="modifiedDate"/>
+        <result column="typeid" property="typeId"/>
+        <result column="isquotable" property="isQuotable"/>
+        <result column="carrier" property="carrier"/>
+    </resultMap>
+
+    <resultMap type="SurchargeListVo" id="AccessorialList" extends="AccessorialMap">
+        <result column="service_name" property="serviceName"/>
+    </resultMap>
+
+    <select id="selectAccessorialListByCarrier" resultMap="AccessorialList" parameterType="AccessorialVo">
+        select a.*, s.service_name from xms_tbl_accessorial as a
+        left join xms_tbl_service as s on a.carrier = s.service_id
+        <if test="carrier != null and carrier != ''">
+            where a.carrier= #{carrier}
+        </if>
+        group by accessorialid
+        order by description
+    </select>
+
+    <select id="selectAccessorialList" resultMap="AccessorialList" parameterType="AccessorialFilter">
+        select a.*, s.service_name from xms_tbl_accessorial as a
+        left join xms_tbl_service as s on a.carrier = s.service_id
+        <where>
+            <if test="code!=null and code!=''">
+                <bind name="searchCode" value="'%' + _parameter.getCode() + '%'"/>
+                and a.code like #{searchCode}
+            </if>
+            <if test="modifiedDate!=null and modifiedDate!=''">
+                <![CDATA[ and a.modified_date>=date(#{modifiedDate}) and a.modified_date<=date_add(date(#{modifiedDate}),interval 1 day) ]]>
+            </if>
+            <if test="description!=null and description!=''">
+                <bind name="searchDescription" value="'%' + _parameter.getDescription() + '%'"/>
+                and a.description like #{searchDescription}
+            </if>
+            <if test="carrierName!=null and carrierName!=''">
+                <bind name="searchCarrierName" value="'%' + _parameter.getCarrierName() + '%'"/>
+                and s.service_name like #{searchCarrierName}
+            </if>
+            <if test="typeId!=null">
+                and a.typeid = #{typeId}
+            </if>
+            <if test="isQuotable!=null">
+                and a.isquotable = #{isQuotable}
+            </if>
+        </where>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectAccessorialListCount" resultType="integer" parameterType="AccessorialFilter">
+        select count(*) from xms_tbl_accessorial as a
+        left join xms_tbl_service as s on a.carrier = s.service_id
+        <where>
+            <if test="code!=null and code!=''">
+                <bind name="searchCode" value="'%' + _parameter.getCode() + '%'"/>
+                and a.code like #{searchCode}
+            </if>
+            <if test="modifiedDate!=null and modifiedDate!=''">
+                <![CDATA[ and a.modified_date>=date(#{modifiedDate}) and a.modified_date<=date_add(date(#{modifiedDate}),interval 1 day) ]]>
+            </if>
+            <if test="description!=null and description!=''">
+                <bind name="searchDescription" value="'%' + _parameter.getDescription() + '%'"/>
+                and a.description like #{searchDescription}
+            </if>
+            <if test="carrierName!=null and carrierName!=''">
+                <bind name="searchCarrierName" value="'%' + _parameter.getCarrierName() + '%'"/>
+                and s.service_name like #{searchCarrierName}
+            </if>
+            <if test="typeId!=null">
+                and a.typeid = #{typeId}
+            </if>
+            <if test="isQuotable!=null">
+                and a.isquotable = #{isQuotable}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectSurChargeList" resultMap="AccessorialMap" parameterType="AccessorialFilter">
+        SELECT
+        *
+        FROM
+        (SELECT
+        a.accessorialid,
+        a.code,
+        a.description,
+        ad.default_charge,
+        a.typeid,
+        CASE typeid
+        WHEN 1 THEN (IFNULL(ca.amount, 0) + IFNULL(ad.default_charge, 0))
+        WHEN 2 THEN ROUND((((IFNULL(ad.default_charge, 0)) / 100) * #{baseCharge}) + ((IFNULL(ca.amount, 0) / 100) *
+        (((IFNULL(ad.default_charge, 0)) / 100) * #{baseCharge})), 2)
+        ELSE ROUND(IFNULL(ad.default_charge, 0) + ((IFNULL(ca.amount, 0) / 100) * IFNULL(ad.default_charge, 0)), 2)
+        END AS value
+        FROM
+        xms_tbl_accessorial AS a
+        LEFT JOIN (SELECT accessorialid, apply_start_date, default_charge, default_charge_carrier from xms_tbl_accessorial_detail
+        where apply_start_date = (select max(apply_start_date) from xms_tbl_accessorial_detail acd where acd.accessorialid =
+        xms_tbl_accessorial_detail.accessorialid
+        <if test="shipmentDate == null and shipmentDate == ''">
+            <![CDATA[
+									  AND DATE(NOW()) >= DATE(apply_start_date)
+									]]>
+        </if>
+        <if test="shipmentDate != null and shipmentDate != ''">
+            <![CDATA[
+										AND	DATE(#{shipmentDate}) >= DATE(apply_start_date)
+										]]>
+        </if>
+        )
+        GROUP BY accessorialid) AS ad ON a.accessorialid = ad.accessorialid
+        LEFT JOIN (SELECT
+        *
+        FROM
+        xms_tbl_customer_accessorial
+        WHERE
+        customer_code = #{customerCode}) AS ca ON ca.accessorialid = a.accessorialid
+        WHERE
+        a.carrier = #{carrier}
+        <if test="quotable != null">
+            AND a.isquotable = #{quotable}
+        </if>
+        ) AS surcharge
+        GROUP BY accessorialid
+    </select>
+
+    <select id="getAccessorialValueByFilter" resultMap="AccessorialMap" parameterType="AccessorialFilter">
+        SELECT
+        *
+        FROM
+        (SELECT
+        a.accessorialid,
+        a.code,
+        a.description,
+        ad.default_charge,
+        a.typeid,
+        CASE typeid
+        WHEN 1 THEN (IFNULL(ca.amount, 0) + IFNULL(ad.default_charge, 0))
+        WHEN 2 THEN ROUND((((IFNULL(ad.default_charge, 0)) / 100) * #{baseCharge}) + ((IFNULL(ca.amount, 0) / 100) *
+        (((IFNULL(ad.default_charge, 0)) / 100) * #{baseCharge})), 2)
+        ELSE ROUND(IFNULL(ad.default_charge, 0) + ((IFNULL(ca.amount, 0) / 100) * IFNULL(ad.default_charge, 0)), 2)
+        END AS value
+        FROM
+        xms_tbl_accessorial AS a
+        LEFT JOIN (SELECT
+        *
+        FROM
+        (SELECT
+        *
+        FROM
+        xms_tbl_accessorial_detail
+        <if test="shipmentDate == null or shipmentDate == ''">
+            <![CDATA[
+										WHERE DATE(NOW()) >= DATE(apply_start_date)
+									]]>
+        </if>
+        <if test="shipmentDate != null and shipmentDate != ''">
+            <![CDATA[
+										WHERE #{shipmentDate} >= DATE_FORMAT(apply_start_date,'%m-%b-%y')
+									]]>
+        </if>
+        ORDER BY apply_start_date DESC) AS pre_ad
+        GROUP BY accessorialid DESC) AS ad ON a.accessorialid = ad.accessorialid
+        LEFT JOIN (SELECT
+        *
+        FROM
+        xms_tbl_customer_accessorial
+        WHERE
+        customer_code = #{customerCode}) AS ca ON ca.accessorialid = a.accessorialid
+        WHERE
+        a.carrier = #{carrier}
+        <if test="quotable != null">
+            AND a.isquotable = #{quotable}
+        </if>
+        ) AS surcharge
+        WHERE 1=1
+        <if test="description != null">
+            AND description = #{description}
+        </if>
+        <if test="accessorialId != null">
+            AND accessorialid = #{accessorialId}
+        </if>
+        GROUP BY accessorialid
+        LIMIT 1
+    </select>
+
+    <select id="getAccessorialValueByFilterForRecalculate" resultMap="AccessorialMap" parameterType="AccessorialFilter">
+        SELECT
+        *
+        FROM
+        (SELECT
+        a.accessorialid,
+        a.code,
+        a.description,
+        ad.default_charge,
+        a.typeid,
+        CASE typeid
+        WHEN 1 THEN (IFNULL(ca.amount, 0) + IFNULL(ad.default_charge, 0))
+        WHEN 2 THEN ROUND((((IFNULL(ad.default_charge, 0)) / 100) * #{baseCharge}) + ((IFNULL(ca.amount, 0) / 100) *
+        (((IFNULL(ad.default_charge, 0)) / 100) * #{baseCharge})), 2)
+        ELSE ROUND(IFNULL(ad.default_charge, 0) + ((IFNULL(ca.amount, 0) / 100) * IFNULL(ad.default_charge, 0)), 2)
+        END AS value
+        FROM
+        xms_tbl_accessorial AS a
+        LEFT JOIN (SELECT
+        *
+        FROM
+        (SELECT
+        *
+        FROM
+        xms_tbl_accessorial_detail
+        <if test="shipmentDate == null and shipmentDate == ''">
+            <![CDATA[
+										WHERE DATE(NOW()) >= DATE(apply_start_date)
+									]]>
+        </if>
+        <if test="shipmentDate != null and shipmentDate != ''">
+            <![CDATA[
+										WHERE apply_start_date <= #{shipmentDate}
+									]]>
+        </if>
+        ORDER BY apply_start_date DESC) AS pre_ad
+        GROUP BY accessorialid DESC) AS ad ON a.accessorialid = ad.accessorialid
+        LEFT JOIN (SELECT
+        *
+        FROM
+        xms_tbl_customer_accessorial
+        WHERE
+        customer_code = #{customerCode}) AS ca ON ca.accessorialid = a.accessorialid
+        WHERE
+        a.carrier = #{carrier}
+        <if test="quotable != null">
+            AND a.isquotable = #{quotable}
+        </if>
+        ) AS surcharge
+        WHERE 1=1
+        <if test="description != null">
+            AND description = #{description}
+        </if>
+        <if test="accessorialId != null">
+            AND accessorialid = #{accessorialId}
+        </if>
+        GROUP BY accessorialid
+        LIMIT 1
+    </select>
+
+    <select id="selectById" resultMap="AccessorialMap" parameterType="long">
+        select * from xms_tbl_accessorial where accessorialid = #{accessorialId}
+    </select>
+
+    <select id="checkAccessorialByCode" parameterType="AccessorialVo" resultMap="AccessorialMap">
+        select
+        *
+        from xms_tbl_accessorial
+        where carrier = #{carrier}
+        and code = #{code}
+        limit 1
+    </select>
+
+    <select id="checkAccessorialByDescription" parameterType="AccessorialVo" resultMap="AccessorialMap">
+        select
+        *
+        from xms_tbl_accessorial
+        where carrier = #{carrier}
+        and description = #{description}
+        limit 1
+    </select>
+
+    <insert id="insertAccessorial" parameterType="AccessorialVo" useGeneratedKeys="true" keyProperty="accessorialId">
+        INSERT INTO `xms_tbl_accessorial`
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="code != null">
+                code,
+            </if>
+            <if test="description != null">
+                description,
+            </if>
+            <if test="modifiedDate != null">
+                modified_date,
+            </if>
+            <if test="typeId != null">
+                typeid,
+            </if>
+            <if test="isQuotable != null">
+                isquotable,
+            </if>
+            <if test="carrier != null">
+                carrier,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="code != null">
+                #{code},
+            </if>
+            <if test="description != null">
+                #{description},
+            </if>
+            <if test="modifiedDate != null">
+                #{modifiedDate},
+            </if>
+            <if test="typeId != null">
+                #{typeId},
+            </if>
+            <if test="isQuotable != null">
+                #{isQuotable},
+            </if>
+            <if test="carrier != null">
+                #{carrier},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateAccessorial" parameterType="com.gms.xms.txndb.vo.AccessorialVo">
+        UPDATE xms_tbl_accessorial
+        SET
+        description = #{description},
+        modified_date = #{modifiedDate},
+        typeid = #{typeId},
+        isquotable = #{isQuotable},
+        carrier = #{carrier}
+        WHERE accessorialid = #{accessorialId}
+    </update>
+    <select id="updateAccessorial_SelectForLog" parameterType="com.gms.xms.txndb.vo.AccessorialVo"
+            resultMap="AccessorialMap">
+        SELECT * FROM xms_tbl_accessorial
+        WHERE accessorialid = #{accessorialId}
+    </select>
+</mapper>

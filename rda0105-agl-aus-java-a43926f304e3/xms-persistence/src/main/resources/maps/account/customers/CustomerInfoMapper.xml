@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerInfo">
+    <resultMap id="BasicCustomerMap" type="BasicCustomerVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+    </resultMap>
+
+    <resultMap id="CustomerAccountSetupMap" type="CustomerAccountSetupVo" extends="Customer.CustomerMap">
+        <result column="country_name" property="countryName"/>
+        <association property="address" resultMap="CustomerAddress.CustomerAddressMap"/>
+    </resultMap>
+
+    <resultMap id="ManageCustomerAddressMap" type="ManageCustomerAddressVo">
+        <result column="customer_code" property="customerCode"/>
+        <association property="address" resultMap="CustomerAddress.CustomerAddressMap"/>
+        <association property="billingAddress" resultMap="CustomerBillingAddress.CustomerBillingAddressMap"/>
+    </resultMap>
+
+    <select id="selectByBasicCustomerFilter" parameterType="BasicCustomerFilter" resultMap="BasicCustomerMap">
+        select distinct c.customer_code, ca.customer_name from xms_tbl_customer as c
+        left join xms_tbl_customer_address as ca on ca.customer_code = c.customer_code
+        <where>
+            <if test="franchiseCode!=null and franchiseCode!=''">
+                and left(c.customer_code,3) = #{franchiseCode}
+            </if>
+            <if test="searchText!=null and searchText!=''">
+                and (c.customer_code like concat(#{searchText},'%') or ca.customer_name like
+                concat('%',#{searchText},'%'))
+            </if>
+            <if test="userLevel==6">
+                and c.sales_rep_id = #{userId}
+            </if>
+        </where>
+        order by c.customer_code
+    </select>
+
+    <select id="getCustomerAccountSetupInfo" parameterType="string" resultMap="CustomerAccountSetupMap">
+        select
+        c.customer_code,
+        c.create_date,
+        c.activate_date,
+        c.inactive,
+        c.previous_carrier,
+        c.webship_groupid,
+        c.industryid,
+        c.area_id,
+        c.sales_rep_id,
+        c.collectorid,
+        c.registrationid,
+        c.gstid,
+        c.dhl_account,
+        c.hub_account,
+        c.tnt_account,
+        c.toll_priority_account,
+        c.startrack_account,
+        c.dispatch_id,
+        c.other_account,
+        c.booking_email_notification,
+        c.rejection_note,
+        c.enable_si,
+        ca.customer_name,
+        ca.contact_name,
+        ca.contact_title,
+        ca.address1,
+        ca.address2,
+        ca.city,
+        ca.country,
+        ct.countryname as country_name,
+        ca.postal_code,
+        ca.state_code,
+        ca.phone,
+        ca.fax,
+        ca.email
+        from xms_tbl_customer as c
+        left join xms_tbl_customer_address as ca on ca.customer_code = c.customer_code
+        left join xms_tbl_country as ct on ct.countryid = ca.country
+        where c.customer_code = #{customerCode}
+    </select>
+
+    <select id="getManageCustomerAddressInfo" parameterType="string" resultMap="ManageCustomerAddressMap">
+        select
+        c.customer_code,
+        ca.customer_name,
+        ca.contact_name,
+        ca.contact_title,
+        ca.address1,
+        ca.address2,
+        ca.city,
+        ca.country,
+        ca.postal_code,
+        ca.state_code,
+        ca.phone,
+        ca.fax,
+        ca.email,
+        ca.mobile,
+        ca.alternate_phone,
+        cba.billing_same_with_customer,
+        cba.billing_customer_name,
+        cba.billing_contact_name,
+        cba.billing_contact_title,
+        cba.billing_address1,
+        cba.billing_address2,
+        cba.billing_city,
+        cba.billing_country,
+        cba.billing_postal_code,
+        cba.billing_state_code,
+        cba.billing_phone,
+        cba.billing_fax,
+        cba.billing_email,
+        cba.billing_mobile,
+        cba.billing_alternate_phone,
+        ca.owner,
+        ca.owner_phone,
+        ca.owner_email,
+        ca.ap_contact,
+        ca.ap_phone,
+        ca.ap_email,
+        ca.other_contact,
+        ca.other_phone,
+        ca.other_email,
+        ca.other2_contact,
+        ca.other2_phone,
+        ca.other2_email
+        from xms_tbl_customer as c
+        left join xms_tbl_customer_address as ca on ca.customer_code = c.customer_code
+        left join xms_tbl_customer_billing_address as cba on cba.customer_code = c.customer_code
+        where c.customer_code = #{customerCode}
+    </select>
+
+    <select id="getManageFranchiseAddressInfo" parameterType="string" resultMap="ManageCustomerAddressMap">
+        SELECT
+        f.franchise_code as customer_code,
+        ca.customer_name,
+        ca.contact_name,
+        ca.contact_title,
+        ca.address1,
+        ca.address2,
+        ca.city,
+        ca.country,
+        ca.postal_code,
+        ca.state_code,
+        ca.phone,
+        ca.fax,
+        ca.email,
+        ca.mobile,
+        ca.alternate_phone,
+        cba.billing_same_with_customer,
+        cba.billing_customer_name,
+        cba.billing_contact_name,
+        cba.billing_contact_title,
+        cba.billing_address1,
+        cba.billing_address2,
+        cba.billing_city,
+        cba.billing_country,
+        cba.billing_postal_code,
+        cba.billing_state_code,
+        cba.billing_phone,
+        cba.billing_fax,
+        cba.billing_email,
+        cba.billing_mobile,
+        cba.billing_alternate_phone,
+        ca.owner,
+        ca.owner_phone,
+        ca.owner_email,
+        ca.ap_contact,
+        ca.ap_phone,
+        ca.ap_email,
+        ca.other_contact,
+        ca.other_phone,
+        ca.other_email,
+        ca.other2_contact,
+        ca.other2_phone,
+        ca.other2_email
+        FROM
+        xms_tbl_franchise AS f
+        LEFT JOIN xms_tbl_customer_address AS ca
+        ON ca.customer_code = f.franchise_code
+        LEFT JOIN xms_tbl_customer_billing_address AS cba
+        ON cba.customer_code = f.franchise_code
+        WHERE
+        f.franchise_code = #{franchiseCode}
+    </select>
+</mapper>

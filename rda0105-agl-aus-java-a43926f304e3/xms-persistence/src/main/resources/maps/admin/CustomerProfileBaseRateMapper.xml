@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerProfileBaseRate">
+    <resultMap id="CustomerProfileBaseRateMap" type="CustomerProfileBaseRateVo">
+        <id column="customer_profile_base_rate_id" property="customerProfileBaseRateId"/>
+        <result column="profileid" property="profileId"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="rate_type" property="rateType"/>
+        <result column="weight" property="weight"/>
+        <result column="rate" property="rate"/>
+        <result column="zone_check" property="zoneCheck"/>
+        <result column="content" property="content"/>
+        <result column="bound" property="bound"/>
+        <result column="baserate_description" property="baseRateDescription"/>
+        <result column="carrierid" property="carrierId"/>
+    </resultMap>
+
+    <resultMap id="CustomerProfileServiceMap" type="CustomerProfileBaseRateVo" extends="CustomerProfileBaseRateMap">
+        <association property="service" javaType="ServiceVo" select="getInforService" column="carrierid"/>
+    </resultMap>
+
+    <resultMap type="CustomerProfileBaseRateVo" id="CustomerProfileWithShipmentMap">
+        <association property="shipmentType" javaType="ShipmentTypeVo" select="getShipmentType"
+                     column="shipment_type_id"/>
+        <association property="service" javaType="ServiceVo" select="getInforService" column="carrierid"/>
+        <collection property="customerProfiles" ofType="CustomerBaseRateDetailVo" javaType="ArrayList"
+                    select="getListBaseRateDetail" column="customer_profile_base_rate_id"></collection>
+    </resultMap>
+
+    <select id="selectByShipmentTypeProfileId" resultMap="CustomerProfileBaseRateMap"
+            parameterType="com.gms.xms.filter.admin.customerprofile.CustomerProfileFilter">
+        SELECT * FROM xms_tbl_customer_profile_base_rate WHERE profileid=#{profileId} AND
+        shipment_type_id=#{shipmentTypeId} AND content=#{content} AND bound=#{bound} limit 1;
+    </select>
+
+    <select id="selectCustomerProfileWithShipment" resultMap="CustomerProfileWithShipmentMap"
+            parameterType="com.gms.xms.filter.admin.customerprofile.CustomerProfileFilter">
+        SELECT
+        c.customer_profile_base_rate_id as customerProfileBaseRateId,
+        c.profileid as profileId,
+        c.shipment_type_id as shipmentTypeId,
+        c.rate_type as rateType,
+        c.weight as weight,
+        c.rate as rate,
+        c.zone_check as zoneCheck,
+        c.content as content,
+        c.bound as bound,
+        c.baserate_description as baseRateDescription,
+        c.carrierid as carrierId
+        FROM xms_tbl_customer_profile_base_rate as c
+        WHERE c.profileid=#{profileId} and carrierid in (${listServices})
+    </select>
+
+
+    <select id="selectByCarrierAndProfileId" resultMap="CustomerProfileServiceMap"
+            parameterType="com.gms.xms.filter.admin.customerprofile.CustomerProfileFilter">
+        SELECT c.customer_profile_base_rate_id as customerProfileBaseRateId,
+        c.profileid as profileId,
+        c.shipment_type_id as shipmentTypeId,
+        c.rate_type as rateType,
+        c.weight as weight,
+        c.rate as rate,
+        c.zone_check as zoneCheck,
+        c.content as content,
+        c.bound as bound,
+        c.baserate_description as baseRateDescription,
+        s.service_id as carrierId
+        FROM xms_tbl_service as s
+        LEFT JOIN xms_tbl_customer_profile_base_rate as c ON s.service_id = c.carrierid and c.profileid = #{profileId}
+        and c.shipment_type_id = 0
+        WHERE s.service_id NOT IN (${listServices}) and s.inactive = 0
+
+    </select>
+
+    <select id="getInforService" resultType="ServiceVo">
+        select service_id as serviceId, service_name as serviceName from xms_tbl_service where service_id = #{carrierId}
+    </select>
+
+    <select id="getShipmentType" resultType="ShipmentTypeVo">
+        select
+        shipment_type_name as shipmentTypeName,
+        basic_charge as basicCharge,
+        document as document,
+        document_inbound as documentInbound,
+        package as package,
+        package_inbound as packageInbound,
+        pak as pak,
+        pak_inbound as pakInbound,
+        allow_carrier as allowCarrier,
+        allow_non_carrier as allowNonCarrier,
+        perweight_status as perweightStatus,
+        service_group as serviceGroup,
+        carrier_document_inbound_rate as carrierDocumentInboundRate,
+        carrier_document_rate as carrierDocumentRate,
+        carrier_package_inbound_perweight_rate as carrierPackageInboundPerweightRate,
+        carrier_package_inbound_rate as carrierPackageInboundRate,
+        carrier_package_perweight_rate as carrierPackagePerweightRate,
+        carrier_package_rate as carrierPackageRate,
+        carrier_pak_inbound_perweight_rate as carrierPakInboundPerweightRate,
+        carrier_pak_inbound_rate as carrierPakInboundRate,
+        carrier_pak_perweight_rate as carrierPakPerweightRate,
+        carrier_pak_rate as carrierPakRate
+        from xms_tbl_shipment_type
+        where shipment_type_id = #{shipmentTypeId}
+    </select>
+
+    <select id="getListBaseRateDetail" resultType="CustomerBaseRateDetailVo">
+        SELECT rate as rate, zone as zone from xms_tbl_customer_profile_base_rate_detail
+        where customer_profile_base_rate_id = #{customerProfileBaseRateId}
+    </select>
+
+    <delete id="deleteByProfileId" parameterType="Long">
+        delete from xms_tbl_customer_profile_base_rate
+        where profileId = #{profileId}
+    </delete>
+
+    <select id="deleteByProfileId_SelectForLog" parameterType="Long" resultMap="CustomerProfileBaseRateMap">
+        select * from xms_tbl_customer_profile_base_rate
+        where profileId = #{profileId}
+    </select>
+
+    <insert id="insert" parameterType="CustomerProfileBaseRateVo" useGeneratedKeys="true"
+            keyProperty="customerProfileBaseRateId">
+        insert into xms_tbl_customer_profile_base_rate (
+        profileid,
+        shipment_type_id,
+        rate_type,
+        weight,
+        rate,
+        zone_check,
+        content,
+        bound,
+        baserate_description,
+        carrierid
+        )
+        values (
+        #{profileId},
+        #{shipmentTypeId},
+        #{rateType},
+        #{weight},
+        #{rate},
+        #{zoneCheck},
+        #{content},
+        #{bound},
+        #{baseRateDescription},
+        #{carrierId}
+        )
+    </insert>
+</mapper>

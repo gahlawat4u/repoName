@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ESHIPPER>
+    <LOGIN>
+        <COMPANY>YOUR USERID</COMPANY>
+        <PASSWORD>YOUR PASSWORD</PASSWORD>
+        <APPID>IN</APPID>
+        <APPVERSION>2</APPVERSION>
+    </LOGIN>
+    <CONSIGNMENTBATCH>
+        <SENDER>
+            <COMPANYNAME>Sender Co</COMPANYNAME>
+            <STREETADDRESS1>TEST DO NOT COLLECT1</STREETADDRESS1>
+            <STREETADDRESS2>TEST DO NOT COLLECT2</STREETADDRESS2>
+            <STREETADDRESS3>TEST DO NOT COLLECT3</STREETADDRESS3>
+            <CITY>Atherstone</CITY>
+            <PROVINCE>Warwickshire</PROVINCE>
+            <POSTCODE>CV9 2ry</POSTCODE>
+            <COUNTRY>GB</COUNTRY>
+            <ACCOUNT>987654321</ACCOUNT>
+            <VAT/>
+            <CONTACTNAME>Mr Contact</CONTACTNAME>
+            <CONTACTDIALCODE>01827</CONTACTDIALCODE>
+            <CONTACTTELEPHONE>717733</CONTACTTELEPHONE>
+            <CONTACTEMAIL>contact@tnt.com</CONTACTEMAIL>
+            <COLLECTION>
+                <COLLECTIONADDRESS>
+                    <COMPANYNAME>Collection Name</COMPANYNAME>
+                    <STREETADDRESS1>TEST DO NOT COLLECT4</STREETADDRESS1>
+                    <STREETADDRESS2>TEST DO NOT COLLECT5</STREETADDRESS2>
+                    <STREETADDRESS3>TEST DO NOT COLLECT6</STREETADDRESS3>
+                    <CITY>Atherstone</CITY>
+                    <PROVINCE>Warwickshire</PROVINCE>
+                    <POSTCODE>CV9 1TT</POSTCODE>
+                    <COUNTRY>GB</COUNTRY>
+                    <VAT/>
+                    <CONTACTNAME>Mr Contact</CONTACTNAME>
+                    <CONTACTDIALCODE>00000</CONTACTDIALCODE>
+                    <CONTACTTELEPHONE>700005</CONTACTTELEPHONE>
+                    <CONTACTEMAIL>contact@tnt.com</CONTACTEMAIL>
+                </COLLECTIONADDRESS>
+                <SHIPDATE>27/01/2016</SHIPDATE>
+                <PREFCOLLECTTIME>
+                    <FROM>09:00</FROM>
+                    <TO>10:00</TO>
+                </PREFCOLLECTTIME>
+                <ALTCOLLECTTIME>
+                    <FROM>11:00</FROM>
+                    <TO>12:00</TO>
+                </ALTCOLLECTTIME>
+                <COLLINSTRUCTIONS>use rear gate</COLLINSTRUCTIONS>
+            </COLLECTION>
+        </SENDER>
+        <CONSIGNMENT>
+            <CONREF>ref2</CONREF>
+            <DETAILS>
+                <RECEIVER>
+                    <COMPANYNAME>Receiver Name</COMPANYNAME>
+                    <STREETADDRESS1>TEST DO NOT COLLECT7</STREETADDRESS1>
+                    <STREETADDRESS2>TEST DO NOT COLLECT8</STREETADDRESS2>
+                    <STREETADDRESS3>TEST DO NOT COLLECT9</STREETADDRESS3>
+                    <CITY>Amsterdam</CITY>
+                    <PROVINCE/>
+                    <POSTCODE>1100 AA</POSTCODE>
+                    <COUNTRY>NL</COUNTRY>
+                    <VAT>7668880</VAT>
+                    <CONTACTNAME>Mr Frank</CONTACTNAME>
+                    <CONTACTDIALCODE>1672</CONTACTDIALCODE>
+                    <CONTACTTELEPHONE>987432</CONTACTTELEPHONE>
+                    <CONTACTEMAIL>email@mail.com</CONTACTEMAIL>
+                </RECEIVER>
+                <DELIVERY>
+                    <COMPANYNAME>Delivery Name</COMPANYNAME>
+                    <STREETADDRESS1>TEST DO NOT COLLECT10</STREETADDRESS1>
+                    <STREETADDRESS2>TEST DO NOT COLLECT11</STREETADDRESS2>
+                    <STREETADDRESS3>TEST DO NOT COLLECT12</STREETADDRESS3>
+                    <CITY>Amsterdam</CITY>
+                    <PROVINCE/>
+                    <POSTCODE>1100 AA</POSTCODE>
+                    <COUNTRY>NL</COUNTRY>
+                    <VAT>7668880</VAT>
+                    <CONTACTNAME>Mr Frank</CONTACTNAME>
+                    <CONTACTDIALCODE>1672</CONTACTDIALCODE>
+                    <CONTACTTELEPHONE>987432</CONTACTTELEPHONE>
+                    <CONTACTEMAIL>email@mail.com</CONTACTEMAIL>
+                </DELIVERY>
+                <CUSTOMERREF>DISKS</CUSTOMERREF>
+                <CONTYPE>N</CONTYPE>
+                <PAYMENTIND>S</PAYMENTIND>
+                <ITEMS>2</ITEMS>
+                <TOTALWEIGHT>1.4</TOTALWEIGHT>
+                <TOTALVOLUME>1.0</TOTALVOLUME>
+                <CURRENCY>GBP</CURRENCY>
+                <GOODSVALUE>180.00</GOODSVALUE>
+                <INSURANCEVALUE>150.00</INSURANCEVALUE>
+                <INSURANCECURRENCY>GBP</INSURANCECURRENCY>
+                <SERVICE>15N</SERVICE>
+                <OPTION>PR</OPTION>
+                <DESCRIPTION>assorted office accessories</DESCRIPTION>
+                <DELIVERYINST>ggg</DELIVERYINST>
+                <PACKAGE>
+                    <ITEMS>3</ITEMS>
+                    <DESCRIPTION>box 1</DESCRIPTION>
+                    <LENGTH>0.1</LENGTH>
+                    <HEIGHT>0.2</HEIGHT>
+                    <WIDTH>0.3</WIDTH>
+                    <WEIGHT>0.4</WEIGHT>
+                    <ARTICLE>
+                        <ITEMS>1</ITEMS>
+                        <DESCRIPTION>paperclips</DESCRIPTION>
+                        <WEIGHT>.03</WEIGHT>
+                        <INVOICEVALUE>2.30</INVOICEVALUE>
+                        <INVOICEDESC>metal paperclips</INVOICEDESC>
+                        <HTS>ABC</HTS>
+                        <COUNTRY>GB</COUNTRY>
+                    </ARTICLE>
+                </PACKAGE>
+                <PACKAGE>
+                    <ITEMS>3</ITEMS>
+                    <DESCRIPTION>box 2</DESCRIPTION>
+                    <LENGTH>0.5</LENGTH>
+                    <HEIGHT>0.6</HEIGHT>
+                    <WIDTH>0.7</WIDTH>
+                    <WEIGHT>0.8</WEIGHT>
+                    <ARTICLE>
+                        <ITEMS>1</ITEMS>
+                        <DESCRIPTION>paperclips</DESCRIPTION>
+                        <WEIGHT>.03</WEIGHT>
+                        <INVOICEVALUE>2.30</INVOICEVALUE>
+                        <INVOICEDESC>metal paperclips</INVOICEDESC>
+                        <HTS>ABC</HTS>
+                        <COUNTRY>GB</COUNTRY>
+                    </ARTICLE>
+                </PACKAGE>
+            </DETAILS>
+        </CONSIGNMENT>
+    </CONSIGNMENTBATCH>
+    <ACTIVITY>
+        <CREATE>
+            <CONREF>ref2</CONREF>
+        </CREATE>
+        <RATE>
+            <CONREF>ref2</CONREF>
+        </RATE>
+        <BOOK>
+            <CONREF>ref2</CONREF>
+        </BOOK>
+        <PRINT>
+            <CONNOTE>
+                <CONREF>ref2</CONREF>
+            </CONNOTE>
+            <LABEL>
+                <CONREF>ref2</CONREF>
+            </LABEL>
+            <MANIFEST>
+                <CONREF>ref2</CONREF>
+            </MANIFEST>
+            <INVOICE>
+                <CONREF>ref2</CONREF>
+            </INVOICE>
+        </PRINT>
+    </ACTIVITY>
+</ESHIPPER>

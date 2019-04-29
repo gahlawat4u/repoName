@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="AirbillPausingDeduct">
+    <resultMap id="AirbillPausingDeductMap" type="AirbillPausingDeductVo">
+        <id column="airbill_number" property="airbillNumber"/>
+        <result column="pausing_day" property="pausingDay"/>
+        <result column="start_date" property="startDate"/>
+    </resultMap>
+
+    <select id="selectByAirbillNumber" resultMap="AirbillPausingDeductMap" parameterType="String">
+        SELECT * FROM xms_tbl_airbill_pausing_deduct where airbill_number = #{airbillNumber}
+    </select>
+
+    <insert id="insert" parameterType="AirbillPausingDeductVo">
+        insert into xms_tbl_airbill_pausing_deduct(airbill_number, pausing_day, start_date)
+        values(#{airbillNumber},#{pausingDay},#{startDate})
+    </insert>
+
+    <update id="updateByAirbillNumber" parameterType="AirbillPausingDeductVo">
+        update xms_tbl_airbill_pausing_deduct
+        set pausing_day = #{pausingDay}
+        where airbill_number = #{airbillNumber}
+    </update>
+
+    <select id="updateByAirbillNumber_SelectForLog" parameterType="AirbillPausingDeductVo"
+            resultMap="AirbillPausingDeductMap">
+        select * from xms_tbl_airbill_pausing_deduct
+        where airbill_number = #{airbillNumber}
+    </select>
+
+    <update id="updatePausingDay" parameterType="AirbillAdjustmentVo">
+        update xms_tbl_airbill_pausing_deduct
+        set pausing_day = pausing_day + #{pausingDay}
+        where airbill_number = #{airbillNumber}
+        and DATE_ADD((select i.invoice_date from xms_tbl_shipment_invoice as si
+        inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        where si.shipmentid = #{shipmentId} and si.airbill_number = #{airbillNumber}),INTERVAL (60 +
+        IFNULL(pausing_day,0)) DAY) > #{startPausingDate}
+    </update>
+
+    <select id="updatePausingDay_SelectForLog" parameterType="AirbillAdjustmentVo" resultMap="AirbillPausingDeductMap">
+        select * xms_tbl_airbill_pausing_deduct
+        where airbill_number = #{airbillNumber}
+        and DATE_ADD((select i.invoice_date from xms_tbl_shipment_invoice as si
+        inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        where si.shipmentid = #{shipmentId} and si.airbill_number = #{airbillNumber}),INTERVAL (60 +
+        IFNULL(pausing_day,0)) DAY) > #{startPausingDate}
+    </select>
+</mapper>

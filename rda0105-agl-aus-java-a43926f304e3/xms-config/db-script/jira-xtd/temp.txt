@@ -1,0 +1,21 @@
+template for new sql file
+
+/**
+date: 24/03/2017
+author: huynh
+purpose: to do sth ....
+**/
+
+insert into ....
+
+-- undo
+delete from ...
+
+* Save script file in folder with name of database
+    Ex: au/XTD-197.sql
+
+* Naming
+- Prefix Execute: XTD-XXX.sql
+- Prefix Restore: XTD-XXX.restore.sql
+
+NOTE: if re-fix same issue, then append xtd_xxx_1.sql, xtd_xxx_2.sql ...etc

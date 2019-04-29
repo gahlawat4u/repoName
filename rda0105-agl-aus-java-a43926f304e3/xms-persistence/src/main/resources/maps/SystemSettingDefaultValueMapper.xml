@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="SystemSettingDefaultValue">
+    <select id="selectAllSystemSetting" parameterType="SystemSettingDefaultValueVo"
+            resultType="SystemSettingDefaultValueVo">
+        SELECT
+        ${key} as 'key',${value} as 'value',
+        <if test="inputDisplay != null">#{inputDisplay} as inputDisplay</if>
+        <if test="inputDisplay == null">'text' as inputDisplay</if>
+        FROM ${dataSource}
+        <if test="filter != null">
+            Where ${filter}
+        </if>
+    </select>
+</mapper>

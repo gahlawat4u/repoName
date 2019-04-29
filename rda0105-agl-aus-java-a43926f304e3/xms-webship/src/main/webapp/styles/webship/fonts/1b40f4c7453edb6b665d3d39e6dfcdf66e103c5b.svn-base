@@ -1,0 +1,26 @@
+package com.crmweb.module.generic.entity;
+
+import com.crmweb.system.entity.meta.EntityField;
+
+public enum RoomGroupField implements EntityField {
+
+	ID ("id"),
+	DESCRIPTION ("description"),
+
+	;
+
+	private String fieldname;
+
+	private RoomGroupField(String fieldname) {
+		this.fieldname = fieldname;
+	}
+
+	@Override
+	public String toString() {
+		return fieldname;
+	}
+	
+	public Enum[] enumValues() {
+		return values();
+	}
+}

@@ -1,0 +1,100 @@
+<getConsignmentDetailResponse>
+    <consignment billedInd="false" carrierCode="" consolidate="false" consolidateSendersReference="false"
+                 deliveryDepot="ARM" despatchDate="2016-06-06" despatchDepot="BRS" despatchNotification="false"
+                 driverCube="0.015" etaDate="2016-06-07T23:59:00+10:00" id="2YAZ50000018"
+                 lastStatusDateTime="2016-06-07T12:09:05+10:00" lock_seq="8" payerAccountNumber="10145213" payerType="O"
+                 podSignatoryName="SCHAEFER"
+                 podSignature="iVBORw0KGgoAAAANSUhEUgAAAU0AAABsCAAAAADLHL8/AAADDklEQVR42u3d3W7sIAxF4fX+L011pNNqAjYBQmZiz+aqP+kgvjqAnSihqO1riECa0pSmmjSlKU01aUpTmtJUk6Y0pfnvePHv00Se+zTR7LBPE8210nymJtoHxNQkvSZFmjdovmGsQbdh0syvSUmv+caJU5o60aX5+Vzodk2KNKX5UM2ouSunA6M9GoXmkibHQ6S5U/M95eLUmm1wIswVzRbvDZzJNUeDE2nO7oiQ5kXNJjjv1AyMOahZc3LjpjuTJtLcp4n33fFLaYbRDHyBmaETvebkvqiKHJp+MPZoKdK8pnkIzsXYHDmJQ9+C90ZNGNmSfonmYb+E81nM5PzS7O04D5pwlvLnmzaXNa1BczwGVjRD34Dn5T50bAc08far36hJOdX8b4qdc1LbSNP95WuEdjVbRaZmniyazhWhGsbRdMvLFGma0fZ7hDWfuuXlSyf682eBac2m/DGiOXwHE7Fn1FFN56LGgGa71HfTqdCrk6lJm9lgb0ixL3Lg7Mg5y6aIPZ3OadKO3jwGB8nThH4iFGVt8jVfxwZ25ExqOpn+XzkkemiWTvbH3wbdHyr2nQucVDwwkgHih2ZP8+UEBc4vXuBXkqg+AWtdI5lmvdWeq0bSWWGMAgrGMk9sTEvzbOG1l+sZTZzCCLk064V8JHUxkiT6/eDNpW4ROqhmtaxwZomXctrwr/OndTMjwTN31n+Lm+iMpTO0tRQIjXlBk2qWZKHrNpHiOzWpTeaHjbHzJzLmqiZNWrMwbDjfq36DZpVks1biMa9zEBhzTZPR0s+kZufySQbNwb9htW8wqy1RMZemu027GJoSgHulM68mZaem/ZOoD17iQZiHCohbtsqkuS/32/Zviau5rywRPSWX5sM078WU5sZZM8HT/lBoPklToblPE4o092he2F9Ls5h3u2zrNsMTZ+c0D21zr1+neWuv0tSJLs38mjmeeo4wpSnNTqdZ3m4gzXSrUJoXbzxBM89bTPh4t5nepfVpzVzvJeOj/WZ7x9vHNIPef/BMzZxNmtKUpjTVpCnNHO0HjXQWcGxoy4YAAAAASUVORK5CYII="
+                 requestService="false" source="Ext" status="DF" totalQuantity="1" totalVolume="1.0E-3"
+                 totalWeight="3.0E0" type="T" unitType="CTN" userName="">
+        <references lock_seq="0" name="REF1" printOnLabel="true" priority="1" type="S" value="SO24546"/>
+        <references lock_seq="0" name="REF2" printOnLabel="false" priority="10" type="R" value="SO24546"/>
+        <serviceCode>EXP</serviceCode>
+        <receiver shortName="">
+            <name>MONKS HEALTHMART</name>
+            <name>CHRIS DAVIS</name>
+            <contactDetails>
+                <phoneNumber>0267726176</phoneNumber>
+                <mobileNumber>0000000000</mobileNumber>
+                <address>
+                    <addressLine>SHOP 12</addressLine>
+                    <addressLine>90-96 MARSH STREET</addressLine>
+                    <suburbOrLocation>ARMIDALE</suburbOrLocation>
+                    <state>NSW</state>
+                    <postCode>2350</postCode>
+                    <country/>
+                    <stateCode>2</stateCode>
+                </address>
+            </contactDetails>
+        </receiver>
+        <sender shortName="GREEN LIVING AUSTRALIA">
+            <name>GREEN LIVING AUSTRALIA</name>
+            <contactDetails>
+                <phoneNumber>0738082576</phoneNumber>
+                <address>
+                    <addressLine>UNIT 23/25 PARRAMATTA RD</addressLine>
+                    <suburbOrLocation>UNDERWOOD</suburbOrLocation>
+                    <state>QLD</state>
+                    <postCode>4119</postCode>
+                    <country/>
+                    <stateCode>4</stateCode>
+                </address>
+            </contactDetails>
+        </sender>
+        <despatchLocationCode>2YA</despatchLocationCode>
+        <statusHistory dateTime="2016-06-07T12:09:05+10:00" signatoryName="SCHAEFER R" status="DF">
+            <user user="ARM40"/>
+        </statusHistory>
+        <statusHistory dateTime="2016-06-07T11:07:42+10:00" signatoryName="" status="OD">
+            <user user="ARM40"/>
+        </statusHistory>
+        <statusHistory dateTime="2016-06-06T14:04:08+10:00" signatoryName="" status="IT">
+            <user user=""/>
+        </statusHistory>
+        <trackingEvents eventDateTime="2016-06-07T12:09:05+10:00" id="2YAZ50000018" quantityDelivered="1"
+                        quantityOnHand="1" scanningDepot="TAM" signatoryName="SCHAEFER R">
+            <scanner depotCode="TAM" id="14921242760"/>
+            <scanMode>S</scanMode>
+            <transitState>D</transitState>
+        </trackingEvents>
+        <trackingEvents eventDateTime="2016-06-07T11:07:42+10:00" id="2YAZ50000018" quantityDelivered="1"
+                        quantityOnHand="1" scanningDepot="TAM" signatoryName="">
+            <scanner depotCode="TAM" id="14921242760"/>
+            <scanMode>S</scanMode>
+            <transitState>M</transitState>
+        </trackingEvents>
+        <lineItems cube="0.001" lineNumber="1" packagingType="CTN" quantity="1" unitType="CTN" weight="3.0">
+            <freightItem currentTransitState="M" etaDttm="2016-06-07T23:59:00+10:00" id="2YAZ50000018EXP00001"
+                         lock_seq="8" measuredCube="0.0" measuredWeight="0.0" status="DF">
+                <freightItemTrackingEvent eventDateTime="2016-06-07T10:48:26+10:00" scanMode="S" transitState="M">
+                    <scanner depotCode="TAM"/>
+                </freightItemTrackingEvent>
+                <freightItemTrackingEvent eventDateTime="2016-06-07T04:15:46+10:00" scanMode="T" transitState="F">
+                    <scanner depotCode="TAM"/>
+                </freightItemTrackingEvent>
+                <freightItemTrackingEvent eventDateTime="2016-06-06T17:39:35+10:00" scanMode="Q" transitState="F">
+                    <scanner depotCode="BRS"/>
+                </freightItemTrackingEvent>
+                <freightItemTrackingEvent eventDateTime="2016-06-06T14:04:08+10:00" scanMode="S" transitState="P">
+                    <scanner depotCode="BRS"/>
+                </freightItemTrackingEvent>
+                <statusHistory dateTime="2016-06-07T12:09:05+10:00" status="DF">
+                    <user/>
+                </statusHistory>
+                <statusHistory dateTime="2016-06-06T14:04:08+10:00" status="IT">
+                    <user user="11702"/>
+                </statusHistory>
+                <printStatus printedInd="true" reprintedInd="false"/>
+            </freightItem>
+        </lineItems>
+        <image>
+            <creationDateTime>2016-06-07T00:00:00+10:00</creationDateTime>
+            <type>P</type>
+            <signatoryName/>
+            <cartridge>16067Ejf9</cartridge>
+            <frame>00174</frame>
+            <consignmentId>2YAZ50000018</consignmentId>
+            <isPOD>true</isPOD>
+        </image>
+    </consignment>
+</getConsignmentDetailResponse>

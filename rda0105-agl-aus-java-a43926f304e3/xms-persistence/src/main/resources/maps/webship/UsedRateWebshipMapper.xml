@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="UsedRateWebship">
+    <select id="selectUsedRateWebship" resultType="UsedRateWebshipVo" parameterType="UsedRateWebshipFilter">
+        <![CDATA[
+	SELECT
+		rate.srno as srNo,
+		rate.customer_base_rate_id as customerBaseRateId,
+		rate.customer_code as customerCode,
+		rate.shipment_type_id as shipmentTypeId,
+		rate.rate_type as rateType,
+		rate.weight as weight,
+		ifnull(rate.rate,0) as rate,
+		rate.zone_check as zoneCheck,
+		rate.content as content,
+		rate.bound as bound,
+		ifnull(rate.cbrate,0) as cbRate,
+		ifnull(
+			minbase.minimun_base_charge,
+			0
+		) AS minimunBaseCharge
+	FROM
+		(
+			SELECT
+				1 AS srno,
+				cbr.customer_base_rate_id,
+				cbr.customer_code,
+				cbr.shipment_type_id,
+				cbr.rate_type,
+				cbr.weight,
+				cbr.rate,
+				cbr.zone_check,
+				cbr.content,
+				cbr.bound ,
+				ifnull(
+					cbrd.rate,
+					ifnull(cbr.rate, 0)
+				) AS cbrate
+			FROM
+				xms_tbl_customer_base_rate AS cbr
+			LEFT JOIN xms_tbl_customer_base_rate_detail AS cbrd ON cbrd.customer_base_rate_id = cbr.customer_base_rate_id
+			WHERE
+				cbr.customer_code = #{customerCode}
+				AND zone = #{zone}
+				AND shipment_type_id = #{shipType}
+				AND weight <= #{weight}
+				AND content = #{content}
+				AND bound = #{bound}
+			UNION
+				SELECT
+					2 AS srno,
+					cbr.customer_base_rate_id,
+					cbr.customer_code,
+					cbr.shipment_type_id,
+					cbr.rate_type,
+					cbr.weight,
+					cbr.rate,
+					cbr.zone_check,
+					cbr.content,
+					cbr.bound,
+					ifnull(
+						cbrd.rate,
+						ifnull(cbr.rate, 0)
+					) AS cbrate
+				FROM
+					xms_tbl_customer_base_rate AS cbr
+				LEFT JOIN xms_tbl_customer_base_rate_detail AS cbrd ON cbrd.customer_base_rate_id = cbr.customer_base_rate_id
+				WHERE
+					cbr.customer_code = #{customerCode}
+				AND shipment_type_id = #{shipType}
+				AND weight <= #{weight}
+				AND content = #{content}
+				AND bound = #{bound}
+				UNION
+					SELECT
+						3 AS srno,
+						cbr.customer_base_rate_id,
+						cbr.customer_code,
+						cbr.shipment_type_id,
+						cbr.rate_type,
+						cbr.weight,
+						cbr.rate,
+						cbr.zone_check,
+						cbr.content,
+						cbr.bound,
+						ifnull(cbr.rate, 0) AS cbrate
+					FROM
+						xms_tbl_customer_base_rate AS cbr
+					LEFT JOIN xms_tbl_customer_base_rate_detail AS cbrd ON cbrd.customer_base_rate_id = cbr.customer_base_rate_id
+					WHERE
+						cbr.customer_code = #{customerCode}
+					AND shipment_type_id = #{shipType}
+					AND content = #{content}
+					AND bound = #{bound}
+					UNION
+						SELECT
+							4 AS srno,				
+							cbr.customer_base_rate_id,
+							cbr.customer_code,
+							cbr.shipment_type_id,
+							cbr.rate_type,
+							cbr.weight,
+							cbr.rate,
+							cbr.zone_check,
+							cbr.content,
+							cbr.bound,
+							ifnull(cbr.rate, 0) AS cbrate
+						FROM
+							xms_tbl_customer_base_rate AS cbr
+						LEFT JOIN xms_tbl_customer_base_rate_detail AS cbrd ON cbrd.customer_base_rate_id = cbr.customer_base_rate_id
+						WHERE
+							cbr.customer_code = #{customerCode}
+						AND shipment_type_id = #{shipType}
+						AND content = '1'
+						AND bound = '0'
+						UNION
+							SELECT
+								5 AS srno,
+								cbr.customer_base_rate_id,
+								cbr.customer_code,
+								cbr.shipment_type_id,
+								cbr.rate_type,
+								cbr.weight,
+								cbr.rate,
+								cbr.zone_check,
+								cbr.content,
+								cbr.bound,
+								ifnull(cbr.rate, 0) AS cbrate
+							FROM
+								xms_tbl_customer_base_rate AS cbr
+							LEFT JOIN xms_tbl_customer_base_rate_detail AS cbrd ON cbrd.customer_base_rate_id = cbr.customer_base_rate_id
+							WHERE
+								cbr.customer_code = #{customerCode}
+							AND carrierid IN (
+								SELECT
+									t.serviceid
+								FROM
+									xms_tbl_shipment_type t
+								INNER JOIN xms_tbl_service s ON t.serviceid = s.service_id
+								WHERE
+									t.shipment_type_id = #{shipType}
+								AND non_centralized = 1
+							)
+							UNION
+								SELECT
+									6 AS srno,				
+									cbr.customer_base_rate_id,
+									cbr.customer_code,
+									cbr.shipment_type_id,
+									cbr.rate_type,
+									cbr.weight,
+									cbr.rate,
+									cbr.zone_check,
+									cbr.content,
+									cbr.bound ,
+									ifnull(cbr.rate, 0) AS cbrate
+								FROM
+									xms_tbl_customer_base_rate AS cbr
+								LEFT JOIN xms_tbl_customer_base_rate_detail AS cbrd ON cbrd.customer_base_rate_id = cbr.customer_base_rate_id
+								WHERE
+									cbr.customer_code = #{customerCode}
+								AND carrierid IN (
+									SELECT
+										t.serviceid
+									FROM
+										xms_tbl_shipment_type t
+									INNER JOIN xms_tbl_service s ON t.serviceid = s.service_id
+									WHERE
+										t.shipment_type_id = #{shipType}
+								)
+								UNION
+									SELECT
+										7 AS srno,
+										'',
+										#{customerCode} ,
+										'' ,
+										#{rateType} ,
+										0 ,
+										0 ,
+										'',
+										'',
+										'',
+										'0' as cbrate
+									ORDER BY
+										srno ASC,
+										weight DESC
+									LIMIT 1
+		) AS rate
+	LEFT JOIN (
+		SELECT
+			customer_code,
+			ifnull(minimun_base_charge, 0) AS minimun_base_charge
+		FROM
+			xms_tbl_customer
+		UNION
+			SELECT
+				franchise_code,
+				ifnull(minimun_base_charge, 0) AS minimun_base_charge
+			FROM
+				xms_tbl_franchise
+	) AS minbase ON minbase.customer_code = rate.customer_code
+	]]>
+    </select>
+</mapper>

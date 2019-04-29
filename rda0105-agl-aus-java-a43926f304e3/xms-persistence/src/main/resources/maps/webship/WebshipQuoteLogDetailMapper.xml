@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="WebshipQuoteLogDetail">
+    <resultMap id="WebshipQuoteLogDetailMap" type="WebshipQuoteLogDetailVo">
+        <result column="quoteid" property="quoteId"/>
+        <result column="accessorialid" property="accessorialId"/>
+        <result column="amount" property="amount"/>
+    </resultMap>
+
+    <update id="update" parameterType="WebshipQuoteLogDetailVo">
+        update xms_tbl_webship_quote_log_detail
+        <set>
+            <if test="amount != null">
+                amount = #{amount}
+            </if>
+        </set>
+        where quoteid = #{quoteId} and accessorialid = #{accessorialId}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="WebshipQuoteLogDetailVo" resultMap="WebshipQuoteLogDetailMap">
+        select * from xms_tbl_webship_quote_log_detail
+        where quoteid = #{quoteId} and accessorialid = #{accessorialId}
+    </select>
+
+    <insert id="insert" parameterType="WebshipQuoteLogDetailVo">
+        insert into xms_tbl_webship_quote_log_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="quoteId != null">
+                quoteid,
+            </if>
+            <if test="accessorialId != null">
+                accessorialid,
+            </if>
+            <if test="amount != null">
+                amount,
+            </if>
+            <if test="type != null">
+                type,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="quoteId != null">
+                #{quoteId},
+            </if>
+            <if test="accessorialId != null">
+                #{accessorialId},
+            </if>
+            <if test="amount != null">
+                #{amount},
+            </if>
+            <if test="type != null">
+                #{type},
+            </if>
+        </trim>
+    </insert>
+</mapper>

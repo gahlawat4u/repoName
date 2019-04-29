@@ -1,0 +1,22 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+           targetNamespace="http://tempuri.org/">
+    <xs:import
+            schemaLocation="https://extwebservices.startrack.com.au:3112/AaECreateBookingUAT/AaECreateBooking.Service1.svc?xsd=xsd2"
+            namespace="http://schemas.datacontract.org/2004/07/AaECreateBooking"/>
+    <xs:element name="CreateBooking">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/AaECreateBooking" minOccurs="0"
+                            name="composite" nillable="true" type="q1:AaEBookingType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="CreateBookingResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/AaECreateBooking" minOccurs="0"
+                            name="CreateBookingResult" nillable="true" type="q2:AaEBookingResult"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CustomerProfile">
+    <resultMap id="CustomerProfileMap" type="CustomerProfileVo">
+        <id column="profileid" property="profileId"/>
+        <result column="profile_name" property="profileName"/>
+        <result column="franchise_code" property="franchiseCode"/>
+        <result column="inactive" property="inActive"/>
+        <result column="group_id" property="groupId"/>
+        <result column="webship_groupid" property="webshipGroupId"/>
+        <result column="industry_id" property="industryId"/>
+        <result column="sales_rep_id" property="salesRepId"/>
+        <result column="collectorid" property="collectorId"/>
+        <result column="registrationid" property="registrationId"/>
+        <result column="gstid" property="gstId"/>
+        <result column="dhl_account" property="dhlAccount"/>
+        <result column="dhl_domestic_account" property="dhlDomesticAccount"/>
+        <result column="dhl_international_account" property="dhlInternationalAccount"/>
+        <result column="dhl_inbound_account" property="dhlInboundAccount"/>
+        <result column="other_account" property="otherAccount"/>
+        <result column="minimun_base_charge" property="minimunBaseCharge"/>
+        <result column="invoice_sorting" property="invoiceSorting"/>
+        <result column="invoice_terms" property="invoiceTerms"/>
+        <result column="invoice_to_customerid" property="invoiceToCustomerId"/>
+        <result column="pickup_fee" property="pickupFee"/>
+        <result column="invoice_late_fee" property="invoiceLateFee"/>
+        <result column="email_invoice" property="emailInvoice"/>
+        <result column="download_csv_invoice" property="downloadCsvInvoice"/>
+        <result column="previous_carrier" property="previousCarrier"/>
+        <result column="area_id" property="areaId"/>
+        <result column="tnt_account" property="tntAccount"/>
+        <result column="aae_account" property="aaeAccount"/>
+        <result column="hub_account" property="hubAccount"/>
+        <result column="fedex_account" property="fedexAccount"/>
+        <result column="toll_priority_account" property="tollPriorityAccount"/>
+        <result column="uk_mail_account" property="ukMailAccount"/>
+        <result column="ups_account" property="upsAccount"/>
+        <result column="booking_email_notification" property="bookingEmailNotification"/>
+        <result column="toll_ipec_account" property="tollIpecAccount"/>
+        <result column="startrack_account" property="startrackAccount"/>
+        <result column="dispatch_id" property="dispatchId"/>
+        <result column="rejection_note" property="rejectionNote"/>
+        <result column="enable_si" property="enableSi"/>
+    </resultMap>
+
+    <select id="selectByFranchiseCode" parameterType="string" resultMap="CustomerProfileMap">
+        select profileid, profile_name, sales_rep_id from xms_tbl_customer_profile
+        where franchise_code = #{franchiseCode}
+    </select>
+
+    <select id="selectByProfileId" parameterType="long" resultMap="CustomerProfileMap">
+        select * from xms_tbl_customer_profile
+        where profileid = #{profileId}
+    </select>
+
+    <select id="selectCustomerProfilesByFilter"
+            parameterType="com.gms.xms.filter.admin.customerprofile.CustomerProfileFilter"
+            resultMap="CustomerProfileMap">
+        SELECT
+        profileid, profile_name, sales_rep_id
+        FROM
+        xms_tbl_customer_profile
+        WHERE
+        franchise_code LIKE CONCAT('',#{franchiseCode},'%')
+        AND profile_name LIKE CONCAT('',#{profileName},'%')
+    </select>
+
+    <select id="checkProfileName" parameterType="com.gms.xms.filter.admin.customerprofile.CustomerProfileFilter"
+            resultType="int">
+        select count(*) from xms_tbl_customer_profile where franchise_code = #{franchiseCode} and profile_name =
+        #{profileName}
+    </select>
+
+    <update id="update" parameterType="CustomerProfileVo">
+        update xms_tbl_customer_profile
+        <set>
+            <if test="profileName!=null">
+                profile_name = #{profileName},
+            </if>
+            <if test="franchiseCode!=null">
+                franchise_code = #{franchiseCode},
+            </if>
+            <if test="inActive!=null">
+                inactive = #{inActive},
+            </if>
+            <if test="groupId!=null">
+                group_id = #{groupId},
+            </if>
+            <if test="webshipGroupId!=null">
+                webship_groupid = #{webshipGroupId},
+            </if>
+            <if test="industryId!=null">
+                industry_id = #{industryId},
+            </if>
+            <if test="salesRepId!=null">
+                sales_rep_id = #{salesRepId},
+            </if>
+            <if test="collectorId!=null">
+                collectorid = #{collectorId},
+            </if>
+            <if test="registrationId!=null">
+                registrationid = #{registrationId},
+            </if>
+            <if test="gstId!=null">
+                gstid = #{gstId},
+            </if>
+            <if test="dhlAccount!=null">
+                dhl_account = #{dhlAccount},
+            </if>
+            <if test="dhlDomesticAccount!=null">
+                dhl_domestic_account = #{dhlDomesticAccount},
+            </if>
+            <if test="dhlInternationalAccount!=null">
+                dhl_international_account = #{dhlInternationalAccount},
+            </if>
+            <if test="dhlInboundAccount!=null">
+                dhl_inbound_account = #{dhlInboundAccount},
+            </if>
+            <if test="otherAccount!=null">
+                other_account = #{otherAccount},
+            </if>
+            <if test="minimunBaseCharge!=null">
+                minimun_base_charge = #{minimunBaseCharge},
+            </if>
+            <if test="invoiceSorting!=null">
+                invoice_sorting = #{invoiceSorting},
+            </if>
+            <if test="invoiceTerms!=null">
+                invoice_terms = #{invoiceTerms},
+            </if>
+            <if test="invoiceToCustomerId!=null">
+                invoice_to_customerid = #{invoiceToCustomerId},
+            </if>
+            <if test="pickupFee!=null">
+                pickup_fee = #{pickupFee},
+            </if>
+            <if test="invoiceLateFee!=null">
+                invoice_late_fee = #{invoiceLateFee},
+            </if>
+            <if test="rejectionNote!=null">
+                rejection_note = #{rejectionNote},
+            </if>
+            <if test="emailInvoice!=null">
+                email_invoice =
+            </if>
+            <if test="downloadCsvInvoice!=null">
+                download_csv_invoice = #{downloadCsvInvoice},
+            </if>
+            <if test="previousCarrier!=null">
+                previous_carrier = #{previousCarrier},
+            </if>
+            <if test="areaId!=null">
+                area_id = #{areaId},
+            </if>
+            <if test="tntAccount!=null">
+                tnt_account = #{tntAccount},
+            </if>
+            <if test="aaeAccount!=null">
+                aae_account = #{aaeAccount},
+            </if>
+            <if test="hubAccount!=null">
+                hub_account = #{hubAccount},
+            </if>
+            <if test="fedexAccount!=null">
+                fedex_account = #{fedexAccount},
+            </if>
+            <if test="tollPriorityAccount!=null">
+                toll_priority_account = #{tollPriorityAccount},
+            </if>
+            <if test="ukMailAccount!=null">
+                uk_mail_account = #{ukMailAccount},
+            </if>
+            <if test="upsAccount!=null">
+                ups_account = #{upsAccount},
+            </if>
+            <if test="bookingEmailNotification!=null">
+                booking_email_notification = #{bookingEmailNotification},
+            </if>
+            <if test="tollIpecAccount!=null">
+                toll_ipec_account = #{tollIpecAccount},
+            </if>
+            <if test="startrackAccount!=null">
+                startrack_account = #{startrackAccount},
+            </if>
+            <if test="dispatchId!=null">
+                dispatch_id = #{dispatchId},
+            </if>
+            <if test="enableSi!=null">
+                enable_si = #{enableSi},
+            </if>
+        </set>
+        where profileid = #{profileId}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="CustomerProfileVo" resultMap="CustomerProfileMap">
+        select * from xms_tbl_customer_profile
+        where profileid = #{profileId}
+    </select>
+
+    <insert id="insert" parameterType="CustomerProfileVo" useGeneratedKeys="true" keyProperty="profileId"
+            keyColumn="profileid">
+        insert into xms_tbl_customer_profile (
+        profile_name,
+        franchise_code,
+        inactive,
+        group_id,
+        webship_groupid,
+        industry_id,
+        sales_rep_id,
+        collectorid,
+        registrationid,
+        gstid,
+        dhl_account,
+        dhl_domestic_account,
+        dhl_international_account,
+        dhl_inbound_account,
+        other_account,
+        rejection_note,
+        minimun_base_charge,
+        invoice_sorting,
+        invoice_terms,
+        invoice_to_customerid,
+        pickup_fee,
+        invoice_late_fee,
+        email_invoice,
+        download_csv_invoice,
+        previous_carrier,
+        area_id,
+        tnt_account,
+        aae_account,
+        hub_account,
+        fedex_account,
+        toll_priority_account,
+        uk_mail_account,
+        ups_account,
+        booking_email_notification,
+        toll_ipec_account,
+        startrack_account,
+        dispatch_id,
+        enable_si
+        )
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="profileName!=null">
+                #{profileName},
+            </if>
+            <if test="profileName==null">
+                "",
+            </if>
+            <if test="franchiseCode!=null">
+                #{franchiseCode},
+            </if>
+            <if test="franchiseCode==null">
+                0,
+            </if>
+            <if test="inActive!=null">
+                <if test="inActive==false">0,</if>
+                <if test="inActive==true">1,</if>
+            </if>
+            <if test="inActive==null">
+                0,
+            </if>
+            <if test="groupId!=null">
+                #{groupId},
+            </if>
+            <if test="groupId==null">
+                0,
+            </if>
+            <if test="webshipGroupId!=null">
+                #{webshipGroupId},
+            </if>
+            <if test="webshipGroupId==null">
+                0,
+            </if>
+            <if test="industryId!=null">
+                #{industryId},
+            </if>
+            <if test="industryId==null">
+                0,
+            </if>
+            <if test="salesRepId!=null">
+                #{salesRepId},
+            </if>
+            <if test="salesRepId==null">
+                0,
+            </if>
+            <if test="collectorId!=null">
+                #{collectorId},
+            </if>
+            <if test="collectorId==null">
+                0,
+            </if>
+            <if test="registrationId!=null">
+                #{registrationId},
+            </if>
+            <if test="registrationId==null">
+                0,
+            </if>
+            <if test="gstId!=null">
+                #{gstId},
+            </if>
+            <if test="gstId==null">
+                0,
+            </if>
+            <if test="dhlAccount!=null">
+                #{dhlAccount},
+            </if>
+            <if test="dhlAccount==null">
+                "",
+            </if>
+            <if test="dhlDomesticAccount!=null">
+                #{dhlDomesticAccount},
+            </if>
+            <if test="dhlDomesticAccount==null">
+                "",
+            </if>
+            <if test="dhlInternationalAccount!=null">
+                #{dhlInternationalAccount},
+            </if>
+            <if test="dhlInternationalAccount==null">
+                "",
+            </if>
+            <if test="dhlInboundAccount!=null">
+                #{dhlInboundAccount},
+            </if>
+            <if test="dhlInboundAccount==null">
+                "",
+            </if>
+            <if test="otherAccount!=null">
+                #{otherAccount},
+            </if>
+            <if test="otherAccount==null">
+                "",
+            </if>
+            <if test="rejectionNote!=null">
+                #{rejectionNote},
+            </if>
+            <if test="rejectionNote==null">
+                "",
+            </if>
+            <if test="minimunBaseCharge!=null">
+                #{minimunBaseCharge},
+            </if>
+            <if test="minimunBaseCharge==null">
+                0,
+            </if>
+            <if test="invoiceSorting!=null">
+                #{invoiceSorting},
+            </if>
+            <if test="invoiceSorting==null">
+                0,
+            </if>
+            <if test="invoiceTerms!=null">
+                #{invoiceTerms},
+            </if>
+            <if test="invoiceTerms==null">
+                0,
+            </if>
+            <if test="invoiceToCustomerId!=null">
+                #{invoiceToCustomerId},
+            </if>
+            <if test="invoiceToCustomerId==null">
+                0,
+            </if>
+            <if test="pickupFee!=null">
+                #{pickupFee},
+            </if>
+            <if test="pickupFee==null">
+                0,
+            </if>
+            <if test="invoiceLateFee!=null">
+                #{invoiceLateFee},
+            </if>
+            <if test="invoiceLateFee==null">
+                0,
+            </if>
+            <if test="emailInvoice!=null">
+                <if test="emailInvoice==true">1,</if>
+                <if test="emailInvoice==false">0,</if>
+            </if>
+            <if test="emailInvoice==null">
+                0,
+            </if>
+            <if test="downloadCsvInvoice!=null">
+                <if test="downloadCsvInvoice==true">1,</if>
+                <if test="downloadCsvInvoice==false">0,</if>
+            </if>
+            <if test="downloadCsvInvoice==null">
+                0,
+            </if>
+            <if test="previousCarrier!=null">
+                #{previousCarrier},
+            </if>
+            <if test="previousCarrier==null">
+                0,
+            </if>
+            <if test="areaId!=null">
+                #{areaId},
+            </if>
+            <if test="areaId==null">
+                0,
+            </if>
+            <if test="tntAccount!=null">
+                #{tntAccount},
+            </if>
+            <if test="tntAccount==null">
+                "",
+            </if>
+            <if test="aaeAccount!=null">
+                #{aaeAccount},
+            </if>
+            <if test="aaeAccount==null">
+                "",
+            </if>
+            <if test="hubAccount!=null">
+                #{hubAccount},
+            </if>
+            <if test="hubAccount==null">
+                "",
+            </if>
+            <if test="fedexAccount!=null">
+                #{fedexAccount},
+            </if>
+            <if test="fedexAccount==null">
+                "",
+            </if>
+            <if test="tollPriorityAccount!=null">
+                #{tollPriorityAccount},
+            </if>
+            <if test="tollPriorityAccount==null">
+                "",
+            </if>
+            <if test="ukMailAccount!=null">
+                #{ukMailAccount},
+            </if>
+            <if test="ukMailAccount==null">
+                "",
+            </if>
+            <if test="upsAccount!=null">
+                #{upsAccount},
+            </if>
+            <if test="upsAccount==null">
+                "",
+            </if>
+            <if test="bookingEmailNotification!=null">
+                #{bookingEmailNotification},
+            </if>
+            <if test="bookingEmailNotification==null">
+                "",
+            </if>
+            <if test="tollIpecAccount!=null">
+                #{tollIpecAccount},
+            </if>
+            <if test="tollIpecAccount==null">
+                "",
+            </if>
+            <if test="startrackAccount!=null">
+                #{startrackAccount},
+            </if>
+            <if test="startrackAccount==null">
+                "",
+            </if>
+            <if test="dispatchId!=null">
+                #{dispatchId},
+            </if>
+            <if test="dispatchId==null">
+                "",
+            </if>
+            <if test="enableSi!=null">
+                #{enableSi},
+            </if>
+            <if test="enableSi==null">
+                0,
+            </if>
+        </trim>
+    </insert>
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PackageShipmentCarrier">
+	<resultMap id="PackageShipmentCarrierMapper" type="com.gms.xms.txndb.vo.PackageShipmentCarrierVO">
+		<id column="pcc_id" property="pccId" />
+		<result column="service_id" property="serviceId" />
+		<result column="service_name" property="serviceName" />
+		<result column="shipment_type_id" property="shipmentTypeId" />
+		<result column="shipment_type_name" property="shipmentTypeName" />
+		<result column="packageid" property="packageId" />
+		<result column="packagename" property="packageName" />
+		<result column="status_both" property="statusBoth" />
+		<result column="default_both" property="defaultBoth" />
+		<result column="doc_status" property="docStatus" />
+		<result column="doc_default" property="docDefault" />
+		<result column="nondoc_status" property="nonDocStatus" />
+		<result column="nondoc_default" property="nonDocDefault" />
+		<result column="packagetypecode" property="packageTypeCode" />
+	</resultMap>
+
+	<select id="selectByShipmentTypeId" parameterType="PackageShipmentCarrierVO"
+		resultMap="PackageShipmentCarrierMapper">
+		<!-- select * from xms_tbl_package_shipment_carrier
+		where shipment_type_id =
+		#{shipmentTypeId} -->
+		
+		SELECT distinct(packageid) ,packagename , packagetypecode FROM xms_tbl_package_shipment_carrier where shipment_type_id = #{shipmentTypeId} 
+		
+		 
+		<if test="docStatus != null">
+		and
+		doc_status = #{docStatus} 
+		</if>
+		
+		<if test="nonDocStatus != null">
+		and
+		nondoc_status = #{nonDocStatus}
+		</if>
+		
+		<if test="packageId != null">
+		and
+		packageid = #{packageId} 
+		</if>
+		
+		ORDER BY doc_default DESC
+		
+	</select>
+</mapper>

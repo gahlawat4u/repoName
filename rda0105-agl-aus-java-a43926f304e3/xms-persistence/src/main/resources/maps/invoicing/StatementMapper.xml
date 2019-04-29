@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Statement">
+    <resultMap id="StatementMap" type="StatementCustomerVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+    </resultMap>
+
+    <resultMap id="StatementCustomerBillingAddressMap" type="StatementCustomerBillingAddressVo">
+        <result column="billing_customer_name" property="customerName"/>
+        <result column="billing_address1" property="address1"/>
+        <result column="billing_address2" property="address2"/>
+        <result column="billing_postal_code" property="postalCode"/>
+        <result column="billing_city" property="city"/>
+        <result column="countryname" property="countryName"/>
+    </resultMap>
+
+    <resultMap id="StatementInvoiceMap" type="StatementInvoiceVo">
+        <result column="invoiceid" property="invoiceId"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="due_date" property="dueDate"/>
+        <result column="invoice_amount" property="invoiceAmount"/>
+        <result column="late_fee" property="lateFee"/>
+        <result column="invoice_total" property="invoiceTotal"/>
+        <result column="total_paid" property="totalPaid"/>
+        <result column="remaining_due" property="remainingDue"/>
+    </resultMap>
+
+    <select id="getCustomerByFranchises" parameterType="string" resultMap="StatementMap">
+        select
+        distinct
+        ca.customer_code,
+        ca.customer_name
+        from xms_tbl_customer_address as ca
+        inner join xms_tbl_invoice as i on i.customer_code=ca.customer_code
+        where i.status > 0
+        and i.paid=0
+        and left(i.customer_code,3) in (${_parameter})
+        order by customer_code
+    </select>
+
+    <select id="getBillingAddressByCustCode" parameterType="string" resultMap="StatementCustomerBillingAddressMap">
+        select
+        cba.billing_customer_name,
+        cba.billing_address1,
+        cba.billing_address2,
+        cba.billing_postal_code,
+        cba.billing_city,
+        bct.countryname
+        from
+        (select customer_code, if(invoice_to_customerid=0,customer_code,invoice_to_customerid) as billing_customer_code
+        from xms_tbl_customer
+        where customer_code = #{customerCode}
+        union
+        select franchise_code, if(invoice_to_customerid=0,franchise_code,invoice_to_customerid) as billing_customer_code
+        from xms_tbl_franchise
+        where franchise_code = #{customerCode}
+        ) as c
+        left join xms_tbl_customer_billing_address as cba on cba.customer_code = c.billing_customer_code
+        left join xms_tbl_country as bct on bct.countryid = cba.billing_country
+    </select>
+
+    <select id="getInvoiceByCustCode" parameterType="com.gms.xms.filter.invoicing.StatementInvoiceFilter"
+            resultMap="StatementInvoiceMap">
+        <![CDATA[
+		select 
+			i.invoiceid,
+			i.invoice_code,
+			i.invoice_date,
+		    date_add(i.invoice_date,interval ifnull(it.days,0) day) as due_date,
+		    ifnull(tc.total_cost,0) as invoice_amount,
+		    i.late_fee,
+		    ifnull(tc.total_cost,0) + i.late_fee as invoice_total,
+		    ifnull(tp.total_paid,0) as total_paid,
+			ifnull(tc.total_cost,0)+ i.late_fee-ifnull(tp.total_paid,0) as remaining_due
+		from 
+			(select customer_code, invoice_terms from xms_tbl_customer
+			where customer_code = #{customerCode}
+				union 
+			select franchise_code, invoice_terms from xms_tbl_franchise
+			where franchise_code = #{customerCode}
+			) as c
+		inner join xms_tbl_invoice as i on i.customer_code = c.customer_code
+		left join xms_tbl_invoice_terms as it on it.invoice_terms_id = c.invoice_terms
+		left join 
+			(select i.invoiceid, sum(sb.customer_cost+sb.customer_tax_amount) as total_cost from xms_tbl_invoice as i
+			inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+			inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+			where i.customer_code = #{customerCode}
+			group by i.invoiceid
+			) as tc on tc.invoiceid = i.invoiceid
+		left join
+			(select i.invoiceid, sum(ip.amount) as total_paid from xms_tbl_invoice as i
+			inner join xms_tbl_invoice_payment as ip on ip.invoiceid = i.invoiceid
+			where i.customer_code = #{customerCode}
+			group by i.invoiceid
+			) as tp on tp.invoiceid = i.invoiceid
+		where i.status>0
+		having remaining_due>0
+		]]>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="sumInvoiceByCustCode" parameterType="com.gms.xms.filter.invoicing.StatementInvoiceFilter"
+            resultMap="StatementInvoiceMap">
+        <![CDATA[
+		select
+			sum(invoice_amount) as invoice_amount,
+			sum(late_fee) as late_fee,
+			sum(invoice_total) as invoice_total,
+			sum(total_paid) as total_paid,
+			sum(remaining_due) as remaining_due
+		from
+			(select 
+				i.invoiceid,
+				i.invoice_code,
+				i.invoice_date,
+			    date_add(i.invoice_date,interval ifnull(it.days,0) day) as due_date,
+			    ifnull(tc.total_cost,0) as invoice_amount,
+			    i.late_fee,
+			    ifnull(tc.total_cost,0) + i.late_fee as invoice_total,
+			    ifnull(tp.total_paid,0) as total_paid,
+				ifnull(tc.total_cost,0)+ i.late_fee-ifnull(tp.total_paid,0) as remaining_due
+			from 
+				(select customer_code, invoice_terms from xms_tbl_customer
+				where customer_code = #{customerCode}
+					union 
+				select franchise_code, invoice_terms from xms_tbl_franchise
+				where franchise_code = #{customerCode}
+				) as c
+			inner join xms_tbl_invoice as i on i.customer_code = c.customer_code
+			left join xms_tbl_invoice_terms as it on it.invoice_terms_id = c.invoice_terms
+			left join 
+				(select i.invoiceid, sum(sb.customer_cost+sb.customer_tax_amount) as total_cost from xms_tbl_invoice as i
+				inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+				inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+				where i.customer_code = #{customerCode}
+				group by i.invoiceid
+				) as tc on tc.invoiceid = i.invoiceid
+			left join
+				(select i.invoiceid, sum(ip.amount) as total_paid from xms_tbl_invoice as i
+				inner join xms_tbl_invoice_payment as ip on ip.invoiceid = i.invoiceid
+				where i.customer_code = #{customerCode}
+				group by i.invoiceid
+				) as tp on tp.invoiceid = i.invoiceid
+			where i.status>0
+			having remaining_due>0
+			) as r
+		]]>
+    </select>
+
+    <select id="countInvoiceByCustCode" parameterType="com.gms.xms.filter.invoicing.StatementInvoiceFilter"
+            resultType="long">
+        <![CDATA[
+		select
+			count(*)
+		from
+			(select 
+				i.invoiceid,
+				i.invoice_code,
+				i.invoice_date,
+			    date_add(i.invoice_date,interval ifnull(it.days,0) day) as due_date,
+			    ifnull(tc.total_cost,0) as invoice_amount,
+			    i.late_fee,
+			    ifnull(tc.total_cost,0) + i.late_fee as invoice_total,
+			    ifnull(tp.total_paid,0) as total_paid,
+				ifnull(tc.total_cost,0)+ i.late_fee-ifnull(tp.total_paid,0) as remaining_due
+			from 
+				(select customer_code, invoice_terms from xms_tbl_customer
+				where customer_code = #{customerCode}
+					union 
+				select franchise_code, invoice_terms from xms_tbl_franchise
+				where franchise_code = #{customerCode}
+				) as c
+			inner join xms_tbl_invoice as i on i.customer_code = c.customer_code
+			left join xms_tbl_invoice_terms as it on it.invoice_terms_id = c.invoice_terms
+			left join 
+				(select i.invoiceid, sum(sb.customer_cost+sb.customer_tax_amount) as total_cost from xms_tbl_invoice as i
+				inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+				inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+				where i.customer_code = #{customerCode}
+				group by i.invoiceid
+				) as tc on tc.invoiceid = i.invoiceid
+			left join
+				(select i.invoiceid, sum(ip.amount) as total_paid from xms_tbl_invoice as i
+				inner join xms_tbl_invoice_payment as ip on ip.invoiceid = i.invoiceid
+				where i.customer_code = #{customerCode}
+				group by i.invoiceid
+				) as tp on tp.invoiceid = i.invoiceid
+			where i.status>0
+			having remaining_due>0
+			) as r
+		]]>
+    </select>
+</mapper>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FranchisePayableMSOverview">
+
+    <select id="getSetups" parameterType="FranchisePayableFilter" resultType="_long">
+        SELECT COUNT(customer_code) FROM xms_tbl_customer
+        WHERE create_date BETWEEN #{startDate} AND #{endDate}
+        AND franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+
+    <select id="getActivations" parameterType="FranchisePayableFilter" resultType="_long">
+        SELECT COUNT(customer_code) FROM xms_tbl_customer
+        WHERE activate_date BETWEEN #{startDate} AND #{endDate}
+        AND franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+
+    <select id="getPrintedInvoices" parameterType="FranchisePayableFilter" resultType="_long">
+        SELECT COUNT(invoice_code) FROM xms_tbl_invoice AS i
+        INNER JOIN xms_tbl_customer AS c ON i.customer_code = c.customer_code
+        WHERE i.invoice_date BETWEEN #{startDate} AND #{endDate} AND i.status = 4
+        AND franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+
+    <select id="getEmailInvoices" parameterType="FranchisePayableFilter" resultType="_long">
+        SELECT COUNT(invoice_code) FROM xms_tbl_invoice as i
+        INNER JOIN xms_tbl_customer AS c ON i.customer_code = c.customer_code
+        WHERE i.invoice_date BETWEEN #{startDate} AND #{endDate} AND i.status = 2
+        AND franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+
+    <select id="get61DaysPayments" parameterType="FranchisePayableFilter" resultType="decimal">
+        <![CDATA[
+		SELECT	SUM(
+			IF(previously_deducted_cost>0,
+				IF(payments_received < IF(franchise_cost_exc_gst + franchise_cost_gst - previously_paid > 0, 
+											franchise_cost_exc_gst + franchise_cost_gst - previously_paid,
+											0
+										),
+					payments_received, 
+					IF(franchise_cost_exc_gst + franchise_cost_gst - previously_paid > 0, 
+						franchise_cost_exc_gst + franchise_cost_gst - previously_paid,
+						0
+					)
+				),
+				0
+			)
+		)
+		FROM tmp_xms_tbl_ms_rpt_fran_pab_61days
+		WHERE rpt_txn_id = #{rptTxnId} 
+		]]>
+        AND franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+</mapper>

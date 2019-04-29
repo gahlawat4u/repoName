@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="DuplicateAirbill">
+    <resultMap id="DuplicateAirbillMap" type="DuplicateAirbillVo">
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="carrier" property="carrier"/>
+        <result column="import_date" property="importDate"/>
+    </resultMap>
+
+    <select id="getDuplicateAirbillByFilter" parameterType="com.gms.xms.filter.invoicing.DuplicateAirbillFilter"
+            resultMap="DuplicateAirbillMap">
+        select da.* from xms_tbl_duplicate_airbill as da
+        left join xms_tbl_shipment as sm on sm.shipmentid = da.shipmentid
+        where da.shipmentid!=0 and left(sm.customer_code,3) in (${franchiseList})
+        <![CDATA[
+	    	and da.import_date >= date(#{fromDate}) and da.import_date < date(date_add(#{toDate},interval 1 day))
+	    	]]>
+        group by da.shipmentid, da.airbill_number
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countDuplicateAirbillByFilter" parameterType="com.gms.xms.filter.invoicing.DuplicateAirbillFilter"
+            resultType="long">
+        select
+        count(*)
+        from
+        (select da.* from xms_tbl_duplicate_airbill as da
+        left join xms_tbl_shipment as sm on sm.shipmentid = da.shipmentid
+        where da.shipmentid!=0 and left(sm.customer_code,3) in (${franchiseList})
+        <![CDATA[
+	    		and da.import_date >= date(#{fromDate}) and da.import_date < date(date_add(#{toDate},interval 1 day))
+	    		]]>
+        group by da.shipmentid, da.airbill_number
+        ) as r
+    </select>
+
+    <insert id="saveDuplicateAirbill" parameterType="DuplicateAirbillVo">
+        insert into xms_tbl_duplicate_airbill
+        (shipmentid,airbill_number,carrier,import_date)
+        values
+        (#{shipmentId},#{airbillNumber},#{carrier},#{importDate})
+    </insert>
+</mapper>

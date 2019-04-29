@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CsvInvoices">
+    <select id="selectCsvInvoiceInfo" parameterType="com.gms.xms.filter.invoicing.CsvInvoicesExportFilter"
+            resultType="CsvInvoicesExportVo">
+        SELECT
+        *
+        FROM
+        (SELECT
+        result.*
+        FROM
+        (SELECT
+        invoice.invoiceid as invoiceId,
+        invoice.invoice_code as invoiceCode,
+        invoice.invoice_date as invoiceDate,
+        invoice.customer_code as customerCode,
+        bill.airbill_number as airbillNumber,
+        bill.shipmentid,
+        bill.shipper_reference AS shipperReference,
+        bill.billing_account as shipperAccount,
+        sh.productcontentcode as productCode,
+        bill.billing_reference2 AS reference2,
+        bill.billing_reference3 AS reference3,
+        bill.description AS baseChargeType,
+        bill.display_description,
+        bill.ship_date AS shipmentDate,
+        bill.customer_cost AS baseChargeAmount,
+        bill.weight as billedWeight,
+        bill.bill_actual_dimension AS dimensionWeight,
+        bill.pal AS pieces,
+        bill.zone AS zone,
+        bill.carrier,
+        sender.companyname AS shipperName,
+        sender.contact_name AS shipperAttention,
+        sender.address AS shipperAddress1,
+        sender.address2 AS shipperAddress2,
+        sender.city AS shipperCity,
+        sender.state AS shipperState,
+        sender.postal_code AS shipperZipcode,
+        sender.country AS sendercountryid,
+        receiver.companyname AS consigneeName,
+        receiver.contact_name AS consigneeAttention,
+        receiver.address AS consigneeAddress1,
+        receiver.address2 AS consigneeAddress2,
+        receiver.city AS consigneeCity,
+        receiver.state AS consigneeState,
+        receiver.postal_code AS consigneeZipcode,
+        receiver.country AS receivercountryid,
+        rc.countrycode AS consigneeCountryCode
+        FROM
+        xms_tbl_invoice AS invoice
+        LEFT JOIN xms_tbl_shipment_invoice AS ship ON ship.invoiceid = invoice.invoiceid
+        LEFT JOIN
+        xms_tbl_shipment_billing bill ON (bill.shipmentid = ship.shipmentid
+        AND bill.airbill_number = ship.airbill_number AND bill.is_base_charge = 1)
+        LEFT JOIN xms_tbl_shipment AS sh ON (bill.shipmentid = sh.shipmentid)
+        LEFT JOIN xms_tbl_piece pi ON pi.shipmentid = sh.shipmentid
+        LEFT JOIN xms_tbl_address AS sender ON (bill.senderaddressid = sender.addressid)
+        LEFT JOIN xms_tbl_country AS sc ON (sender.country = sc.countryid)
+        LEFT JOIN xms_tbl_address AS receiver ON (bill.receiveraddressid = receiver.addressid)
+        LEFT JOIN xms_tbl_country AS rc ON (receiver.country = rc.countryid)
+        LEFT JOIN xms_tbl_dhl_country AS dc ON (rc.countryname = dc.dhl_countryname)
+        LEFT JOIN xms_tbl_dhl_country AS dr ON (sc.countryname = dr.dhl_countryname)
+        WHERE
+        invoice.status != 0
+        AND invoice.invoiceid = #{invoiceId}
+        GROUP BY bill.shipmentid , bill.airbill_number) AS result
+        WHERE
+        airbillNumber != '') AS B1,
+        (SELECT
+        frn.franchise_territory as thirdPartyName,
+        frn.dhl_international_account as thirdPartyNumber,
+        cus.address1 AS thirdPartyAddress1,
+        cus.address2 AS thirdPartyAddress2,
+        cus.city AS thirdPartyCity,
+        c.display_name,
+        c.countrycode AS thirdPartyState,
+        cus.postal_code AS thirdPartyZipcode
+        FROM
+        xms_tbl_franchise frn
+        LEFT JOIN xms_tbl_customer_address cus ON frn.franchise_code = cus.customer_code
+        LEFT JOIN xms_tbl_country c ON cus.country = c.countryid
+        WHERE
+        frn.franchise_code = #{franchiseCode}) AS B2;
+    </select>
+</mapper>

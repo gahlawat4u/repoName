@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ViewRateSheet">
+    <resultMap id="ViewRateSheetMap" type="com.gms.xms.txndb.vo.ratesheet.ViewRateSheetShipmentVo">
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="minimun_base_charge" property="minimunBaseCharge"/>
+        <result column="carrier" property="carrier"/>
+        <result column="description" property="description"/>
+        <result column="display_description" property="displayDescription"/>
+        <result column="service_area_code_origin" property="serviceAreaCodeOrigin"/>
+    </resultMap>
+
+    <select id="getShipmentInfo" parameterType="com.gms.xms.txndb.vo.ratesheet.ViewRateSheetShipmentVo"
+            resultMap="ViewRateSheetMap">
+        select
+        sm.shipmentid,
+        sm.airbill_number,
+        sm.customer_code,
+        c.minimun_base_charge,
+        sb.carrier,
+        sb.description,
+        sb.display_description,
+        sb.service_area_code_origin
+        from xms_tbl_shipment as sm
+        inner join
+        (select customer_code, minimun_base_charge from xms_tbl_customer
+        union
+        select franchise_code as customer_code, minimun_base_charge from xms_tbl_franchise
+        ) as c on c.customer_code = sm.customer_code
+        inner join xms_tbl_shipment_billing as sb on sb.shipmentid = sm.shipmentid and sb.airbill_number =
+        sm.airbill_number and sb.is_base_charge = 1
+        where sm.shipmentid = #{shipmentId}
+        <if test="airbillNumber != null and airbillNumber != ''">
+            and sm.airbill_number = #{airbillNumber}
+        </if>
+    </select>
+</mapper>

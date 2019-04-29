@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerActivation">
+    <resultMap id="CustomerActivationMap" type="CustomerActivationVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="sale_rep_name" property="saleRepName"/>
+        <result column="submission_date" property="submissionDate"/>
+        <result column="activation_date" property="activationDate"/>
+        <result column="days_to_activate" property="daysToActivate"/>
+        <result column="first_invoice" property="firstInvoice"/>
+        <result column="margin_on_invoice" property="marginOnInvoice"/>
+    </resultMap>
+
+    <select id="getActivationReport"
+            parameterType="com.gms.xms.filter.reports.customer.activation.CustomerActivationFilter"
+            resultMap="CustomerActivationMap">
+        select * from tmp_customer_activation_report
+        where rpt_txn_id = #{rptTxnId}
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="checkActivationReport"
+            parameterType="com.gms.xms.filter.reports.customer.activation.CustomerActivationFilter" resultType="long">
+        select count(*) from tmp_customer_activation_report
+        where rpt_txn_id = #{rptTxnId}
+    </select>
+
+    <insert id="prepareActivationReport"
+            parameterType="com.gms.xms.filter.reports.customer.activation.CustomerActivationFilter">
+        <![CDATA[
+		insert into tmp_customer_activation_report (
+			rpt_txn_id,
+			customer_code,
+			customer_name,
+			sale_rep_name,
+			submission_date,
+			activation_date,
+			days_to_activate,
+			first_invoice,
+			margin_on_invoice
+		)
+		select 
+			#{rptTxnId},
+			r.customer_code,
+		    r.customer_name,
+		    r.display_name as sale_rep_name,
+		    r.submission_date,
+		    r.activation_date,
+		    r.days_to_activate,
+		    i.invoice_code as first_invoice,
+		    sum(sb.customer_cost+sb.customer_tax_amount-sb.franchise_cost-sb.franchise_tax_amount) as margin_on_invoice
+		from
+			(select 
+				c.customer_code,
+				ca.customer_name,
+				u.display_name,
+				c.create_date as submission_date,
+				c.activate_date as activation_date,
+				datediff(activate_date, create_date) as days_to_activate,
+				(select invoiceid from xms_tbl_invoice
+				where customer_code = c.customer_code
+				order by invoice_date
+				limit 1) as first_invoice
+			from
+				(select customer_code, sales_rep_id, date(create_date) as create_date, date(activate_date) as activate_date from xms_tbl_customer 
+				where franchise_code in (${franchiseList})
+					and activate_date >= #{startDate}
+					and activate_date <= #{endDate}
+					union
+				select franchise_code as customer_code, sales_rep_id, date(create_date) as create_date, date(activate_date) as activate_date from xms_tbl_franchise
+				where franchise_code in (${franchiseList})
+					and activate_date >= #{startDate}
+					and activate_date <= #{endDate}
+				) as c
+			left join xms_tbl_customer_address as ca on ca.customer_code = c.customer_code
+			left join xms_tbl_user as u on u.userid = c.sales_rep_id) as r	
+		left join xms_tbl_shipment_invoice as si on si.invoiceid = r.first_invoice
+		inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+		inner join xms_tbl_invoice as i on i.invoiceid = r.first_invoice
+		group by r.first_invoice
+		order by r.customer_code
+		]]>
+    </insert>
+</mapper>

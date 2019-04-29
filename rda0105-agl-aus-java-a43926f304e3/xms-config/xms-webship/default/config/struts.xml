@@ -1,0 +1,659 @@
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+        "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+    <package name="default" extends="struts-default" namespace="/">
+
+        <global-results>
+            <result name="err_handler" type="chain">
+                <param name="actionName">error_handler</param>
+            </result>
+        </global-results>
+        <global-exception-mappings>
+            <exception-mapping exception="java.lang.Exception" result="err_handler"/>
+        </global-exception-mappings>
+
+        <action name="error_handler" class="errorHandlerController" method="errorHandler">
+            <result name="error_handler">/jsp/error_handler.jsp</result>
+            <result name="error_handler_data">/jsp/error_handler_data.jsp</result>
+        </action>
+
+        <action name="settings_search_address" class="settingsController" method="doSearchAddress">
+            <result name="success">/jsp/settings/search_address_result_data.jsp</result>
+        </action>
+
+        <action name="settings_get_customer_address" class="settingsController" method="getCustomerAddressBook">
+            <result name="success">/jsp/settings/get_address_content_data.jsp</result>
+        </action>
+
+        <action name="settings_save_from_customer_address" class="settingsController" method="doSaveFromAddress">
+            <result name="success" type="httpheader">
+                <param name="status">200</param>
+            </result>
+        </action>
+
+        <action name="settings_save_to_customer_address" class="settingsController" method="doSaveToAddress">
+            <result name="success" type="httpheader">
+                <param name="status">200</param>
+            </result>
+        </action>
+
+        <action name="do_reset_password" class="loginController" method="resetPasswordDo">
+            <result name="input">/jsp/reset_webship.jsp</result>
+            <result name="success" type="httpheader">
+                <param name="status">200</param>
+            </result>
+        </action>
+
+        <action name="quote_job_update_detail" class="quoteJobController" method="updateWebshipQuoteDetail">
+            <result name="success">/jsp/quote_job/quote_job.jsp
+            </result>
+        </action>
+
+        <action name="return_services" class="shipmentController" method="showPage">
+            <result name="success">/jsp/shipment/return_services_data.jsp</result>
+        </action>
+
+        <!-- BEGIN WEBSHIP ACTIONS -->
+
+        <!-- Login Controller -->
+        <action name="login" class="loginController" method="login">
+            <result name="success" type="redirectAction">webship.ix</result>
+            <result name="changepass" type="redirectAction">show_change_password.ix</result>
+            <result name="input">/jsp/login.jsp</result>
+            <result name="json_error">/jsp/json_login_error_data.jsp</result>
+        </action>
+
+        <action name="login_as" class="loginController" method="loginAs">
+            <result name="success">webship.ix</result>
+        </action>
+
+        <action name="logout" class="loginController" method="logout">
+            <result name="success" type="redirectAction">login.ix</result>
+            <result name="home" type="redirectAction">webship.ix</result>
+            <result name="error">/jsp/error_handler.jsp</result>
+        </action>
+
+        <action name="reset_password" class="webshipResetController" method="reset">
+            <result name="success">/jsp/reset_password/reset_password.jsp</result>
+            <result name="input">/jsp/reset_password/reset_password.jsp</result>
+            <result name="redirect" type="redirectAction">change_password.ix</result>
+        </action>
+
+        <action name="change_password" class="webshipResetController" method="changePasswordWebship">
+            <result name="success">/jsp/reset_password/reset_password_change_password.jsp</result>
+            <result name="input">/jsp/reset_password/reset_password_change_password.jsp</result>
+        </action>
+        <!-- End Login Controller -->
+
+        <!-- Begin Quick Search Controller -->
+        <action name="quick_search_login_as" class="quickSearchController" method="search">
+            <result name="success">/jsp/login/login_as_data.jsp</result>
+        </action>
+        <!-- End Quick Search Controller -->
+
+        <!-- Begin User Settings Controller -->
+        <action name="settings" class="userSettingsController" method="show">
+            <result name="success">/jsp/settings/settings.jsp</result>
+        </action>
+
+        <action name="settings_user_settings_change_service" class="userSettingsController" method="changeService">
+            <result name="success">/jsp/settings/settings_package_data.jsp</result>
+        </action>
+
+        <action name="settings_user_settings_save" class="userSettingsController" method="save"/>
+        <!-- End User Settings Controller -->
+
+        <!-- Begin Address Default Controller -->
+        <action name="settings_address_default" class="addressDefaultController" method="show">
+            <result name="success">/jsp/settings/settings_address_default_data.jsp</result>
+        </action>
+
+        <action name="settings_address_default_search" class="addressDefaultController" method="search">
+            <result name="success">/jsp/settings/settings_search_address_data.jsp</result>
+            <result name="webship_success">/jsp/shipment/webship_search_address_data.jsp</result>
+        </action>
+
+        <action name="webship_load_address" class="addressDefaultController" method="loadWebshipAddress">
+            <result name="sender">/jsp/shipment/webship_load_sender_address_data.jsp</result>
+            <result name="receiver">/jsp/shipment/webship_load_receiver_address_data.jsp</result>
+        </action>
+
+        <action name="settings_address_default_update" class="addressDefaultController" method="update">
+            <result name="success">/jsp/settings/settings_address_detail_data.jsp</result>
+        </action>
+        <!-- End Address Default Controller -->
+
+        <!-- Begin Change Password Controller -->
+        <action name="settings_change_password" class="changePasswordController" method="changePassword">
+            <result name="success">/jsp/settings/settings_change_password_data.jsp</result>
+        </action>
+        <action name="show_change_password" class="requirePasswordController" method="show">
+            <result name="success">/jsp/changepass/require_change_password.jsp</result>
+        </action>
+        <action name="require_change_password" class="requirePasswordController" method="changePassword">
+            <result name="success">/jsp/changepass/require_change_password_data.jsp</result>
+        </action>
+        <!-- End Change Password Controller -->
+
+        <!-- Begin Dimension Controller -->
+        <action name="settings_load_dimension_list" class="dimensionController" method="show">
+            <result name="success">/jsp/settings/settings_dimension_list_data.jsp</result>
+        </action>
+
+        <action name="settings_add_dimension" class="dimensionController" method="add">
+            <result name="success">/jsp/settings/settings_dimesion_form_data.jsp</result>
+        </action>
+
+        <action name="settings_edit_dimension" class="dimensionController" method="edit">
+            <result name="success">/jsp/settings/settings_dimesion_form_data.jsp</result>
+        </action>
+
+        <action name="settings_delete_dimension" class="dimensionController" method="delete">
+            <result name="success">/jsp/settings/settings_delete_dimension.jsp</result>
+        </action>
+        <!-- End Dimension Controller -->
+
+        <!-- Begin Admin Settings Controller -->
+        <action name="webship_settings_admin_settings" class="webshipAdminSettingsController" method="show">
+            <result name="success">/jsp/settings/admin_settings_data.jsp</result>
+        </action>
+        <action name="webship_settings_admin_settings_save" class="webshipAdminSettingsController" method="save"/>
+        <action name="webship_settings_admin_settings_clear" class="webshipAdminSettingsController" method="clear"/>
+        <!-- End Admin Settings Controller -->
+
+        <!-- Begin Webship User List Controller -->
+        <action name="webship_settings_user_list" class="webshipUserListController" method="show">
+            <result name="success">/jsp/settings/user_list/user_list_data.jsp</result>
+        </action>
+        <action name="webship_settings_user_list_search" class="webshipUserListController" method="search">
+            <result name="success">/jsp/settings/user_list/user_list_search_data.jsp</result>
+        </action>
+        <action name="webship_settings_user_list_load" class="webshipUserListController" method="load">
+            <result name="success">/jsp/settings/user_list/user_form_data.jsp</result>
+        </action>
+        <action name="webship_settings_user_list_edit" class="webshipUserListController" method="edit">
+            <result name="success">/jsp/settings/user_list/user_form_data.jsp</result>
+        </action>
+        <!-- End Webship User List Controller -->
+        <!-- Begin Supply Controller -->
+        <action name="supplies" class="supplyController" method="show">
+            <result name="success">/jsp/supplies/supplies.jsp</result>
+        </action>
+
+        <action name="supplies_detail" class="supplyController" method="showDetail">
+            <result name="success">/jsp/supplies/supplies_detail_data.jsp</result>
+        </action>
+
+        <action name="supplies_order" class="supplyController" method="order"/>
+        <!-- End Supply Controller -->
+
+        <!-- Shipment Controller -->
+        <action name="webship" class="shipmentController" method="show">
+            <result name="success">/jsp/shipment/webship.jsp</result>
+            <result name="return_service">/jsp/shipment/webship_return_service_data.jsp</result>
+        </action>
+
+        <action name="webship_change_country" class="shipmentController" method="changeCountry">
+            <result name="success">/jsp/shipment/webship_change_country_data.jsp
+            </result>
+        </action>
+
+        <action name="webship_load_states" class="shipmentController" method="loadStates">
+            <result name="success">/jsp/shipment/webship_load_state_data.jsp
+            </result>
+        </action>
+
+        <action name="webship_change_service" class="shipmentController" method="changeService">
+            <result name="success">/jsp/shipment/webship_change_service_data.jsp
+            </result>
+        </action>
+
+        <action name="webship_change_shipment_type" class="shipmentController" method="changeShipmentType">
+            <result name="success">/jsp/shipment/webship_change_shipment_type_data.jsp
+            </result>
+        </action>
+
+        <action name="webship_change_package_type" class="shipmentController" method="changePackage">
+            <result name="success">/jsp/shipment/webship_change_package_data.jsp
+            </result>
+        </action>
+
+        <action name="webship_change_dimension_type" class="shipmentController" method="changeDimension">
+            <result name="success">/jsp/shipment/webship_change_dimension_data.jsp</result>
+        </action>
+
+        <action name="webship_reset_addpiece" class="shipmentController" method="resetAddPiece">
+            <result name="success">/jsp/shipment/webship_reset_addpiece_data.jsp</result>
+        </action>
+
+        <action name="webship_get_quote" class="getQuoteController" method="getQuote">
+            <result name="success">/jsp/shipment/webship_get_quote_data.jsp</result>
+            <result name="field_error">/jsp/shipment/webship_field_error_data.jsp</result>
+        </action>
+
+        <action name="webship_save_quote" class="getQuoteController" method="save"/>
+
+        <action name="webship_continue_booking" class="continueBookingController" method="continueBooking">
+            <result name="success" type="httpheader">200</result>
+            <result name="field_error">/jsp/shipment/webship_field_error_data.jsp</result>
+            <result name="dhl_dom_doc">/jsp/shipment/continue_booking/dhl_dom/continue_booking_doc_data.jsp</result>
+            <result name="dhl_dom_pac">/jsp/shipment/continue_booking/dhl_dom/continue_booking_pac_data.jsp</result>
+            <result name="dhl_int_doc">/jsp/shipment/continue_booking/dhl_int/continue_booking_doc_data.jsp</result>
+            <result name="dhl_int_pac">/jsp/shipment/continue_booking/dhl_int/continue_booking_pac_data.jsp</result>
+            <result name="tnt_dom_doc">/jsp/shipment/continue_booking/tnt_dom/continue_booking_doc_data.jsp</result>
+            <result name="tnt_dom_pac">/jsp/shipment/continue_booking/tnt_dom/continue_booking_pac_data.jsp</result>
+            <result name="tnt_int_doc">/jsp/shipment/continue_booking/tnt_int/continue_booking_doc_data.jsp</result>
+            <result name="tnt_int_pac">/jsp/shipment/continue_booking/tnt_int/continue_booking_pac_data.jsp</result>
+            <result name="toll_priority_doc">
+                /jsp/shipment/continue_booking/toll_priority/continue_booking_doc_data.jsp
+            </result>
+            <result name="toll_priority_pac">
+                /jsp/shipment/continue_booking/toll_priority/continue_booking_pac_data.jsp
+            </result>
+            <result name="toll_ipec_doc">/jsp/shipment/continue_booking/toll_ipec/continue_booking_doc_data.jsp</result>
+            <result name="toll_ipec_pac">/jsp/shipment/continue_booking/toll_ipec/continue_booking_pac_data.jsp</result>
+            <result name="startrack_doc">/jsp/shipment/continue_booking/startrack/continue_booking_doc_data.jsp</result>
+            <result name="startrack_pac">/jsp/shipment/continue_booking/startrack/continue_booking_pac_data.jsp</result>
+            <result name="ups_doc">/jsp/shipment/continue_booking/ups/continue_booking_doc_data.jsp</result>
+            <result name="ups_pac">/jsp/shipment/continue_booking/ups/continue_booking_pac_data.jsp</result>
+            <result name="other_doc">/jsp/shipment/continue_booking/other_carrier/continue_booking_doc_data.jsp</result>
+            <result name="other_pac">/jsp/shipment/continue_booking/other_carrier/continue_booking_pac_data.jsp</result>
+        </action>
+
+        <action name="hts_good_lookup" class="htsLookupController" method="lookup">
+            <result name="success">/jsp/shipment/continue_booking/input_models/hts_lookup_model_data.jsp</result>
+        </action>
+        <action name="hts_good_search" class="htsLookupController" method="search">
+            <result name="success">/jsp/shipment/continue_booking/input_models/hts_lookup_search_model_data.jsp</result>
+        </action>
+        <action name="packing_list_add_new_row" class="htsLookupController" method="addNewRow">
+            <result name="success">/jsp/shipment/continue_booking/input_models/packing_list_add_new_row_data.jsp
+            </result>
+        </action>
+        <action name="commercial_invoice_add_new_row" class="htsLookupController" method="addNewRow">
+            <result name="success">/jsp/shipment/continue_booking/input_models/commercial_invoice_add_new_row_data.jsp
+            </result>
+        </action>
+
+        <action name="webship_book" class="bookingController" method="booking">
+            <result name="success">/jsp/shipment/webship_booking_result_data.jsp</result>
+            <result name="field_error">/jsp/shipment/webship_field_error_data.jsp</result>
+        </action>
+
+        <action name="webship_do_ship" class="bookingController" method="doShip">
+            <result name="success">/jsp/shipment/webship_booking_result_data.jsp</result>
+            <result name="field_error">/jsp/shipment/webship_field_error_data.jsp</result>
+        </action>
+
+        <action name="webship_get_additional_config" class="shipmentController" method="loadAdditionalConfig">
+            <result name="success">/jsp/shipment/webship_get_additional_config_data.jsp
+            </result>
+        </action>
+
+        <action name="webship_search_city" class="searchPostalCodeController" method="search">
+            <result name="success">/jsp/shipment/webship_search_city_data.jsp</result>
+        </action>
+
+        <action name="get-schedule-collection-input" class="continueBookingController"
+                method="getScheduleCollectionForm">
+            <result name="success">
+                /jsp/shipment/continue_booking/input_models/schedule_collection_input_model_data.jsp
+            </result>
+            <result name="field_error">/jsp/shipment/webship_field_error_data.jsp</result>
+        </action>
+
+        <action name="get-commercial-invoice-input" class="continueBookingController" method="getCommercialInvoiceForm">
+            <result name="success">/jsp/shipment/continue_booking/input_models/commercial_invoice_input_model_data.jsp
+            </result>
+            <result name="field_error">/jsp/shipment/webship_field_error_data.jsp</result>
+        </action>
+
+        <action name="get-packing-list-input" class="continueBookingController" method="getPackingListForm">
+            <result name="success">/jsp/shipment/continue_booking/input_models/packing_list_input_model_data.jsp
+            </result>
+            <result name="field_error">/jsp/shipment/webship_field_error_data.jsp</result>
+        </action>
+        <!-- End Shipment Controller -->
+
+
+        <!-- Address Book Controller -->
+        <action name="address_book" class="addressBookController" method="show">
+            <result name="success">/jsp/address_book/address_book.jsp</result>
+        </action>
+
+        <action name="address_book_search_city" class="searchPostalCodeController" method="search">
+            <result name="success">/jsp/address_book/address_book_search_city_data.jsp</result>
+        </action>
+
+        <action name="address_book_get_data" class="addressBookController" method="getData">
+            <result name="error" type="httpheader">
+                <param name="status">200</param>
+            </result>
+            <result name="success">/jsp/address_book/address_book_get_data.jsp</result>
+        </action>
+
+        <action name="address_book_add" class="addressBookController" method="add">
+            <result name="saved" type="redirectAction">address_book.ix</result>
+            <result name="success">/jsp/address_book/address_book_form.jsp</result>
+        </action>
+
+        <action name="address_book_delete" class="addressBookController" method="delete">
+            <result name="error" type="httpheader">
+                <param name="status">200</param>
+            </result>
+            <result name="success">/jsp/address_book/address_book_get_data.jsp</result>
+        </action>
+
+        <action name="address_book_edit" class="addressBookController" method="edit">
+            <result name="saved" type="redirectAction">
+                <param name="page">${page}</param>
+                <param name="pageSize">${pageSize}</param>
+                <param name="actionName">address_book.ix</param>
+            </result>
+            <result name="success">/jsp/address_book/address_book_form.jsp</result>
+        </action>
+
+        <action name="address_book_export" class="addressBookController" method="export">
+            <result name="success" type="redirectAction">
+                <param name="actionName">address_book.ix</param>
+            </result>
+            <result name="export" type="stream">
+                <param name="contentType">application/vnd.ms-excel</param>
+                <param name="contentDisposition">attachment;filename="${fileName}.xls"</param>
+                <param name="inputName">stream</param>
+                <param name="bufferSize">1024</param>
+            </result>
+        </action>
+
+        <action name="address_book_import" class="addressBookImportController" method="show">
+            <result name="success">/jsp/address_book/address_book_import.jsp</result>
+        </action>
+
+        <action name="address_book_do_import" class="addressBookImportController" method="doImport">
+            <result name="success">/jsp/address_book/address_book_import_result_data.jsp</result>
+        </action>
+
+        <action name="upload_address_book" class="addressBookImportController" method="uploadAddress">
+            <interceptor-ref name="fileUploadStack">
+                <param name="fileUpload.allowedTypes">application/*,text/csv</param>
+            </interceptor-ref>
+            <result name="success">/jsp/address_book/address_book_import_fields_table_data.jsp</result>
+        </action>
+
+        <action name="address_book_import_show_mapping" class="addressBookImportController" method="showMapping">
+            <result name="error" type="httpheader">
+                <param name="status">200</param>
+            </result>
+            <result name="field_error">/jsp/address_book/address_book_import_field_error_data.jsp</result>
+            <result name="success">/jsp/address_book/address_book_import_map_data.jsp</result>
+        </action>
+
+        <action name="address_book_import_do_mapping" class="addressBookImportController" method="doMapping">
+            <result name="success">/jsp/address_book/address_book_do_mapping_data.jsp</result>
+        </action>
+
+        <action name="address_book_change_country" class="addressBookImportController" method="changeCountry">
+            <result name="success">/jsp/address_book/address_book_change_country_data.jsp</result>
+        </action>
+
+        <!-- End Address Book Controller -->
+
+        <!-- Begin History -->
+        <action name="history" class="historyController" method="index">
+            <result name="success">/jsp/history/history.jsp</result>
+        </action>
+
+        <action name="history_search" class="historyController" method="search">
+            <result name="success">/jsp/history/history_data.jsp</result>
+        </action>
+
+        <action name="history_shipment_note" class="historyShipmentNoteController" method="index">
+            <result name="success">/jsp/history/shipment_note_data.jsp</result>
+        </action>
+
+        <action name="history_shipment_note_add" class="historyShipmentNoteController" method="add">
+            <result name="success">/jsp/history/shipment_note_add_data.jsp</result>
+        </action>
+
+        <action name="history_tracking" class="historyTrackingController" method="tracking">
+            <result name="success">/jsp/history/history_tracking.jsp</result>
+            <result name="star_track">/jsp/history/tracking/star_track_tracking.jsp</result>
+        </action>
+
+        <action name="history_detail" class="historyDetailController" method="show">
+            <result name="success">/jsp/history/history_detail_data.jsp</result>
+        </action>
+
+        <action name="history_export_detail" class="historyDetailController" method="exportDetail">
+            <result name="error">/jsp/history/view_airbill_error.jsp</result>
+            <result name="export" type="stream">
+                <param name="contentType">application/pdf</param>
+                <param name="inputName">stream</param>
+                <param name="contentDisposition">inline;filename="${fileName}"</param>
+                <param name="bufferSize">1024</param>
+            </result>
+            <result name="success" type="redirect">/view_airbill.ix</result>
+        </action>
+
+        <action name="view_airbill" class="historyDetailController" method="viewAirbill">
+            <result name="error">/jsp/history/view_airbill_error.jsp</result>
+            <result name="view">/jsp/history/view_airbill_data.jsp</result>
+            <result name="export" type="stream">
+                <param name="contentType">application/pdf</param>
+                <param name="inputName">stream</param>
+                <param name="contentDisposition">inline;filename="${fileName}"</param>
+                <param name="bufferSize">1024</param>
+            </result>
+            <result name="success" type="redirect">/view_airbill.ix</result>
+        </action>
+
+        <action name="view_tnt_connote" class="historyDetailController" method="viewConnote">
+            <result name="error">/jsp/history/view_airbill_error.jsp</result>
+            <result name="export" type="stream">
+                <param name="contentType">application/pdf</param>
+                <param name="inputName">stream</param>
+                <param name="contentDisposition">inline;filename="${fileName}"</param>
+                <param name="bufferSize">1024</param>
+            </result>
+            <result name="success" type="redirect">/view_tnt_connote.ix</result>
+        </action>
+
+        <action name="view_shipment_receipt" class="historyDetailController" method="viewShipmentReceipt">
+            <result name="export" type="stream">
+                <param name="contentType">application/pdf</param>
+                <param name="inputName">stream</param>
+                <param name="contentDisposition">inline;filename="${fileName}"</param>
+                <param name="bufferSize">1024</param>
+            </result>
+            <result name="success" type="redirect">/history.ix</result>
+        </action>
+
+        <action name="view_commercial_invoice" class="historyDetailController" method="viewCommercialInvoice">
+            <result name="error">/jsp/history/view_airbill_error.jsp</result>
+            <result name="view">/jsp/history/view_airbill_data.jsp</result>
+            <result name="export" type="stream">
+                <param name="contentType">application/pdf</param>
+                <param name="inputName">stream</param>
+                <param name="contentDisposition">inline;filename="${fileName}"</param>
+                <param name="bufferSize">1024</param>
+            </result>
+            <result name="success" type="redirect">/view_commercial_invoice.ix</result>
+        </action>
+
+        <action name="view_thermal_label" class="historyDetailController" method="viewThermalLable">
+            <result name="error">/jsp/history/view_airbill_error.jsp</result>
+            <result name="view">/jsp/history/view_airbill_data.jsp</result>
+            <result name="export" type="stream">
+                <param name="contentType">application/pdf</param>
+                <param name="inputName">stream</param>
+                <param name="contentDisposition">inline;filename="${fileName}"</param>
+                <param name="bufferSize">1024</param>
+            </result>
+        </action>
+
+        <action name="view_manifest" class="historyDetailController" method="viewManifest">
+            <result name="error">/jsp/history/view_airbill_error.jsp</result>
+            <result name="view">/jsp/history/view_airbill_data.jsp</result>
+            <result name="export" type="stream">
+                <param name="contentType">application/pdf</param>
+                <param name="inputName">stream</param>
+                <param name="contentDisposition">inline;filename="${fileName}"</param>
+                <param name="bufferSize">1024</param>
+            </result>
+        </action>
+
+        <action name="view_packing_list" class="historyDetailController" method="viewPackingList">
+            <result name="error">/jsp/history/view_airbill_error.jsp</result>
+            <result name="view">/jsp/history/view_airbill_data.jsp</result>
+            <result name="export" type="stream">
+                <param name="contentType">application/pdf</param>
+                <param name="inputName">stream</param>
+                <param name="contentDisposition">inline;filename="${fileName}"</param>
+                <param name="bufferSize">1024</param>
+            </result>
+            <result name="success" type="redirect">/view_packing_list.ix</result>
+        </action>
+
+        <action name="history_export_pdf" class="historyController" method="exportPdf">
+            <result name="success" type="redirect">/history.ix</result>
+            <result name="export" type="stream">
+                <param name="contentType">application/pdf</param>
+                <param name="contentDisposition">attachment;filename="${fileName}"</param>
+                <param name="inputName">stream</param>
+                <param name="bufferSize">1024</param>
+            </result>
+        </action>
+
+        <action name="history_export_excel" class="historyController" method="exportExcel">
+            <result name="success" type="redirect">/history.ix</result>
+            <result name="export" type="stream">
+                <param name="contentType">application/vnd.ms-excel</param>
+                <param name="contentDisposition">attachment;filename="${fileName}.xls"</param>
+                <param name="inputName">stream</param>
+                <param name="bufferSize">1024</param>
+            </result>
+        </action>
+
+        <action name="history_void_airbill" class="historyScheduleController" method="historyVoidAirbill">
+            <result name="success">/jsp/history/history_void_airbill.jsp
+            </result>
+        </action>
+        <action name="history_do_void_airbill" class="historyScheduleController" method="doVoidAirbill">
+            <result name="success">/jsp/history/history_void_airbill.jsp
+            </result>
+        </action>
+
+        <action name="history_cancel_collection" class="historyScheduleController" method="historyCancelCollection">
+            <result name="success">/jsp/history/schedule_collection_cancel.jsp
+            </result>
+        </action>
+
+        <action name="history_do_cancel_collection" class="historyScheduleController" method="doCancelCollection">
+            <result name="success">/jsp/history/schedule_collection_cancel.jsp
+            </result>
+        </action>
+
+        <action name="schedule_collection_modify" class="scheduleCollectionController" method="load2Modify">
+            <result name="success">/jsp/schedule/schedule_collection_modify.jsp</result>
+        </action>
+
+        <action name="schedule_collection_do_modify" class="scheduleCollectionController" method="modify">
+            <result name="success">/jsp/schedule/schedule_collection_modify.jsp</result>
+        </action>
+
+        <action name="schedule_collection_create" class="scheduleCollectionController" method="load2Create">
+            <result name="success">/jsp/schedule/schedule_collection_create.jsp</result>
+        </action>
+
+        <action name="schedule_collection_do_create" class="scheduleCollectionController" method="create">
+            <result name="success">/jsp/schedule/schedule_collection_succes_data.jsp</result>
+        </action>
+
+        <action name="history_proceed_to_void" class="historyScheduleController" method="historyProceedToVoid">
+            <result name="success">/jsp/history/history_data.jsp</result>
+        </action>
+
+        <action name="history_proceed_update_collection" class="historyScheduleController"
+                method="historyProceedUpdateCollection">
+            <result name="success">/jsp/history/history_data.jsp</result>
+        </action>
+
+        <action name="send_airbill" class="historyDetailController" method="sendAirbill">
+            <result name="success">/jsp/history/send_airbill_data.jsp</result>
+            <result name="error">/jsp/history/history_field_error_data.jsp</result>
+        </action>
+
+        <!-- //End History -->
+
+        <!-- Begin Quote Job Controller -->
+        <action name="quote_job" class="quoteJobController" method="show">
+            <result name="success">/jsp/quote_job/quote_job.jsp</result>
+        </action>
+        <action name="quote_job_get_data" class="quoteJobController" method="getData">
+            <result name="error" type="httpheader">
+                <param name="status">200</param>
+            </result>
+            <result name="success">/jsp/quote_job/quote_job_get_data.jsp</result>
+        </action>
+        <action name="quote_job_view_detail" class="quoteJobController" method="viewDetail">
+            <result name="error" type="httpheader">
+                <param name="status">200</param>
+            </result>
+            <result name="success">/jsp/quote_job/quote_job_view_detail_data.jsp</result>
+        </action>
+        <!-- End Quote Job Controller -->
+
+        <!-- Begin Webship Invoices Controller -->
+        <action name="invoices" class="invoicesController" method="show">
+            <result name="success">/jsp/invoices/invoices.jsp</result>
+        </action>
+
+        <action name="invoices_get_outstanding" class="invoicesController" method="doOutstanding">
+            <result name="success">/jsp/invoices/invoices_tab_outstanding_data.jsp</result>
+        </action>
+
+        <action name="invoices_get_paid" class="invoicesController" method="doPaid">
+            <result name="success">/jsp/invoices/invoices_tab_paid_data.jsp</result>
+        </action>
+
+        <action name="invoices_view_pdf" class="invoicesController" method="exportPdf">
+            <result name="success" type="redirectAction">
+                <param name="actionName">invoices.ix</param>
+            </result>
+            <result name="export" type="stream">
+                <param name="contentType">application/pdf</param>
+                <param name="contentDisposition">attachment;filename="${fileName}.pdf"</param>
+                <param name="inputName">stream</param>
+                <param name="bufferSize">1024</param>
+            </result>
+        </action>
+        <!-- End Webship Invoices Controller -->
+
+        <!-- Begin Help Controller -->
+        <action name="help" class="helpController" method="show">
+            <result name="success">/jsp/help.jsp</result>
+        </action>
+
+        <action name="generate_tnt_manifest_list" class="historyController" method="generateTntManifestList">
+            <result name="success" type="httpheader">
+                <param name="status">200</param>
+            </result>
+        </action>
+
+        <action name="generate_toll_priority_manifest_list" class="historyController" method="generateTollPriorityManifestList">
+            <result name="success" type="httpheader">
+                <param name="status">200</param>
+            </result>
+        </action>
+
+        <action name="generate_toll_ipec_manifest_list" class="historyController" method="generateTollIpecManifestList">
+            <result name="success" type="httpheader">
+                <param name="status">200</param>
+            </result>
+        </action>
+        <!-- End Help Controller -->
+        <!-- END WEBSHIP ACTIONS -->
+    </package>
+</struts>

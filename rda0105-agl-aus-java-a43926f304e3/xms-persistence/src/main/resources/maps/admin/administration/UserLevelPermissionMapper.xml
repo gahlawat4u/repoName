@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="UserLevelPermission">
+    <resultMap id="UserLevelPermissionMap" type="UserLevelPermissionVo">
+        <result column="permission_id" property="permissionId"/>
+        <result column="user_level_id" property="userLevelId"/>
+        <result column="franchise_code" property="franchiseCode"/>
+    </resultMap>
+
+    <delete id="delete" parameterType="UserLevelPermissionVo">
+        DELETE FROM xms_tbl_user_level_permission
+        WHERE user_level_id = #{userLevelId} AND permission_id = #{permissionId};
+    </delete>
+
+    <select id="delete_SelectForLog" parameterType="UserLevelPermissionVo" resultMap="UserLevelPermissionMap">
+        SELECT * FROM xms_tbl_user_level_permission
+        WHERE user_level_id = #{userLevelId} AND permission_id = #{permissionId}
+    </select>
+
+    <insert id="insert" parameterType="UserLevelPermissionVo">
+        insert into xms_tbl_user_level_permission (user_level_id,permission_id,franchise_code)
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userLevelId != null">
+                #{userLevelId},
+            </if>
+            <if test="permissionId != null">
+                #{permissionId},
+            </if>
+            <if test="franchiseCode != null">
+                #{franchiseCode},
+            </if>
+        </trim>
+    </insert>
+</mapper>

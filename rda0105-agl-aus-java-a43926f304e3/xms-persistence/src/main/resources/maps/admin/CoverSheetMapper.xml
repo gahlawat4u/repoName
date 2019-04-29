@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CoverSheet">
+    <resultMap id="CoverSheetMap" type="CoverSheetVo">
+        <id column="cover_sheetid" property="coverSheetId"/>
+        <result column="filename" property="fileName"/>
+        <result column="create_date" property="createDate"/>
+    </resultMap>
+    <resultMap id="ServiceCoverSheetMap" type="ServiceCoverSheetVo">
+        <id column="service_id" property="serviceId"/>
+        <result column="service_name" property="serviceName"/>
+        <result column="cover_sheetid" property="coverSheetId"/>
+        <result column="file_name" property="fileName"/>
+        <result column="inbound_cover_sheet_id" property="inboundCoverSheetId"/>
+        <result column="inbound_file_name" property="inboundFileName"/>
+    </resultMap>
+
+    <select id="selectByCoverSheetId" parameterType="long" resultMap="CoverSheetMap">
+        SELECT
+        *
+        FROM
+        xms_tbl_cover_sheet
+        WHERE
+        cover_sheetid = #{coverSheetId}
+    </select>
+
+    <select id="selectAllCoverSheets" parameterType="com.gms.xms.filter.admin.ratesheets.CoverSheetFilter"
+            resultMap="CoverSheetMap">
+        SELECT
+        *
+        FROM
+        xms_tbl_cover_sheet
+        ORDER BY create_date DESC
+        <if test="startRecord != null and pageSize != 0">
+            LIMIT #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectCountAllCoverSheets" resultType="int">
+        SELECT
+        COUNT(*)
+        FROM
+        xms_tbl_cover_sheet
+    </select>
+
+    <select id="selectAllServiceCoverSheets" resultMap="ServiceCoverSheetMap">
+        SELECT
+        s.service_id,
+        s.service_name,
+        ccs.cover_sheetid,
+        cs.filename AS file_name,
+        ccs.inbound_cover_sheetid AS inbound_cover_sheet_id,
+        ics.filename AS inbound_file_name
+        FROM
+        xms_tbl_service AS s
+        LEFT JOIN
+        xms_tbl_carrier_cover_sheet AS ccs ON ccs.carrierid = s.service_id
+        LEFT JOIN
+        xms_tbl_cover_sheet AS cs ON cs.cover_sheetid = ccs.cover_sheetid
+        LEFT JOIN
+        xms_tbl_cover_sheet AS ics ON ics.cover_sheetid = ccs.inbound_cover_sheetid
+        ORDER BY s.service_name
+    </select>
+
+    <select id="selectCountAllServiceCoverSheets" resultType="int">
+        SELECT
+        COUNT(*)
+        FROM
+        xms_tbl_service AS s
+        LEFT JOIN
+        xms_tbl_carrier_cover_sheet AS ccs ON ccs.carrierid = s.service_id
+        LEFT JOIN
+        xms_tbl_cover_sheet AS cs ON cs.cover_sheetid = ccs.cover_sheetid
+        LEFT JOIN
+        xms_tbl_cover_sheet AS ics ON ics.cover_sheetid = ccs.inbound_cover_sheetid
+    </select>
+
+    <insert id="insertCoverSheet" parameterType="string">
+        insert into xms_tbl_cover_sheet
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            filename,
+            create_date
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{fileName},
+            NOW()
+        </trim>
+    </insert>
+
+    <delete id="deleteCoverSheet" parameterType="long">
+        DELETE FROM xms_tbl_cover_sheet
+        WHERE cover_sheetid = #{coverSheetId}
+    </delete>
+
+    <select id="deleteCoverSheet_SelectForLog" parameterType="long" resultMap="CoverSheetMap">
+        SELECT * FROM xms_tbl_cover_sheet
+        WHERE cover_sheetid = #{coverSheetId}
+    </select>
+</mapper>

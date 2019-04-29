@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ProductCarrier">
+    <resultMap id="ProductCarrierMap" type="ProductCarrierVo">
+        <id column="product_carrierid" property="productCarrierId"/>
+        <result column="product_carriername" property="productCarrierName"/>
+    </resultMap>
+
+    <select id="selectById" parameterType="long" resultMap="ProductCarrierMap">
+        select * from xms_tbl_product_carrier
+        where product_carrierid = #{productCarrierId}
+    </select>
+
+    <select id="selectByFilter" parameterType="com.gms.xms.filter.admin.ProductCarrierFilter"
+            resultMap="ProductCarrierMap">
+        select * from xms_tbl_product_carrier
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countByFilter" parameterType="com.gms.xms.filter.admin.ProductCarrierFilter" resultType="long">
+        select count(*) from xms_tbl_product_carrier
+    </select>
+
+    <insert id="insert" parameterType="ProductCarrierVo" useGeneratedKeys="true" keyProperty="productCarrierId">
+        insert into xms_tbl_product_carrier (product_carriername)
+        values (#{productCarrierName})
+    </insert>
+
+    <update id="update" parameterType="ProductCarrierVo">
+        update xms_tbl_product_carrier
+        <set>
+            <if test="productCarrierName != null">
+                product_carriername = #{productCarrierName}
+            </if>
+        </set>
+        <where>
+            product_carrierid = #{productCarrierId}
+        </where>
+    </update>
+
+    <select id="update_SelectForLog" parameterType="ProductCarrierVo" resultMap="ProductCarrierMap">
+        select * from xms_tbl_product_carrier
+        where
+        product_carrierid = #{productCarrierId}
+    </select>
+
+    <delete id="delete" parameterType="long">
+        delete from xms_tbl_product_carrier
+        where product_carrierid = #{productCarrierId}
+    </delete>
+
+    <select id="delete_SelectForLog" parameterType="long" resultMap="ProductCarrierMap">
+        select * from xms_tbl_product_carrier
+        where product_carrierid = #{productCarrierId}
+    </select>
+
+    <select id="countProductCarrierByName" resultType="long" parameterType="ProductCarrierVo">
+        select count(*) FROM xms_tbl_product_carrier
+        WHERE product_carriername = #{productCarrierName}
+        <if test="productCarrierId != null">
+            and product_carrierid != #{productCarrierId}
+        </if>
+    </select>
+</mapper>

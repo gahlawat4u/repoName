@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CountryList">
+    <select id="selectCountryList" parameterType="com.gms.xms.filter.admin.AdministrationFilter"
+            resultType="CountryListVo">
+        select
+        distinct
+        c.countryid as countryId,
+        c.countryname as countryName,
+        c.display_name as displayName,
+        c.other_name as otherName,
+        c.countrycode as countryCode,
+        c.gst_percent as gstPercent,
+        c.isvat_quotable as isVatQuotable,
+        c.modified_date as modifiedDate,
+        c.is_show as isShow,
+        d.dhl_countryid as dhlCountryId,
+        d.dhl_ap_code as dhlApCode,
+        d.dhl_ap_zone as dhlApZone,
+        ifnull(l.countryid, 0) as showOrigin
+        from xms_tbl_country as c
+        left join xms_tbl_dhl_country as d on c.countryname = d.dhl_countryname
+        left join xms_tbl_country_log as l on c.countryid = l.countryid
+        <where>
+            <if test="countryCode!=null and countryCode!=''">
+                and c.countrycode like concat('%',#{countryCode},'%')
+            </if>
+            <if test="countryName!=null and countryName!=''">
+                and c.countryname like concat('%',#{countryName},'%')
+            </if>
+            <if test="displayName!=null and displayName!=''">
+                and c.display_name like concat('%',#{displayName},'%')
+            </if>
+            <if test="gst!=null and gst!=''">
+                and c.gst_percent = #{gst}
+            </if>
+            <if test="otherName!=null and otherName!=''">
+                and c.other_name like concat('%',#{otherName},'%')
+            </if>
+            <if test="modifiedDate!=null and modifiedDate!=''">
+                <![CDATA[ and c.modified_date >= date(#{modifiedDate}) and c.modified_date <= date_add(date(#{modifiedDate}),interval 1 day) ]]>
+            </if>
+            <if test="isShow!=null">
+                and c.is_show = #{isShow}
+            </if>
+            <if test="apCode!=null and apCode!=''">
+                and d.dhl_ap_code like concat('%',#{apCode},'%')
+            </if>
+            <if test="apZone!=null and apZone!=''">
+                and d.dhl_ap_zone like concat('%',#{apZone},'%')
+            </if>
+        </where>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectCountryListCount" resultType="long" parameterType="com.gms.xms.filter.admin.AdministrationFilter">
+        select
+        count(*)
+        from xms_tbl_country as c
+        left join xms_tbl_dhl_country as d on c.countryname = d.dhl_countryname
+        left join xms_tbl_country_log as l on c.countryid = l.countryid
+        <where>
+            <if test="countryCode!=null and countryCode!=''">
+                and c.countrycode like concat('%',#{countryCode},'%')
+            </if>
+            <if test="countryName!=null and countryName!=''">
+                and c.countryname like concat('%',#{countryName},'%')
+            </if>
+            <if test="displayName!=null and displayName!=''">
+                and c.display_name like concat('%',#{displayName},'%')
+            </if>
+            <if test="gst!=null and gst!=''">
+                and c.gst_percent = #{gst}
+            </if>
+            <if test="otherName!=null and otherName!=''">
+                and c.other_name like concat('%',#{otherName},'%')
+            </if>
+            <if test="modifiedDate!=null and modifiedDate!=''">
+                <![CDATA[ and c.modified_date >= date(#{modifiedDate}) and c.modified_date <= date_add(date(#{modifiedDate}),interval 1 day) ]]>
+            </if>
+            <if test="isShow!=null">
+                and c.is_show = #{isShow}
+            </if>
+            <if test="apCode!=null and apCode!=''">
+                and d.dhl_ap_code like concat('%',#{apCode},'%')
+            </if>
+            <if test="apZone!=null and apZone!=''">
+                and d.dhl_ap_zone like concat('%',#{apZone},'%')
+            </if>
+        </where>
+    </select>
+</mapper>

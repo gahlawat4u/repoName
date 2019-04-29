@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="ESHIPPER">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="LOGIN" type="Login"/>
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="CONSIGNMENTBATCH" type="ConsignmentBatch"/>
+                </xs:sequence>
+                <xs:element name="ACTIVITY" type="Activity"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="Login">
+        <xs:sequence>
+            <xs:element name="COMPANY" type="xs:string"/>
+            <xs:element name="PASSWORD" type="xs:string"/>
+            <xs:element name="APPID" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="APPVERSION" type="xs:string"/>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ConsignmentBatch">
+        <xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="GROUPCODE" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="SENDER" type="Sender"/>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="CONSIGNMENT" type="Consignment"/>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Activity">
+        <xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="CREATE" type="Create"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="RATE" type="Rate"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="BOOK" type="Book"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="SHIP" type="Ship"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="PRINT" type="Print"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="SHOW_GROUPCODE">
+                    <xs:complexType/>
+                </xs:element>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Sender">
+        <xs:sequence>
+            <xs:element name="COMPANYNAME" type="xs:string"/>
+            <xs:element name="STREETADDRESS1" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="STREETADDRESS2" type="xs:string"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="STREETADDRESS3" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="CITY" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="PROVINCE" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="POSTCODE" type="xs:string"/>
+            <xs:element name="COUNTRY" type="xs:string"/>
+            <xs:element name="ACCOUNT" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="VAT" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="CONTACTNAME" type="xs:string"/>
+            <xs:element name="CONTACTDIALCODE" type="xs:string"/>
+            <xs:element name="CONTACTTELEPHONE" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="CONTACTEMAIL" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="COLLECTION" type="Collection"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Consignment">
+        <xs:sequence>
+            <xs:element name="CONREF" type="xs:string"/>
+            <xs:choice>
+                <xs:element name="DETAILS" type="Details"/>
+                <xs:element name="CONNUMBER" type="xs:string"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Create">
+        <xs:sequence maxOccurs="unbounded">
+            <xs:element name="CONREF" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Rate">
+        <xs:sequence>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="CONREF" type="xs:string"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="CONNUMBER" type="xs:string"/>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Book">
+        <xs:choice>
+            <xs:element name="GROUPCODE" type="xs:string"/>
+            <xs:sequence>
+                <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                    <xs:element name="CONREF" type="xs:string"/>
+                </xs:sequence>
+                <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                    <xs:element name="CONNUMBER" type="xs:string"/>
+                </xs:sequence>
+            </xs:sequence>
+        </xs:choice>
+        <xs:attribute name="EMAILREQD" type="xs:string"/>
+        <xs:attribute name="ShowBookingRef" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="Ship">
+        <xs:choice>
+            <xs:element name="GROUPCODE" type="xs:string"/>
+            <xs:sequence>
+                <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                    <xs:element name="CONREF" type="xs:string"/>
+                </xs:sequence>
+                <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                    <xs:element name="CONNUMBER" type="xs:string"/>
+                </xs:sequence>
+            </xs:sequence>
+        </xs:choice>
+    </xs:complexType>
+    <xs:complexType name="Print">
+        <xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="REQUIRED" type="Required"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="CONNOTE" type="Connote"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="LABEL" type="Label"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="MANIFEST" type="Manifest"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="INVOICE" type="Invoice"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="EMAILTO" type="EmailTo"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="EMAILFROM" type="xs:string"/>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Collection">
+        <xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="COLLECTIONADDRESS" type="CollectionAddress"/>
+            </xs:sequence>
+            <xs:element name="SHIPDATE" type="xs:string"/>
+            <xs:element name="PREFCOLLECTTIME" type="CollectTime"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="ALTCOLLECTTIME" type="CollectTime"/>
+            </xs:sequence>
+            <xs:element name="COLLINSTRUCTIONS" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="CONFIRMATIONEMAILADDRESS" type="xs:string"/>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Details">
+        <xs:sequence>
+            <xs:element name="RECEIVER" type="Receiver"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="DELIVERY" type="Delivery"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="CONNUMBER" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="CUSTOMERREF" type="xs:string"/>
+            <xs:element name="CONTYPE" type="xs:string"/>
+            <xs:element name="PAYMENTIND" type="xs:string"/>
+            <xs:element name="ITEMS" type="xs:integer"/>
+            <xs:element name="TOTALWEIGHT" type="DoubleThreeDecimalPlaces"/>
+            <xs:element name="TOTALVOLUME" type="DoubleThreeDecimalPlaces"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="CURRENCY" type="xs:string"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="GOODSVALUE" type="DoubleThreeDecimalPlaces"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="INSURANCEVALUE" type="DoubleThreeDecimalPlaces"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="INSURANCECURRENCY" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="SERVICE" type="xs:string"/>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="OPTION" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="DESCRIPTION" type="xs:string"/>
+            <xs:element name="DELIVERYINST" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="CUSTOMCONTROLIN" type="xs:string"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="HAZARDOUS" type="xs:string"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="UNNUMBER" type="xs:string"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="PACKAGE" type="Package"/>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Required">
+        <xs:sequence>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="CONREF" type="xs:string"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="CONNUMBER" type="xs:string"/>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Connote">
+        <xs:sequence>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="CONREF" type="xs:string"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="CONNUMBER" type="xs:string"/>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Label">
+        <xs:sequence>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="CONREF" type="xs:string"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="CONNUMBER" type="xs:string"/>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Manifest">
+        <xs:choice>
+            <xs:element name="GROUPCODE" type="xs:string"/>
+            <xs:sequence>
+                <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                    <xs:element name="CONREF" type="xs:string"/>
+                </xs:sequence>
+                <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                    <xs:element name="CONNUMBER" type="xs:string"/>
+                </xs:sequence>
+            </xs:sequence>
+        </xs:choice>
+    </xs:complexType>
+    <xs:complexType name="Invoice">
+        <xs:sequence>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="CONREF" type="xs:string"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="CONNUMBER" type="xs:string"/>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="EmailTo">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="type" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="CollectionAddress">
+        <xs:sequence>
+            <xs:element name="COMPANYNAME" type="xs:string"/>
+            <xs:element name="STREETADDRESS1" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="STREETADDRESS2" type="xs:string"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="STREETADDRESS3" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="CITY" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="PROVINCE" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="POSTCODE" type="xs:string"/>
+            <xs:element name="COUNTRY" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="VAT" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="CONTACTNAME" type="xs:string"/>
+            <xs:element name="CONTACTDIALCODE" type="xs:string"/>
+            <xs:element name="CONTACTTELEPHONE" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="CONTACTEMAIL" type="xs:string"/>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="CollectTime">
+        <xs:sequence>
+            <xs:element name="FROM" type="xs:string"/>
+            <xs:element name="TO" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Receiver">
+        <xs:sequence>
+            <xs:element name="COMPANYNAME" type="xs:string"/>
+            <xs:element name="STREETADDRESS1" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="STREETADDRESS2" type="xs:string"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="STREETADDRESS3" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="CITY" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="PROVINCE" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="POSTCODE" type="xs:string"/>
+            <xs:element name="COUNTRY" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="VAT" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="CONTACTNAME" type="xs:string"/>
+            <xs:element name="CONTACTDIALCODE" type="xs:string"/>
+            <xs:element name="CONTACTTELEPHONE" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="CONTACTEMAIL" type="xs:string"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="ACCOUNT" type="xs:string"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="ACCOUNTCOUNTRY" type="xs:string"/>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Delivery">
+        <xs:sequence>
+            <xs:element name="COMPANYNAME" type="xs:string"/>
+            <xs:element name="STREETADDRESS1" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="STREETADDRESS2" type="xs:string"/>
+            </xs:sequence>
+            <xs:sequence minOccurs="0">
+                <xs:element name="STREETADDRESS3" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="CITY" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="PROVINCE" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="POSTCODE" type="xs:string"/>
+            <xs:element name="COUNTRY" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="VAT" type="xs:string"/>
+            </xs:sequence>
+            <xs:element name="CONTACTNAME" type="xs:string"/>
+            <xs:element name="CONTACTDIALCODE" type="xs:string"/>
+            <xs:element name="CONTACTTELEPHONE" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="CONTACTEMAIL" type="xs:string"/>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="DoubleThreeDecimalPlaces">
+        <xs:restriction base="xs:decimal">
+            <xs:fractionDigits value="3"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="DoubleTwoDecimalPlaces">
+        <xs:restriction base="xs:decimal">
+            <xs:fractionDigits value="2"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="Package">
+        <xs:sequence>
+            <xs:element name="ITEMS" type="xs:integer"/>
+            <xs:element name="DESCRIPTION" type="xs:string"/>
+            <xs:element name="LENGTH" type="DoubleThreeDecimalPlaces"/>
+            <xs:element name="HEIGHT" type="DoubleThreeDecimalPlaces"/>
+            <xs:element name="WIDTH" type="DoubleThreeDecimalPlaces"/>
+            <xs:element name="WEIGHT" type="DoubleThreeDecimalPlaces"/>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="ARTICLE" type="Article"/>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Article">
+        <xs:sequence>
+            <xs:element name="ITEMS" type="xs:integer"/>
+            <xs:element name="DESCRIPTION" type="xs:string"/>
+            <xs:element name="WEIGHT" type="DoubleThreeDecimalPlaces"/>
+            <xs:element name="INVOICEVALUE" type="DoubleTwoDecimalPlaces"/>
+            <xs:element name="INVOICEDESC" type="xs:string"/>
+            <xs:element name="HTS" type="xs:string"/>
+            <xs:element name="COUNTRY" type="xs:string"/>
+            <xs:sequence minOccurs="0">
+                <xs:element name="EMRN" type="xs:string"/>
+            </xs:sequence>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

@@ -1,0 +1,727 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="AdminQuickSearch">
+    <resultMap id="QuickSearchCustomerMap" type="QuickSearchCustomerVo" extends="Customer.CustomerMap">
+        <result column="customer_name" property="customerName"/>
+        <result column="invoicetoname" property="invoiceToCustomerName"/>
+    </resultMap>
+
+    <select id="getCustomersByCustomerCode" parameterType="com.gms.xms.filter.admin.AdminQuickSearchFilter"
+            resultMap="QuickSearchCustomerMap">
+        <bind name="customerCodeExp" value="_parameter.getSearchValue() + '%'"/>
+        <bind name="customerCodeExp2" value="'%' + _parameter.getSearchValue() + '%'"/>
+        select
+        distinct
+        cus.*,
+        cad.customer_name,
+        incad.customer_name as invoicetoname
+        from xms_tbl_customer as cus
+        left join xms_tbl_customer_address as cad on cus.customer_code = cad.customer_code and cad.usertype = 1
+        left join xms_tbl_customer as incus on cus.invoice_to_customerid = incus.customer_code
+        left join xms_tbl_customer_address as incad on incus.customer_code = incad.customer_code and incad.usertype = 1
+        where (cus.customer_code like #{customerCodeExp} or cad.customer_name like #{customerCodeExp2})
+        and cus.franchise_code in (${franchiseList})
+        <if test="userLevel==6">
+            and cus.sales_rep_id = #{userId}
+        </if>
+    </select>
+
+    <select id="countCustomersByCustomerCode" parameterType="com.gms.xms.filter.admin.AdminQuickSearchFilter"
+            resultType="long">
+        <bind name="customerCodeExp" value="_parameter.getSearchValue() + '%'"/>
+        <bind name="customerCodeExp2" value="'%' + _parameter.getSearchValue() + '%'"/>
+        select
+        count(*)
+        from
+        (select
+        distinct
+        cus.*,
+        cad.customer_name,
+        incad.customer_name as invoicetoname
+        from xms_tbl_customer as cus
+        left join xms_tbl_customer_address as cad on cus.customer_code = cad.customer_code and cad.usertype = 1
+        left join xms_tbl_customer as incus on cus.invoice_to_customerid = incus.customer_code
+        left join xms_tbl_customer_address as incad on incus.customer_code = incad.customer_code and incad.usertype = 1
+        where (cus.customer_code like #{customerCodeExp} or cad.customer_name like #{customerCodeExp2})
+        and cus.franchise_code in (${franchiseList})
+        <if test="userLevel==6">
+            and cus.sales_rep_id = #{userId}
+        </if>
+        ) as r
+    </select>
+
+    <resultMap id="QuickSearchContactMap" type="ManageContactVo" extends="ManageContact.ManageContactMap">
+    </resultMap>
+
+    <select id="getContactsByContact" parameterType="com.gms.xms.filter.admin.AdminQuickSearchFilter"
+            resultMap="QuickSearchContactMap">
+        <bind name="contact" value="'%' + _parameter.getSearchValue() + '%'"/>
+        select
+        prospectid,
+        customer_code,
+        company_name,
+        contact_name,
+        case status
+        when 0 then 'prospect'
+        when
+        1
+        then
+        (case qualified_status
+        when 0 then 'qualified'
+        when 1 then 'opportunity'
+        when 2 then 'rejected qualified'
+        end)
+        when 2 then 'set scheduled visit'
+        when 3 then 'visit'
+        when 4 then 'proposal'
+        when 5 then 'success'
+        when 6 then 'shipping'
+        when 7 then 'rejected opportunity'
+        end as statusname
+        from
+        xms_tbl_prospect
+        where
+        active = '1' and (company_name like #{contact} or contact_name like #{contact})
+        <if test="prospectList != null and prospectList != ''">
+            and prospectid in (${prospectList})
+        </if>
+    </select>
+
+    <select id="countContactsByContact" parameterType="com.gms.xms.filter.admin.AdminQuickSearchFilter"
+            resultType="long">
+        <bind name="contact" value="'%' + _parameter.getSearchValue() + '%'"/>
+        select
+        count(*)
+        from
+        (select
+        prospectid,
+        customer_code,
+        company_name,
+        contact_name,
+        case status
+        when 0 then 'prospect'
+        when
+        1
+        then
+        (case qualified_status
+        when 0 then 'qualified'
+        when 1 then 'opportunity'
+        when 2 then 'rejected qualified'
+        end)
+        when 2 then 'set scheduled visit'
+        when 3 then 'visit'
+        when 4 then 'proposal'
+        when 5 then 'success'
+        when 6 then 'shipping'
+        when 7 then 'rejected opportunity'
+        end as statusname
+        from
+        xms_tbl_prospect
+        where
+        active = '1' and (company_name like #{contact} or contact_name like #{contact})
+        <if test="prospectList != null and prospectList != ''">
+            and prospectid in (${prospectList})
+        </if>
+        ) as r
+    </select>
+
+    <resultMap id="QuickSearchShipmentBillingMap" type="QuickSearchShipmentBillingVo"
+               extends="ShipmentBilling.ShipmentBillingMap">
+        <result column="invoiceid" property="invoiceId"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="import_date_time" property="importDateTime"/>
+    </resultMap>
+
+    <select id="getShipmentBillingsByAirbill" parameterType="com.gms.xms.filter.admin.AdminQuickSearchFilter"
+            resultMap="QuickSearchShipmentBillingMap">
+        <bind name="airbill" value="_parameter.getSearchValue() + '%'"/>
+        select
+        invoice.invoiceid,
+        invoice.invoice_code,
+        invoice.invoice_date,
+        shipinvoice.airbill_number,
+        shipbill.import_date,
+        shipbill.import_date as import_date_time
+        from
+        xms_tbl_shipment_billing shipbill
+        left join
+        xms_tbl_shipment_invoice shipinvoice on shipbill.shipmentid = shipinvoice.shipmentid and shipbill.airbill_number
+        = shipinvoice.airbill_number
+        left join
+        xms_tbl_invoice invoice on shipinvoice.invoiceid = invoice.invoiceid
+        inner join
+        (select customer_code from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) customer on customer.customer_code = invoice.customer_code
+        left join
+        xms_tbl_shipment s on s.shipmentid = shipbill.shipmentid
+        where
+        shipinvoice.airbill_number like #{airbill}
+        group by shipbill.shipmentid , shipbill.airbill_number
+    </select>
+
+    <select id="countShipmentBillingsByAirbill" parameterType="com.gms.xms.filter.admin.AdminQuickSearchFilter"
+            resultType="long">
+        <bind name="airbill" value="_parameter.getSearchValue() + '%'"/>
+        select
+        count(*)
+        from
+        (select
+        invoice.invoiceid,
+        invoice.invoice_code,
+        invoice.invoice_date,
+        shipinvoice.airbill_number,
+        shipbill.import_date,
+        shipbill.import_date as import_date_time
+        from
+        xms_tbl_shipment_billing shipbill
+        left join
+        xms_tbl_shipment_invoice shipinvoice on shipbill.shipmentid = shipinvoice.shipmentid and shipbill.airbill_number
+        = shipinvoice.airbill_number
+        left join
+        xms_tbl_invoice invoice on shipinvoice.invoiceid = invoice.invoiceid
+        inner join
+        (select customer_code from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) customer on customer.customer_code = invoice.customer_code
+        left join
+        xms_tbl_shipment s on s.shipmentid = shipbill.shipmentid
+        where
+        shipinvoice.airbill_number like #{airbill}
+        group by shipbill.shipmentid , shipbill.airbill_number
+        ) as r
+    </select>
+
+    <resultMap id="QuickSearchInvoiceMap" type="QuickSearchInvoiceVo" extends="Invoice.Invoice">
+        <result column="airbill_count" property="airbillCount"/>
+        <result column="margin" property="margin"/>
+        <result column="total" property="total"/>
+    </resultMap>
+
+    <select id="getInvoicesByInvoiceCode" parameterType="com.gms.xms.filter.admin.AdminQuickSearchFilter"
+            resultMap="QuickSearchInvoiceMap">
+        <bind name="invoiceCode" value="'%' + _parameter.getSearchValue() + '%'"/>
+        select
+        invoiceid,
+        invoice_date,
+        invoice_code,
+        count(airbill_number) as airbill_count,
+        sum(margin) as margin,
+        sum(total) as total
+        from
+        (select
+        invoice.invoiceid,
+        invoice.invoice_date,
+        invoice.invoice_code,
+        shipbill.airbill_number,
+        ifnull(sum(customer_cost) - sum(carrier_cost), '0.00') as margin,
+        ifnull(sum(customer_cost), '0.00') as total
+        from
+        xms_tbl_invoice invoice
+        inner join
+        (select customer_code from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) customer on customer.customer_code = invoice.customer_code
+        left join xms_tbl_shipment_invoice shipinvoice on shipinvoice.invoiceid = invoice.invoiceid
+        left join xms_tbl_shipment_billing shipbill on (shipbill.shipmentid = shipinvoice.shipmentid
+        and shipbill.airbill_number = shipinvoice.airbill_number)
+        where
+        invoice.invoice_code like #{invoiceCode}
+        group by shipbill.shipmentid , shipbill.airbill_number) as a
+        group by invoice_code
+    </select>
+
+    <select id="countInvoicesByInvoiceCode" parameterType="com.gms.xms.filter.admin.AdminQuickSearchFilter"
+            resultType="long">
+        <bind name="invoiceCode" value="'%' + _parameter.getSearchValue() + '%'"/>
+        select
+        count(*)
+        from
+        (select
+        invoiceid,
+        invoice_date,
+        invoice_code,
+        count(airbill_number) as airbill_count,
+        sum(margin) as margin,
+        sum(total) as total
+        from
+        (select
+        invoice.invoiceid,
+        invoice.invoice_date,
+        invoice.invoice_code,
+        shipbill.airbill_number,
+        ifnull(sum(customer_cost) - sum(carrier_cost), '0.00') as margin,
+        ifnull(sum(customer_cost), '0.00') as total
+        from
+        xms_tbl_invoice invoice
+        inner join
+        (select customer_code from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) customer on customer.customer_code = invoice.customer_code
+        left join xms_tbl_shipment_invoice shipinvoice on shipinvoice.invoiceid = invoice.invoiceid
+        left join xms_tbl_shipment_billing shipbill on (shipbill.shipmentid = shipinvoice.shipmentid
+        and shipbill.airbill_number = shipinvoice.airbill_number)
+        where
+        invoice.invoice_code like #{invoiceCode}
+        group by shipbill.shipmentid , shipbill.airbill_number) as a
+        group by invoice_code
+        ) as r
+    </select>
+
+    <resultMap id="QuickSearchShipmentMap" type="QuickSearchShipmentVo" extends="ShipmentMapper.ShipmentMapper">
+        <result column="customer_name" property="customerName"/>
+        <result column="service_name" property="serviceName"/>
+        <result column="service_id" property="serviceId"/>
+        <result column="voidstatus" property="voidStatus"/>
+        <result column="weight_str" property="weightStr"/>
+        <result column="collection_type_name" property="collectionTypeName"/>
+        <result column="confirmation_no" property="confirmationNo"/>
+    </resultMap>
+
+    <select id="getShipmentsByAirbill" parameterType="com.gms.xms.filter.admin.AdminQuickSearchFilter"
+            resultMap="QuickSearchShipmentMap">
+        <bind name="airbill" value="_parameter.getSearchValue() + '%'"/>
+        select
+        sm.shipmentid,
+        sm.customer_code,
+        cusadd.customer_name,
+        airbill_number,
+        ser.service_name,
+        ser.service_id,
+        sm.shipment_type_id,
+        sm.weight_unit,
+        sm.dimension_unit,
+        if(sm.status = 0, 'NO', 'YES') as voidstatus,
+        date(sm.create_date) as create_date,
+        shipment_date,
+        sm.no_of_pieces,
+        concat(cast(SUM(weight) as decimal(6,2)),weight_unit,'(s)') as weight_str,
+        case ifnull(schcoll.schedule_collection_id, 0)
+        when
+        0
+        then
+        case sm.collection_type_id
+        when '2' then 'Already booked'
+        when '3' then 'Book later'
+        when '4' then 'Daily'
+        when '5' then 'Drop off'
+        when '6' then 'Manual booking'
+        else 'Book later'
+        end
+        else 'YES'
+        end as collection_type_name,
+        schcoll.confirmation_no
+        from
+        xms_tbl_shipment as sm
+        inner join
+        (select customer_code from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) customer on customer.customer_code = sm.customer_code
+        inner join
+        xms_tbl_customer_address as cusadd on sm.customer_code = cusadd.customer_code
+        left join
+        xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+        left join
+        xms_tbl_service as ser on ser.service_id = st.serviceid
+        left join
+        xms_tbl_piece as pic on pic.shipmentid = sm.shipmentid
+        left join
+        xms_tbl_localization as stl on st.localizationid = stl.localizationid
+        left join
+        xms_tbl_schedule_collection as schcoll on sm.shipmentid = schcoll.shipmentid
+        and schcoll.status = 1
+        where
+        sm.airbill_number like #{airbill}
+        group by sm.shipmentid
+        order by sm.customer_code , sm.airbill_number
+    </select>
+
+    <select id="countShipmentsByAirbill" parameterType="com.gms.xms.filter.admin.AdminQuickSearchFilter"
+            resultType="long">
+        <bind name="airbill" value="_parameter.getSearchValue() + '%'"/>
+        select
+        count(*)
+        from
+        (select
+        sm.shipmentid,
+        sm.customer_code,
+        cusadd.customer_name,
+        airbill_number,
+        ser.service_name,
+        if(sm.status = 0, 'NO', 'YES') as voidstatus,
+        date(sm.create_date) as create_date,
+        shipment_date,
+        sm.no_of_pieces,
+        concat(cast(SUM(weight) as decimal(6,2)),weight_unit,'(s)') as weight_str,
+        case ifnull(schcoll.schedule_collection_id, 0)
+        when
+        0
+        then
+        case sm.collection_type_id
+        when '2' then 'Already booked'
+        when '3' then 'Book later'
+        when '4' then 'Daily'
+        when '5' then 'Drop off'
+        when '6' then 'Manual booking'
+        else 'Book later'
+        end
+        else 'YES'
+        end as collection_type_name,
+        schcoll.confirmation_no
+        from
+        xms_tbl_shipment as sm
+        inner join
+        (select customer_code from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) customer on customer.customer_code = sm.customer_code
+        inner join
+        xms_tbl_customer_address as cusadd on sm.customer_code = cusadd.customer_code
+        left join
+        xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+        left join
+        xms_tbl_service as ser on ser.service_id = st.serviceid
+        left join
+        xms_tbl_piece as pic on pic.shipmentid = sm.shipmentid
+        left join
+        xms_tbl_localization as stl on st.localizationid = stl.localizationid
+        left join
+        xms_tbl_schedule_collection as schcoll on sm.shipmentid = schcoll.shipmentid
+        and schcoll.status = 1
+        where
+        sm.airbill_number like #{airbill}
+        group by sm.shipmentid
+        ) as r
+    </select>
+
+    <resultMap id="QuickSearchReferenceMap" type="QuickSearchShipmentVo" extends="QuickSearchShipmentMap">
+    </resultMap>
+
+    <select id="getShipmentsByReference" parameterType="com.gms.xms.filter.admin.AdminQuickSearchFilter"
+            resultMap="QuickSearchReferenceMap">
+        <bind name="reference" value="_parameter.getSearchValue() + '%'"/>
+        select
+        sm.shipmentid,
+        sm.customer_code,
+        cusadd.customer_name,
+        airbill_number,
+        ser.service_name,
+        if(sm.status = 0, 'NO', 'YES') as voidstatus,
+        date(sm.create_date) as create_date,
+        shipment_date,
+        sm.no_of_pieces,
+        concat(cast(SUM(weight) as decimal(6,2)),weight_unit,'(s)') as weight_str,
+        case ifnull(schcoll.schedule_collection_id, 0)
+        when
+        0
+        then
+        case sm.collection_type_id
+        when '2' then 'Already booked'
+        when '3' then 'Book later'
+        when '4' then 'Daily'
+        when '5' then 'Drop off'
+        when '6' then 'Manual booking'
+        else 'Book later'
+        end
+        else 'YES'
+        end as collection_type_name,
+        schcoll.confirmation_no,
+        sm.reference
+        from
+        xms_tbl_shipment as sm
+        inner join
+        (select customer_code from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) customer on customer.customer_code = sm.customer_code
+        inner join
+        xms_tbl_customer_address as cusadd on sm.customer_code = cusadd.customer_code
+        left join
+        xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+        left join
+        xms_tbl_service as ser on ser.service_id = st.serviceid
+        left join
+        xms_tbl_piece as pic on pic.shipmentid = sm.shipmentid
+        left join
+        xms_tbl_localization as stl on st.localizationid = stl.localizationid
+        left join
+        xms_tbl_schedule_collection as schcoll on sm.shipmentid = schcoll.shipmentid
+        and schcoll.status = 1
+        where
+        sm.reference like #{reference}
+        group by sm.shipmentid
+        order by sm.customer_code , sm.airbill_number
+    </select>
+
+    <select id="countShipmentsByReference" parameterType="com.gms.xms.filter.admin.AdminQuickSearchFilter"
+            resultType="long">
+        <bind name="reference" value="_parameter.getSearchValue() + '%'"/>
+        select
+        count(*)
+        from
+        (select
+        sm.shipmentid,
+        sm.customer_code,
+        cusadd.customer_name,
+        airbill_number,
+        ser.service_name,
+        if(sm.status = 0, 'NO', 'YES') as voidstatus,
+        date(sm.create_date) as create_date,
+        shipment_date,
+        sm.no_of_pieces,
+        concat(cast(SUM(weight) as decimal(6,2)),weight_unit,'(s)') as weight_str,
+        case ifnull(schcoll.schedule_collection_id, 0)
+        when
+        0
+        then
+        case sm.collection_type_id
+        when '2' then 'Already booked'
+        when '3' then 'Book later'
+        when '4' then 'Daily'
+        when '5' then 'Drop off'
+        when '6' then 'Manual booking'
+        else 'Book later'
+        end
+        else 'YES'
+        end as collection_type_name,
+        schcoll.confirmation_no,
+        sm.reference
+        from
+        xms_tbl_shipment as sm
+        inner join
+        (select customer_code from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) customer on customer.customer_code = sm.customer_code
+        inner join
+        xms_tbl_customer_address as cusadd on sm.customer_code = cusadd.customer_code
+        left join
+        xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+        left join
+        xms_tbl_service as ser on ser.service_id = st.serviceid
+        left join
+        xms_tbl_piece as pic on pic.shipmentid = sm.shipmentid
+        left join
+        xms_tbl_localization as stl on st.localizationid = stl.localizationid
+        left join
+        xms_tbl_schedule_collection as schcoll on sm.shipmentid = schcoll.shipmentid
+        and schcoll.status = 1
+        where
+        sm.reference like #{reference}
+        group by sm.shipmentid
+        ) as r
+    </select>
+
+    <resultMap id="QuickSearchConfirmationNoMap" type="QuickSearchShipmentVo" extends="QuickSearchShipmentMap">
+    </resultMap>
+
+    <select id="getShipmentsByConfirmationNo" parameterType="com.gms.xms.filter.admin.AdminQuickSearchFilter"
+            resultMap="QuickSearchConfirmationNoMap">
+        <bind name="confirmationNo" value="_parameter.getSearchValue() + '%'"/>
+        select
+        sm.shipmentid,
+        sm.customer_code,
+        cusadd.customer_name,
+        airbill_number,
+        ser.service_name,
+        if(sm.status = 0, 'NO', 'YES') as voidstatus,
+        date(sm.create_date) as create_date,
+        shipment_date,
+        sm.no_of_pieces,
+        concat(cast(SUM(weight) as decimal(6,2)),weight_unit,'(s)') as weight_str,
+        case ifnull(schcoll.schedule_collection_id, 0)
+        when
+        0
+        then
+        case sm.collection_type_id
+        when '2' then 'Already booked'
+        when '3' then 'Book later'
+        when '4' then 'Daily'
+        when '5' then 'Drop off'
+        when '6' then 'Manual booking'
+        else 'Book later'
+        end
+        else 'YES'
+        end as collection_type_name,
+        schcoll.confirmation_no
+        from
+        xms_tbl_shipment as sm
+        inner join
+        (select customer_code from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) customer on customer.customer_code = sm.customer_code
+        inner join
+        xms_tbl_customer_address as cusadd on sm.customer_code = cusadd.customer_code
+        left join
+        xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+        left join
+        xms_tbl_service as ser on ser.service_id = st.serviceid
+        left join
+        xms_tbl_piece as pic on pic.shipmentid = sm.shipmentid
+        left join
+        xms_tbl_localization as stl on st.localizationid = stl.localizationid
+        left join
+        xms_tbl_schedule_collection as schcoll on sm.shipmentid = schcoll.shipmentid
+        and schcoll.status = 1
+        where
+        schcoll.confirmation_no like #{confirmationNo}
+        group by sm.shipmentid
+        order by sm.customer_code , sm.airbill_number
+    </select>
+
+    <select id="countShipmentsByConfirmationNo" parameterType="com.gms.xms.filter.admin.AdminQuickSearchFilter"
+            resultType="long">
+        <bind name="confirmationNo" value="_parameter.getSearchValue() + '%'"/>
+        select
+        count(*)
+        from
+        (select
+        sm.shipmentid,
+        sm.customer_code,
+        cusadd.customer_name,
+        airbill_number,
+        ser.service_name,
+        if(sm.status = 0, 'NO', 'YES') as voidstatus,
+        date(sm.create_date) as create_date,
+        shipment_date,
+        sm.no_of_pieces,
+        concat(cast(SUM(weight) as decimal(6,2)),weight_unit,'(s)') as weight_str,
+        case ifnull(schcoll.schedule_collection_id, 0)
+        when
+        0
+        then
+        case sm.collection_type_id
+        when '2' then 'Already booked'
+        when '3' then 'Book later'
+        when '4' then 'Daily'
+        when '5' then 'Drop off'
+        when '6' then 'Manual booking'
+        else 'Book later'
+        end
+        else 'YES'
+        end as collection_type_name,
+        schcoll.confirmation_no
+        from
+        xms_tbl_shipment as sm
+        inner join
+        (select customer_code from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) customer on customer.customer_code = sm.customer_code
+        inner join
+        xms_tbl_customer_address as cusadd on sm.customer_code = cusadd.customer_code
+        left join
+        xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+        left join
+        xms_tbl_service as ser on ser.service_id = st.serviceid
+        left join
+        xms_tbl_piece as pic on pic.shipmentid = sm.shipmentid
+        left join
+        xms_tbl_localization as stl on st.localizationid = stl.localizationid
+        left join
+        xms_tbl_schedule_collection as schcoll on sm.shipmentid = schcoll.shipmentid
+        and schcoll.status = 1
+        where
+        schcoll.confirmation_no like #{confirmationNo}
+        group by sm.shipmentid
+        ) as r
+    </select>
+    <select id="getSaleRepIdOfAirbill" parameterType="string" resultType="long">
+        <bind name="airbillNumber" value="_parameter"/>
+        select
+        c.sales_rep_id
+        from xms_tbl_shipment as sm
+        inner join
+        (select customer_code, sales_rep_id from xms_tbl_customer
+        union
+        select franchise_code as customer_code, sales_rep_id from xms_tbl_franchise
+        ) as c on c.customer_code = sm.customer_code
+        where sm.airbill_number = #{airbillNumber}
+    </select>
+</mapper>

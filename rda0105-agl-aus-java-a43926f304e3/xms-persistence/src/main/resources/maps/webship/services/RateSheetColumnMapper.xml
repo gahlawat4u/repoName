@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="RateSheetColumn">
+    <resultMap id="RateSheetColumnMap" type="RateSheetColumnVo">
+        <id column="column_id" property="columnId"/>
+        <result column="sheet_id" property="sheetId"/>
+        <result column="column_name" property="columnName"/>
+    </resultMap>
+
+    <select id="selectBySheetId" parameterType="long" resultMap="RateSheetColumnMap">
+        select * from xms_tbl_rate_sheet_column
+        where sheet_id = #{sheetId}
+        order by column_name
+    </select>
+    
+    <select id="selectBySheetIdForUps" parameterType="long" resultMap="RateSheetColumnMap">
+        select * from xms_tbl_rate_sheet_column
+        where sheet_id = #{sheetId}
+        order by column_id
+    </select>
+
+    <delete id="deleteColumnsBySheetId" parameterType="long">
+        delete from xms_tbl_rate_sheet_column where sheet_id= #{sheetId}
+    </delete>
+
+    <select id="deleteColumnsBySheetId_SelectForLog" parameterType="long" resultMap="RateSheetColumnMap">
+        select * from from xms_tbl_rate_sheet_column where sheet_id= #{sheetId}
+    </select>
+    <select id="getRateSheetColumn" parameterType="com.gms.xms.txndb.vo.RateSheetColumnVo"
+            resultMap="RateSheetColumnMap">
+        select * from xms_tbl_rate_sheet_column
+        where sheet_id = #{sheetId}
+        and column_name = #{columnName}
+    </select>
+    <insert id="insertRateSheetColumn" parameterType="com.gms.xms.txndb.vo.RateSheetColumnVo" useGeneratedKeys="true"
+            keyProperty="columnId">
+        insert into xms_tbl_rate_sheet_column (sheet_id, column_name)
+        values (#{sheetId}, #{columnName})
+    </insert>
+    <update id="updateRateSheetColumns" parameterType="com.gms.xms.txndb.parameter.RateSheetParam">
+        update xms_tbl_rate_sheet_column
+        set column_name = #{zoneCode}
+        where column_name = #{zoneNo}
+        and sheet_id in (${sheetIdList})
+    </update>
+</mapper>

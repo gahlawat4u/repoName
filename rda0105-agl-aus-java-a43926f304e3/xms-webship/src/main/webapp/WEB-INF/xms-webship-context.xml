@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean id="errorHandlerController" class="com.gms.xms.weblib.controller.ErrorHandlerController" scope="request"/>
+
+    <!-- ===== Webship ===== -->
+    <bean id="shipmentController" class="com.gms.xms.weblib.controller.webship.shipment.ShipmentController"
+          scope="request"/>
+    <bean id="getQuoteController" class="com.gms.xms.weblib.controller.webship.shipment.GetQuoteController"
+          scope="request"/>
+    <bean id="continueBookingController"
+          class="com.gms.xms.weblib.controller.webship.shipment.ContinueBookingController" scope="request"/>
+    <bean id="bookingController" class="com.gms.xms.weblib.controller.webship.shipment.BookingController"
+          scope="request"/>
+    <bean id="searchPostalCodeController"
+          class="com.gms.xms.weblib.controller.webship.shipment.SearchPostalCodeController" scope="request"/>
+    <bean id="htsLookupController" class="com.gms.xms.weblib.controller.webship.shipment.HtsLookupController"
+          scope="request"/>
+    <!-- ===== End Webship ===== -->
+
+    <!-- ===== Customer Address Book ===== -->
+    <bean id="addressBookController" class="com.gms.xms.weblib.controller.webship.addressbook.AddressBookController"
+          scope="request"/>
+    <bean id="addressBookImportController"
+          class="com.gms.xms.weblib.controller.webship.addressbook.AddressBookImportController" scope="request"/>
+    <bean id="editAddressBookController"
+          class="com.gms.xms.weblib.controller.webship.addressbook.EditAddressBookController" scope="request"/>
+    <!-- ===== End Customer Address Book ===== -->
+
+    <!-- ===== Quote/Job ===== -->
+    <bean id="quoteJobController" class="com.gms.xms.weblib.controller.webship.quotejob.QuoteJobController"
+          scope="request"/>
+    <!-- ===== End Quote/Job ===== -->
+
+    <!-- ===== Settings ===== -->
+    <bean id="userSettingsController" class="com.gms.xms.weblib.controller.webship.settings.UserSettingsController"
+          scope="request"/>
+    <bean id="changePasswordController" class="com.gms.xms.weblib.controller.webship.settings.ChangePasswordController"
+          scope="request"/>
+    <bean id="requirePasswordController" class="com.gms.xms.weblib.controller.webship.settings.RequirePasswordController"
+          scope="request"/>
+    <bean id="dimensionController" class="com.gms.xms.weblib.controller.webship.settings.DimensionController"
+          scope="request"/>
+    <bean id="addressDefaultController" class="com.gms.xms.weblib.controller.webship.settings.AddressDefaultController"
+          scope="request"/>
+    <bean id="webshipAdminSettingsController"
+          class="com.gms.xms.weblib.controller.webship.settings.WebshipAdminSettingsController" scope="request"/>
+    <bean id="webshipUserListController"
+          class="com.gms.xms.weblib.controller.webship.settings.WebshipUserListController" scope="request"/>
+    <!-- ===== End Settings ===== -->
+
+    <!-- ===== Supplies ===== -->
+    <bean id="supplyController" class="com.gms.xms.weblib.controller.webship.supplies.SupplyController"
+          scope="request"/>
+    <!-- ===== End Supplies ===== -->
+
+    <!-- ===== Invoices ===== -->
+    <bean id="invoicesController" class="com.gms.xms.weblib.controller.webship.invoices.InvoicesController"
+          scope="request"/>
+    <!-- ===== End Invoices ===== -->
+
+    <!-- ===== Help ===== -->
+    <bean id="helpController" class="com.gms.xms.weblib.controller.webship.help.HelpController" scope="request"/>
+    <!-- ===== End Help ===== -->
+
+    <!-- ===== Login ===== -->
+    <bean id="loginController" class="com.gms.xms.weblib.controller.webship.login.LoginController" scope="request"/>
+    <bean id="webshipResetController" class="com.gms.xms.weblib.controller.webship.login.WebshipResetController"
+          scope="request"/>
+    <bean id="quickSearchController" class="com.gms.xms.weblib.controller.webship.login.QuickSearchController"
+          scope="request"/>
+    <!-- ===== End Login ===== -->
+
+    <!-- ===== History ===== -->
+    <bean id="historyController" class="com.gms.xms.weblib.controller.webship.history.HistoryController"
+          scope="request"/>
+    <bean id="historyDetailController" class="com.gms.xms.weblib.controller.webship.history.HistoryDetailController"
+          scope="request"/>
+    <bean id="historyTrackingController" class="com.gms.xms.weblib.controller.webship.history.HistoryTrackingController"
+          scope="request"/>
+    <bean id="historyShipmentNoteController"
+          class="com.gms.xms.weblib.controller.webship.history.HistoryShipmentNoteController" scope="request"/>
+    <bean id="historyScheduleController" class="com.gms.xms.weblib.controller.webship.history.HistoryScheduleController"
+          scope="request"/>
+    <!-- ===== End History ===== -->
+
+    <!-- Schedule Collection -->
+    <bean id="scheduleCollectionController"
+          class="com.gms.xms.weblib.controller.webship.schedule.ScheduleCollectionController" scope="request"/>
+</beans>

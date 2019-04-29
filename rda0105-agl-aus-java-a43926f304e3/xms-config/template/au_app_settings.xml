@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<app-setting>
+	<app-mode>DEVELOPMENT</app-mode>
+	<development-email>xms2tuat@gmail.com</development-email>
+	<enable-php-home>N</enable-php-home>
+	<php-home-path>/xms/admin</php-home-path>
+</app-setting>

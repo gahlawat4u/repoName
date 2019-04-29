@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerGroup">
+    <resultMap id="CustomerGroupMap" type="CustomerGroupVo">
+        <id column="customer_group_id" property="customerGroupId"/>
+        <result column="customer_group_name" property="customerGroupName"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="CustomerGroupMap">
+        select * from xms_tbl_customer_group
+        where customer_group_id!=0
+        order by customer_group_name
+    </select>
+    <select id="selectByFilter" parameterType="com.gms.xms.filter.admin.CustomerGroupFilter"
+            resultMap="CustomerGroupMap">
+        select
+        t.customer_group_id,
+        t.customer_group_name
+        from xms_tbl_customer_group as t
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countByFilter" parameterType="com.gms.xms.filter.admin.CustomerGroupFilter"
+            resultType="long">
+        select count(*) from xms_tbl_customer_group as t
+    </select>
+    <insert id="insert" parameterType="CustomerGroupVo"
+            useGeneratedKeys="true" keyProperty="customerGroupId">
+        insert into xms_tbl_customer_group (
+        customer_group_name)
+        values (#{customerGroupName})
+    </insert>
+
+    <update id="update" parameterType="CustomerGroupVo">
+        update xms_tbl_customer_group
+        <set>
+            <if test="customerGroupName != null">
+                customer_group_name = #{customerGroupName}
+            </if>
+        </set>
+        <where>
+            customer_group_id = #{customerGroupId}
+        </where>
+    </update>
+
+    <select id="update_SelectForLog" parameterType="CustomerGroupVo" resultMap="CustomerGroupMap">
+        select * from xms_tbl_customer_group
+        where
+        customer_group_id = #{customerGroupId}
+    </select>
+
+    <delete id="delete" parameterType="integer">
+        delete from xms_tbl_customer_group
+        where customer_group_id = #{customerGroupId}
+    </delete>
+
+    <select id="delete_SelectForLog" parameterType="integer" resultMap="CustomerGroupMap">
+        select * from xms_tbl_customer_group
+        where customer_group_id = #{customerGroupId}
+    </select>
+
+    <select id="countCustomerGroupByName" resultType="long" parameterType="CustomerGroupVo">
+        select count(*) FROM xms_tbl_customer_group
+        WHERE customer_group_name = #{customerGroupName}
+        <if test="customerGroupId != null">
+            and customer_group_id != #{customerGroupId}
+        </if>
+    </select>
+</mapper>

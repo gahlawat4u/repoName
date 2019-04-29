@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ScheduleCollection">
+    <resultMap id="ScheduleCollection" type="ScheduleCollectionVo">
+        <id column="schedule_collection_id" property="scheduleCollectionId"/>
+        <result column="pickup_date" property="pickupDate"/>
+        <result column="pickup_time" property="pickupTime"/>
+        <result column="pickup_time_no_later" property="pickupTimeNoLater"/>
+        <result column="no_of_pieces" property="noOfPieces"/>
+        <result column="total_weight" property="totalWeight"/>
+        <result column="schedule_weight_unit" property="scheduleWeightUnit"/>
+        <result column="special_instructions" property="specialInstructions"/>
+        <result column="addressid" property="addressId"/>
+        <result column="confirmation_no" property="confirmationNo"/>
+        <result column="location" property="location"/>
+        <result column="location_code_id" property="locationCodeId"/>
+        <result column="description" property="description"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="satus" property="status"/>
+        <result column="create_date" property="createDate"/>
+    </resultMap>
+
+    <resultMap id="ShipmentScheduleCollection" type="com.gms.xms.txndb.vo.webship.ShipmentScheduleCollectionVo">
+        <id column="shipmentid" property="shipmentId"/>
+        <result column="address" property="address"/>
+        <result column="address2" property="address2"/>
+        <result column="city" property="city"/>
+        <result column="state" property="state"/>
+        <result column="postal_code" property="postalCode"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="packageid" property="packageId"/>
+        <result column="location_code_id" property="locationCodeId"/>
+        <result column="description" property="description"/>
+        <result column="confirmation_no" property="confirmationNo"/>
+        <result column="pickup_date" property="pickupDate"/>
+        <result column="pickup_time" property="pickupTime"/>
+        <result column="pickup_time_no_later" property="pickupTimeNoLater"/>
+        <result column="total_weight" property="totalWeight"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="schedule_weight_unit" property="scheduleWeightUnit"/>
+        <result column="special_instructions" property="specialInstructions"/>
+        <result column="no_of_pieces" property="noOfPieces"/>
+        <result column="contact_name" property="contactName"/>
+        <result column="countrycode" property="countryCode"/>
+        <result column="orgsvcode" property="orgsvCode"/>
+        <result column="phone" property="phone"/>
+        <result column="company_name" property="companyName"/>
+    </resultMap>
+
+    <select id="getScheduleCollectionList" resultMap="ScheduleCollection">
+        SELECT * FROM xms_tbl_schedule_collection
+    </select>
+
+    <select id="selectById" parameterType="string" resultMap="ScheduleCollection">
+        select * from xms_tbl_schedule_collection
+        where schedule_collection_id = #{scheduleCollectionId}
+    </select>
+
+    <select id="ScheduleCollection_SelectListScheduleCollectionBySmId" resultMap="ScheduleCollection"
+            parameterType="long">
+        SELECT * FROM xms_tbl_schedule_collection where shipmentid = #{shipmentId}
+    </select>
+
+    <select id="Schedule_CheckScheduleCollectionById" resultType="ScheduleCollectionVo" parameterType="long">
+        SELECT schedule_collection_id
+        FROM
+        xms_tbl_schedule_collection
+        WHERE shipmentid = #{shipmentId}
+    </select>
+
+    <select id="getScheduleCollectionForModify" parameterType="long" resultMap="ScheduleCollection">
+        select * from xms_tbl_schedule_collection
+        where shipmentid = #{shipmentId} and status = 1
+    </select>
+
+    <insert id="Schedule_InsertSelective" parameterType="ScheduleCollectionVo">
+        insert into xms_tbl_schedule_collection
+        (
+        pickup_date, pickup_time,
+        pickup_time_no_later, no_of_pieces, total_weight,
+        schedule_weight_unit, addressid, confirmation_no,
+        location, location_code_id, description,
+        shipmentid, status, create_date,
+        special_instructions
+        )
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="pickupDate != null">
+                #{pickupDate},
+            </if>
+            <if test="pickupDate == null">
+                time(now()),
+            </if>
+
+            <if test="pickupTime != null">
+                time(#{pickupTime}),
+            </if>
+            <if test="pickupTime == null">
+                time(now()),
+            </if>
+
+            <if test="pickupTimeNoLater != null">
+                time(#{pickupTimeNoLater}),
+            </if>
+            <if test="pickupTimeNoLater == null">
+                time(now()),
+            </if>
+
+            <if test="noOfPieces != null">
+                #{noOfPieces},
+            </if>
+            <if test="noOfPieces == null">
+                0,
+            </if>
+
+            <if test="totalWeight != null">
+                #{totalWeight},
+            </if>
+            <if test="totalWeight == null">
+                "",
+            </if>
+
+            <if test="scheduleWeightUnit != null">
+                #{scheduleWeightUnit},
+            </if>
+            <if test="scheduleWeightUnit == null">
+                "",
+            </if>
+
+            <if test="addressId != null">
+                #{addressId},
+            </if>
+            <if test="addressId == null">
+                0,
+            </if>
+
+            <if test="confirmationNo != null">
+                #{confirmationNo},
+            </if>
+            <if test="confirmationNo == null">
+                "",
+            </if>
+
+            <if test="location != null">
+                #{location},
+            </if>
+            <if test="location == null">
+                1,
+            </if>
+
+            <if test="locationCodeId != null">
+                #{locationCodeId},
+            </if>
+            <if test="locationCodeId == null">
+                0,
+            </if>
+
+            <if test="description != null">
+                #{description},
+            </if>
+            <if test="description == null">
+                "",
+            </if>
+
+            <if test="shipmentId != null">
+                #{shipmentId},
+            </if>
+            <if test="shipmentId == null">
+                0,
+            </if>
+
+            <if test="status != null">
+                #{status},
+            </if>
+            <if test="status == null">
+                0,
+            </if>
+
+            <if test="createDate != null">
+                #{createDate},
+            </if>
+            <if test="createDate == null">
+                now(),
+            </if>
+
+            <if test="specialInstructions != null">
+                #{specialInstructions},
+            </if>
+            <if test="specialInstructions == null">
+                "",
+            </if>
+        </trim>
+    </insert>
+
+    <update id="Schedule_UpdateByPrimaryKeySelective" parameterType="ScheduleCollectionVo">
+        update xms_tbl_schedule_collection
+        <set>
+            <if test="pickupDate != null">
+                pickup_date = #{pickupDate},
+            </if>
+            <if test="pickupTime != null">
+                pickup_time = time(#{pickupTime}),
+            </if>
+            <if test="pickupTimeNoLater != null">
+                pickup_time_no_later = time(#{pickupTimeNoLater}),
+            </if>
+            <if test="noOfPieces != null">
+                no_of_pieces = #{noOfPieces},
+            </if>
+            <if test="totalWeight != null">
+                total_weight = #{totalWeight},
+            </if>
+            <if test="scheduleWeightUnit != null">
+                schedule_weight_unit = #{scheduleWeightUnit},
+            </if>
+            <if test="addressId != null">
+                addressid = #{addressId},
+            </if>
+            <if test="confirmationNo != null">
+                confirmation_no = #{confirmationNo},
+            </if>
+            <if test="location != null">
+                location = #{location},
+            </if>
+            <if test="locationCodeId != null">
+                location_code_id = #{locationCodeId},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="shipmentId != null">
+                shipmentid = #{shipmentId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="createDate != null">
+                create_date = #{createDate},
+            </if>
+            <if test="specialInstructions != null">
+                special_instructions = #{specialInstructions},
+            </if>
+        </set>
+        where schedule_collection_id = #{scheduleCollectionId}
+    </update>
+
+    <select id="Schedule_UpdateByPrimaryKeySelective_SelectForLog" parameterType="ScheduleCollectionVo"
+            resultMap="ScheduleCollection">
+        select * from xms_tbl_schedule_collection
+        where schedule_collection_id = #{scheduleCollectionId}
+    </select>
+
+    <update id="Schedule_CancelByPrimaryKeySelective" parameterType="ScheduleCollectionVo">
+        update xms_tbl_schedule_collection
+        <set>
+            <if test="noOfPieces != null">
+                no_of_pieces = #{noOfPieces},
+            </if>
+            <if test="totalWeight != null">
+                total_weight = #{totalWeight},
+            </if>
+            <if test="scheduleWeightUnit != null">
+                schedule_weight_unit = #{scheduleWeightUnit},
+            </if>
+            <if test="addressId != null">
+                addressid = #{addressId},
+            </if>
+            <if test="confirmationNo != null">
+                confirmation_no = #{confirmationNo},
+            </if>
+            <if test="location != null">
+                location = #{location},
+            </if>
+            <if test="locationCodeId != null">
+                location_code_id = #{locationCodeId},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="shipmentId != null">
+                shipmentid = #{shipmentId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="createDate != null">
+                create_date = #{createDate},
+            </if>
+            <if test="specialInstructions != null">
+                special_instructions = #{specialInstructions},
+            </if>
+        </set>
+        where schedule_collection_id = #{scheduleCollectionId}
+    </update>
+
+    <select id="Schedule_CancelByPrimaryKeySelective_SelectForLog" parameterType="ScheduleCollectionVo"
+            resultMap="ScheduleCollection">
+        select * from xms_tbl_schedule_collection
+        where schedule_collection_id = #{scheduleCollectionId}
+    </select>
+
+    <update id="Schedule_UpdateByShipmentId" parameterType="ScheduleCollectionVo">
+        update xms_tbl_schedule_collection
+        <set>
+            <if test="pickupDate != null">
+                pickup_date = #{pickupDate},
+            </if>
+            <if test="pickupTime != null">
+                pickup_time = time(#{pickupTime}),
+            </if>
+            <if test="pickupTimeNoLater != null">
+                pickup_time_no_later = time(#{pickupTimeNoLater}),
+            </if>
+            <if test="noOfPieces != null">
+                no_of_pieces = #{noOfPieces},
+            </if>
+            <if test="totalWeight != null">
+                total_weight = #{totalWeight},
+            </if>
+            <if test="scheduleWeightUnit != null">
+                schedule_weight_unit = #{scheduleWeightUnit},
+            </if>
+            <if test="addressId != null">
+                addressid = #{addressId},
+            </if>
+            <if test="confirmationNo != null">
+                confirmation_no = #{confirmationNo},
+            </if>
+            <if test="location != null">
+                location = #{location},
+            </if>
+            <if test="locationCodeId != null">
+                location_code_id = #{locationCodeId},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="shipmentId != null">
+                shipmentid = #{shipmentId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="createDate != null">
+                create_date = #{createDate},
+            </if>
+            <if test="specialInstructions != null">
+                special_instructions = #{specialInstructions},
+            </if>
+        </set>
+        where shipmentid = #{shipmentId} and status = 1
+    </update>
+    <update id="cancelScheduleByShipmentId" parameterType="long">
+        update xms_tbl_schedule_collection set status=0
+        where shipmentid = #{shipmentId}
+    </update>
+
+    <select id="Schedule_UpdateByShipmentId_SelectForLog" parameterType="ScheduleCollectionVo"
+            resultMap="ScheduleCollection">
+        select * from xms_tbl_schedule_collection
+        where shipmentid = #{shipmentId} and status = 1
+    </select>
+
+    <select id="selectShipmentScheduleCollectionBySmId" parameterType="long"
+            resultMap="ShipmentScheduleCollection">
+        SELECT a.address,a.address2,a.city,a.state,a.postal_code, s.customer_code,s.packageid,  cc.location_code_id, cc.description, cc.shipmentid , cc.confirmation_no ,pickup_date,
+        pickup_time, pickup_time_no_later,total_weight ,shipment_type_id , cc.schedule_weight_unit, cc.special_instructions,
+        cc.no_of_pieces ,contact_name , IFNULL(countrycode,'SG') as countrycode , IFNULL(service_area_code_origin , 'SIN')
+        as orgsvcode, a.companyname, a.phone
+        FROM xms_tbl_shipment s
+        left join xms_tbl_schedule_collection as cc on cc.shipmentid=s.shipmentid and cc.status=1 and cc.status=1
+        left join xms_tbl_address as a on cc.addressid=a.addressid
+        left join xms_tbl_country as c on a.country=c.countryid
+        where s.shipmentid= #{shipmentId};
+    </select>
+</mapper>

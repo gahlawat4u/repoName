@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerAddress">
+    <resultMap id="CustomerAddressMap" type="CustomerAddressVo">
+        <result column="customer_code" property="customerCode" jdbcType="BIGINT"/>
+        <result column="usertype" property="userType"/>
+        <result column="customer_name" property="customerName" jdbcType="VARCHAR"/>
+        <result column="contact_name" property="contactName" jdbcType="VARCHAR"/>
+        <result column="contact_title" property="contactTitle" jdbcType="VARCHAR"/>
+        <result column="address1" property="address1" jdbcType="VARCHAR"/>
+        <result column="address2" property="address2" jdbcType="VARCHAR"/>
+        <result column="city" property="city" jdbcType="VARCHAR"/>
+        <result column="state_code" property="stateCode" jdbcType="VARCHAR"/>
+        <result column="country" property="country" jdbcType="BIGINT"/>
+        <result column="postal_code" property="postalCode" jdbcType="VARCHAR"/>
+        <result column="phone" property="phone" jdbcType="VARCHAR"/>
+        <result column="fax" property="fax" jdbcType="VARCHAR"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="mobile" property="mobile" jdbcType="VARCHAR"/>
+        <result column="alternate_phone" property="alternatePhone" jdbcType="VARCHAR"/>
+        <result column="owner" property="owner" jdbcType="VARCHAR"/>
+        <result column="owner_phone" property="ownerPhone" jdbcType="VARCHAR"/>
+        <result column="owner_email" property="ownerEmail" jdbcType="VARCHAR"/>
+        <result column="ap_contact" property="apContact" jdbcType="VARCHAR"/>
+        <result column="ap_phone" property="apPhone" jdbcType="VARCHAR"/>
+        <result column="ap_email" property="apEmail" jdbcType="VARCHAR"/>
+        <result column="other_contact" property="otherContact" jdbcType="VARCHAR"/>
+        <result column="other_phone" property="otherPhone" jdbcType="VARCHAR"/>
+        <result column="other_email" property="otherEmail" jdbcType="VARCHAR"/>
+        <result column="other2_contact" property="other2Contact" jdbcType="VARCHAR"/>
+        <result column="other2_phone" property="other2Phone" jdbcType="VARCHAR"/>
+        <result column="other2_email" property="other2Email" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="CustomerAddressDetailMap" type="CustomerAddressDetailVo" extends="CustomerAddressMap">
+        <result column="countryname" property="countryName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="CustomerAddressWithCountryMap" type="CustomerAddressVo" extends="CustomerAddressMap">
+        <association property="countryD" javaType="CountryVo" resultMap="Country.CountryMap"></association>
+    </resultMap>
+
+    <resultMap id="CustomerFranchiseInfoMap" type="CustomerFranchiseInfoVo">
+        <result column="customer_name" property="customerName"/>
+        <result column="franchise_name" property="franchiseName"/>
+        <result column="franchise_email" property="franchiseEmail"/>
+        <result column="email" property="email"/>
+    </resultMap>
+
+
+    <select id="selectCustomerAndFranchiseInfo" parameterType="com.gms.xms.txndb.vo.CustomerCodeFilter" resultMap="CustomerFranchiseInfoMap">
+        SELECT
+        customer_name,
+        email,
+        (
+        SELECT
+        customer_name
+        FROM
+        xms_tbl_customer_address
+        WHERE
+        customer_code = #{franchiseCode}
+        ) as franchise_name,
+        (
+        SELECT
+        email
+        FROM
+        xms_tbl_customer_address
+        WHERE
+        customer_code = #{franchiseCode}
+        ) as franchise_email
+        FROM
+        xms_tbl_customer_address
+        WHERE
+        customer_code = #{customerCode}
+    </select>
+
+    <select id="selectByName" resultMap="CustomerAddressMap" parameterType="CustomerAddressFilter">
+        select * from xms_tbl_customer_address
+        where customer_name like concat(#{customerName},'%')
+        and left(customer_code,3) in (${franchiseList})
+        order by customer_code
+    </select>
+
+    <select id="selectByCode" parameterType="String" resultMap="CustomerAddressMap">
+        select * from xms_tbl_customer_address
+        where customer_code = #{customerCode} limit 1
+    </select>
+
+    <select id="selectByCustomerCode" resultMap="CustomerAddressDetailMap" parameterType="long">
+        SELECT
+        ca.*, c.countryname
+        FROM
+        xms_tbl_customer_address AS ca
+        LEFT JOIN
+        xms_tbl_country AS c ON c.countryid = ca.country
+        WHERE
+        customer_code = #{customerCode}
+    </select>
+
+    <select id="selectCustomerAddressByCode" parameterType="CustomerAddressVo" resultMap="CustomerAddressMap">
+        select
+        *
+        from xms_tbl_customer_address
+        where customer_code = #{customerCode}
+        and usertype = #{userType}
+        limit 1
+    </select>
+
+    <insert id="insertCustomerAddress" parameterType="CustomerAddressVo">
+        insert into xms_tbl_customer_address
+        (customer_code, usertype, customer_name, contact_name, contact_title, address1, address2, city, state_code,
+        country, postal_code, phone,
+        fax, email, mobile, alternate_phone, owner, owner_phone, owner_email, ap_contact, ap_phone, ap_email,
+        other_contact, other_phone,
+        other_email, other2_contact, other2_phone, other2_email)
+        values (#{customerCode}, #{userType},
+        #{customerName}, #{contactName}, #{contactTitle}, #{address1}, #{address2}, #{city}, #{stateCode}, #{country},
+        #{postalCode}, #{phone},
+        #{fax}, #{email}, #{mobile}, #{alternatePhone}, #{owner}, #{ownerPhone}, #{ownerEmail}, #{apContact},
+        #{apPhone}, #{apEmail}, #{otherContact}, #{otherPhone},
+        #{otherEmail}, #{other2Contact}, #{other2Phone}, #{other2Email})
+    </insert>
+
+    <update id="updateCustomerAddress" parameterType="CustomerAddressVo">
+        update xms_tbl_customer_address
+        <set>
+            <if test="userType!=null">
+                usertype = #{userType},
+            </if>
+            <if test="customerName!=null">
+                customer_name = #{customerName},
+            </if>
+            <if test="contactName!=null">
+                contact_name = #{contactName},
+            </if>
+            <if test="contactTitle!=null">
+                contact_title = #{contactTitle},
+            </if>
+            <if test="address1!=null">
+                address1 = #{address1},
+            </if>
+            <if test="address2!=null">
+                address2 = #{address2},
+            </if>
+            <if test="city!=null">
+                city = #{city},
+            </if>
+            <if test="stateCode!=null">
+                state_code = #{stateCode},
+            </if>
+            <if test="country!=null">
+                country = #{country},
+            </if>
+            <if test="postalCode!=null">
+                postal_code = #{postalCode},
+            </if>
+            <if test="phone!=null">
+                phone = #{phone},
+            </if>
+            <if test="fax!=null">
+                fax = #{fax},
+            </if>
+            <if test="email!=null">
+                email = #{email},
+            </if>
+            <if test="mobile!=null">
+                mobile = #{mobile},
+            </if>
+            <if test="alternatePhone!=null">
+                alternate_phone = #{alternatePhone},
+            </if>
+            <if test="owner!=null">
+                owner = #{owner},
+            </if>
+            <if test="ownerPhone!=null">
+                owner_phone = #{ownerPhone},
+            </if>
+            <if test="ownerEmail!=null">
+                owner_email = #{ownerEmail},
+            </if>
+            <if test="apContact!=null">
+                ap_contact = #{apContact},
+            </if>
+            <if test="apPhone!=null">
+                ap_phone = #{apPhone},
+            </if>
+            <if test="apEmail!=null">
+                ap_email = #{apEmail},
+            </if>
+            <if test="otherContact!=null">
+                other_contact = #{otherContact},
+            </if>
+            <if test="otherPhone!=null">
+                other_phone = #{otherPhone},
+            </if>
+            <if test="otherEmail!=null">
+                other_email = #{otherEmail},
+            </if>
+            <if test="other2Contact!=null">
+                other2_contact = #{other2Contact},
+            </if>
+            <if test="other2Phone!=null">
+                other2_phone = #{other2Phone},
+            </if>
+            <if test="other2Email!=null">
+                other2_email = #{other2Email},
+            </if>
+        </set>
+        where customer_code = #{customerCode}
+    </update>
+
+    <select id="updateCustomerAddress_SelectForLog" parameterType="CustomerAddressVo" resultMap="CustomerAddressMap">
+        select * from xms_tbl_customer_address
+        where customer_code = #{customerCode}
+    </select>
+
+    <update id="resetPassword" parameterType="CustomerAddressFilter">
+        UPDATE xms_tbl_webship
+        SET password = #{password}
+        WHERE EXISTS (select 1
+        from xms_tbl_customer_address ca
+        where xms_tbl_webship.customer_code = ca.customer_code
+        AND ca.customer_name = #{customerName}
+        AND ca.email = #{email}
+        AND ca.customer_code = #{customerCode})
+    </update>
+
+    <select id="resetPassword_SelectForLog" parameterType="CustomerAddressFilter" resultMap="Webship.WebshipMap">
+        select * from xms_tbl_webship
+        WHERE EXISTS (select 1
+        from xms_tbl_customer_address ca
+        where xms_tbl_webship.customer_code = ca.customer_code
+        AND ca.customer_name = #{customerName}
+        AND ca.email = #{email}
+        AND ca.customer_code = #{customerCode})
+    </select>
+</mapper>

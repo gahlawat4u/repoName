@@ -1,0 +1,7 @@
+.idea
+*.iml
+**/tmp
+**/WEB-INF/classes
+**/WEB-INF/lib
+**/META-INF/MANIFEST.MF
+!**/xms-webship/src/main/webapp/tmp/t.txt

@@ -1,0 +1,1230 @@
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security" xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+http://www.springframework.org/schema/security
+http://www.springframework.org/schema/security/spring-security-3.0.xsd">
+    <bean id="filterChainProxy" class="org.springframework.security.web.FilterChainProxy">
+        <security:filter-chain-map path-type="ant">
+            <security:filter-chain pattern="/*.ix"
+                                   filters="jsonRequestFilter,adminAuthenticationProcessingFilter,prepareParamFilter"/>
+        </security:filter-chain-map>
+    </bean>
+    <bean id="jsonRequestFilter" class="com.gms.xms.weblib.security.JsonRequestFilter"/>
+    <bean id="prepareParamFilter" class="com.gms.xms.weblib.security.PrepareParamFilter"/>
+    <bean id="adminAuthenticationProcessingFilter"
+          class="com.gms.xms.weblib.security.AdminAuthenticationProcessingFilter">
+        <property name="actionConfig">
+            <map>
+                <entry>
+                    <key>
+                        <value>Franchise_Payable_LV_FROM_3_FR_EXT</value>
+                    </key>
+                    <list>
+                        <!-- Receive Payment l1 l2 -->
+                        <value>receive_payment</value>
+                        <value>receive_payment_get_cus</value>
+                        <value>receive_payment_auto_apply_awb</value>
+                        <!-- Invoice OverPayment Payment l1 l2 -->
+                        <value>invoice_overpayment</value>
+                        <value>invoice_overpayment_get_data</value>
+                        <value>load_apply_overpayment</value>
+                        <value>get_paymenttype_by_paymentid</value>
+                        <value>load_overpayment_list</value>
+                        <value>inv_overpmt_delete</value>
+                        <value>inv_ovrpmt_apply_to_inv</value>
+                        <value>overpayment_invoice_detail</value>
+                        <!-- Invoice OverPayment Payment 1 2 -->
+                        <value>invoice_overpayment</value>
+                        <value>invoice_overpayment_get_data</value>
+                        <value>load_overpayment_list</value>
+                        <!-- send credit note -->
+                        <value>send_credit_notes</value>
+                        <value>do_send_credit_notes_by_franchise_code</value>
+                        <value>do_send_credit_notes_by_credit_code</value>
+                        <!-- freeze/unfreeze credit notes 1 2 -->
+                        <value>freeze_credit_notes</value>
+                        <value>do_freeze_credit_notes</value>
+                        <value>unfreeze_credit_notes</value>
+                        <value>do_unfreeze_credit_notes</value>
+                        <value>freeze_credit_notes_change_franchise_code</value>
+                        <value>unfreeze_send_credit_notes_change_franchise_code</value>
+                        <value>do_freeze_by_credit_note_code</value>
+                        <value>do_unfreeze_by_credit_note_code</value>
+                    </list>
+                </entry>
+
+                <entry>
+                    <key>
+                        <value>Franchise_Payable_LV_3</value>
+                    </key>
+                    <list>
+                        <value>cost_deviations</value>
+                        <value>cost_deviations_search</value>
+                        <value>cost_deviations_print</value>
+                        <value>cost_deviations_export</value>
+                    </list>
+                </entry>
+
+                <entry>
+                    <key>
+                        <value>Franchise_Payable_LV_FROM_3</value>
+                    </key>
+                    <list>
+                        <!-- Receive Payment l1 l2 -->
+                        <value>receive_payment</value>
+                        <value>receive_payment_get_cus</value>
+                        <value>receive_payment_auto_apply_awb</value>
+                        <!-- Invoice OverPayment Payment l1 l2 -->
+                        <value>invoice_overpayment</value>
+                        <value>invoice_overpayment_get_data</value>
+                        <value>load_apply_overpayment</value>
+                        <value>get_paymenttype_by_paymentid</value>
+                        <value>load_overpayment_list</value>
+                        <value>inv_overpmt_delete</value>
+                        <value>inv_ovrpmt_apply_to_inv</value>
+                        <value>overpayment_invoice_detail</value>
+                        <!-- Invoice OverPayment Payment 1 2 -->
+                        <value>invoice_overpayment</value>
+                        <value>invoice_overpayment_get_data</value>
+                        <value>load_overpayment_list</value>
+                        <!-- Mass edit -->
+                        <value>show_change_weight</value>
+                        <value>save_change_weight</value>
+                        <value>show_recalc_base_charge</value>
+                        <value>save_recalc_base_charge</value>
+                        <value>show_recalc_customer_base_charge</value>
+                        <value>save_recalc_customer_base_charge</value>
+                        <value>show_change_sender_address_to_customer</value>
+                        <value>save_change_sender_address_to_customer</value>
+                        <value>show_change_sender_address_to_webship</value>
+                        <value>save_change_sender_address_to_webship</value>
+                        <value>show_change_customer</value>
+                        <value>save_change_customer</value>
+                        <value>show_add_accessorial_charge</value>
+                        <value>save_add_accessorial_charge</value>
+                        <value>show_move_airbill</value>
+                        <value>move_airbill</value>
+                        <value>show_change_zone</value>
+                        <value>save_change_zone</value>
+                        <value>show_change_service_type</value>
+                        <value>save_change_service_type</value>
+                        <value>show_recalc_accessorial_markup</value>
+                        <value>save_recalc_accessorial_markup</value>
+                        <value>show_markup_accessorial</value>
+                        <value>save_markup_accessorial</value>
+                        <value>show_change_accessorial_type</value>
+                        <value>save_change_accessorial_type</value>
+                        <value>show_delete_airbill</value>
+                        <value>delete_airbill</value>
+                        <value>show_recalc_customer_cost</value>
+                        <value>save_recalc_customer_cost</value>
+                        <value>show_force_quoted_charge</value>
+                        <value>save_force_quoted_charge</value>
+                        <value>show_force_quoted_accessorial_charge</value>
+                        <value>save_force_quoted_accessorial_charge</value>
+                        <value>show_force_markup_customer_cost</value>
+                        <value>save_force_markup_customer_cost</value>
+                        <!-- End mass edit -->
+
+                        <!-- MS config -->
+                        <value>fpb_ms</value>
+                        <value>fpb_get_overview_data_ms</value>
+                        <value>fpb_get_margin_data_ms</value>
+                        <value>fpb_get_credit_data_ms</value>
+                        <value>fpb_get_deduct_data_ms</value>
+                        <value>fpb_get_61days_data_ms</value>
+                        <value>fpb_get_non_central_data_ms</value>
+                        <value>fpb_get_overpayment_data_ms</value>
+                        <value>fpb_export_report_pdf_ms</value>
+                        <value>fpb_export_report_html_ms</value>
+                        <value>fpb_inv_ms</value>
+                        <value>fpb_get_inv_ms</value>
+                        <value>fpb_export_inv_ms</value>
+                        <!-- SC Config -->
+                        <value>fpb_sc</value>
+                        <value>fpb_sc_credit</value>
+                        <value>fpb_sc_overpayment</value>
+                        <value>fpb_sc_shipment</value>
+                        <value>fpb_sc_tech_fee</value>
+                        <value>fpb_sc_overview</value>
+                        <value>fpb_sc_print</value>
+                        <value>fpb_sc_export_pdf</value>
+                        <value>fpb_inv_sc</value>
+                        <value>fpb_get_inv_sc</value>
+                        <value>fpb_export_inv_sc</value>
+                        <!-- Adjustment -->
+                        <value>manage_adjustment</value>
+                        <value>manage_adjustment_do_print</value>
+                        <value>manage_adjustment_do_export</value>
+                        <value>search_adjustment</value>
+                        <value>adjustment</value>
+                        <value>adjustment_do_adjust</value>
+                        <value>get_adjustment_by_type</value>
+                        <value>get_adjustment_by_sub_type</value>
+                        <value>save_adjustment_requests</value>
+                        <value>make_adjustment_note</value>
+                        <value>update_adjustment_sub_status</value>
+                        <value>resubmit_adjustment</value>
+                        <value>load_adjustment_note</value>
+                        <value>show_adjustment</value>
+                        <value>update_adjustment</value>
+                        <!-- Adjustment Request -->
+                        <value>manage_adjustment_request</value>
+                        <value>manage_adjustment_request_search</value>
+                        <value>manage_adjustment_request_update</value>
+                        <value>manage_adjustment_request_load_adjustment_note</value>
+                        <value>manage_adjustment_request_make_adjustment_note</value>
+                        <value>manage_adjustment_request_do_print</value>
+                        <value>manage_adjustment_request_do_export</value>
+                        <value>manage_adjustment_request_show_adjustment</value>
+                        <value>manage_adjustment_request_update_adjustment</value>
+                        <value>adjustment_request</value>
+                        <value>get_adjustment_request_by_type</value>
+                        <value>get_adjustment_request_by_sub_type</value>
+                        <value>adjustment_request_save_adjustment</value>
+                        <value>update_adjustment_request_sub_status</value>
+                        <!-- CreditNote -->
+                        <value>credit_notes</value>
+                        <value>content_credit_note</value>
+                        <value>send_credit_notes_change_franchise_code</value>
+                        <value>list_credit_note_by_date</value>
+                        <value>credit_notes_printable_preview</value>
+                        <value>credit_notes_printable_preview_all</value>
+                        <value>credit_notes_printable_pdf</value>
+                        <value>credit_notes_change_search_filter</value>
+                        <!-- Invoice OverPayment Payment l1 l2 -->
+                        <value>invoice_overpayment</value>
+                        <value>invoice_overpayment_get_data</value>
+                        <!-- Invoice OverPayment Payment -->
+                        <value>invoice_overpayment</value>
+                        <value>invoice_overpayment_get_data</value>
+                        <value>load_overpayment_list</value>
+                        <!-- Account/Contact/Search Contact -->
+                        <value>manage_contact</value>
+                        <value>manage_contact_search</value>
+                        <value>manage_contact_export</value>
+                        <!-- Account/Customers/Search Customers -->
+                        <value>search_customers</value>
+                        <value>search_customers_search</value>
+                        <value>search_customers_sale_rep_list</value>
+                        <value>search_customers_export</value>
+                        <!-- Account/Customers/Customers List -->
+                        <value>customer_list</value>
+                        <value>customer_list_search</value>
+                        <value>customer_list_sale_rep_list</value>
+                        <value>customer_list_print</value>
+                        <value>customer_list_export</value>
+                        <!-- Account/Customers/Manage Customers -->
+                        <value>manage_customers</value>
+                        <value>manage_customers_from_aging</value>
+                        <value>manage_customers_load_tab</value>
+                        <value>manage_customers_view</value>
+                        <value>manage_customers_get_data</value>
+                        <value>manage_customers_search</value>
+                        <value>manage_customers_load_add_cus_dialog</value>
+                        <value>manage_customers_profile_load</value>
+                        <value>manage_customers_account_setup</value>
+                        <value>manage_customers_account_setup_save</value>
+                        <value>manage_customers_address</value>
+                        <value>manage_customers_address_save</value>
+                        <value>manage_customers_base_rates</value>
+                        <value>manage_customers_base_rates_do_save</value>
+                        <value>manage_customers_invoice_options</value>
+                        <value>manage_customers_invoice_options_save</value>
+                        <value>manage_customers_payments</value>
+                        <value>manage_customers_payments_search_invoices</value>
+                        <value>manage_customers_payments_get_invoice_detail</value>
+                        <value>manage_customers_payments_get_payments</value>
+                        <value>manage_customers_collections</value>
+                        <value>manage_customers_collections_save</value>
+                        <value>manage_customers_webship</value>
+                         <value>imageupload</value>
+                        <value>manage_customers_webship_search</value>
+                        <value>manage_customers_webship_save</value>
+                        <value>manage_customers_webship_load</value>
+                        <value>manage_customers_webship_edit</value>
+                        <value>manage_customers_notes</value>
+                        <value>manage_customers_notes_search</value>
+                        <value>manage_customers_notes_load</value>
+                        <value>manage_customers_notes_save</value>
+                        <value>manage_customers_notes_delete</value>
+                        <value>manage_customers_history</value>
+                        <value>manage_customers_history_search</value>
+                        <value>manage_customers_markups</value>
+                        <value>manage_customer_profile_invoice_options_save</value>
+                        <value>manage_customer_profile_account_setup_save</value>
+                        <value>manage_customer_profile_collection_save</value>
+                        <value>manage_customers_save_customer</value>
+                        <!-- New manage cust base rate -->
+                        <value>manage_cust_base_rate_show</value>
+                        <value>manage_cust_base_rate_save</value>
+                        <value>manage_customers_markups_search</value>
+                        <value>manage_customers_markups_edit</value>
+                        <value>manage_customers_base_rate_show_rate_sheet</value>
+                        <!-- Add Weight Break -->
+                        <value>add_weight_break</value>
+                        <value>add_weight_break_do_add</value>
+                        <value>add_weight_break_do_add_franchise</value>
+                        <value>add_weight_break_do_add_profile</value>
+                        <!-- New manage fran base rate -->
+                        <value>manage_fran_base_rate_show</value>
+                        <value>manage_fran_base_rate_save</value>
+                        <!-- View rate sheet -->
+                        <value>view_rate_sheet</value>
+                        <value>view_airbill_rate_sheet</value>
+                        <value>rate_sheet_export_to_pdf</value>
+                        <value>rate_sheet_export_to_excel</value>
+                        <value>rate_sheet_export_to_html</value>
+                        <!-- New manage customer profile rate -->
+                        <value>manage_cust_profile_base_rate_show</value>
+                        <value>manage_cust_profile_base_rate_save</value>
+
+                        <!-- Account/Users/Manage Users -->
+                        <value>manage_users</value>
+                        <value>manage_users_search</value>
+                        <value>manage_users_load</value>
+                        <value>manage_users_save</value>
+                        <value>manage_users_delete</value>
+
+                        <value>service_list</value>
+                        <value>service_list_get_data</value>
+                        <value>service_list_edit</value>
+                        <value>service_list_add</value>
+                        <value>service_list_delete</value>
+
+                        <value>state_list</value>
+                        <value>state_list_search</value>
+                        <value>state_list_add</value>
+                        <value>state_list_edit</value>
+                        <value>state_list_delete</value>
+                        <!-- End Admin Email Setting -->
+
+                        <!-- Start Product Area -->
+                        <value>product_list</value>
+                        <value>product_search</value>
+                        <value>product_load</value>
+                        <value>product_save</value>
+                        <value>product_delete</value>
+                        <!-- End Product Area -->
+
+                        <!-- START MANAGER CUSTOMER PROFILES -->
+                        <value>manager_customer_profiles</value>
+                        <value>manager_customer_profiles_save</value>
+                        <value>manager_customer_profiles_do_add</value>
+                        <value>manager_customer_account_setup</value>
+                        <value>manager_customer_collections</value>
+                        <value>manager_customer_history</value>
+                        <value>manager_customer_history_search</value>
+                        <value>manager_customer_invoice_options</value>
+                        <value>manager_customer_markups</value>
+                        <value>manager_customer_base_rate</value>
+                        <value>manager_customer_markups_search</value>
+                        <value>select_list_customer_profiles</value>
+                        <value>search_customer_profiles</value>
+                        <value>manager_customer_markups_edit</value>
+                        <value>manager_customer_base_rate_general</value>
+                        <value>manager_customer_base_rate_other</value>
+                        <value>manager_customer_show_base_rate</value>
+                        <value>manager_customer_profiles_base_rate_show_rate_sheet</value>
+                        <value>manager_customer_profiles_load_add</value>
+                        <!-- END MANAGER CUSTOMER PROFILES -->
+
+                        <!-- End Bank Area -->
+
+                        <!-- Start sales_reps Bank Area -->
+                        <value>manage_sales_reps_and_commissions</value>
+                        <value>manage_sales_reps_and_commissions_view_pdf</value>
+                        <value>manage_sales_reps_and_commissions_view_printable</value>
+                        <value>manage_sales_reps_and_commissions_print_details</value>
+                        <value>manage_sales_reps_and_commissions_export_xls_details</value>
+                        <value>search_sales_rep_settings</value>
+                        <value>load_sales_rep_settings</value>
+                        <value>create_sales_rep_settings</value>
+                        <value>save_sales_rep_settings</value>
+                        <value>sales_rep_generate_report</value>
+                        <value>sales_rep_generate_service_report</value>
+                        <value>sales_rep_generate_airbill_report</value>
+                        <!-- End sales_reps Area -->
+
+                        <!-- customer summary report -->
+                        <value>customer_summary</value>
+                        <value>customer_summary_search</value>
+                        <value>customer_summary_export</value>
+                        <value>customer_summary_print</value>
+                        <value>airbill_import_error_logs_search</value>
+                        <value>airbill_import_error_logs_print</value>
+                        <value>airbill_import_error_logs_export</value>
+                        <!-- Invoicing / Invoice Edit Tools / Repair Airbill Errors -->
+                        <value>repair_airbill_errors</value>
+                        <value>repair_airbill_errors_search</value>
+                        <value>delete_airbill_error_show</value>
+                        <value>delete_airbill_error_do</value>
+                        <value>repair_airbill_errors_move_inv_date</value>
+                        <value>repair_airbill_errors_assign_airbills</value>
+                        <value>repair_airbill_errors_print</value>
+                        <value>repair_airbill_errors_export</value>
+
+                        <!-- Reports / Self Insurance / Webship Labels Report -->
+                        <value>webship_label</value>
+                        <value>webship_label_search</value>
+                        <value>webship_label_export_html</value>
+                        <value>webship_label_export_pdf</value>
+                        <value>webship_label_export_xls</value>
+                        <!-- Reports / Self Insurance / Invoiced Airbills Report -->
+                        <value>invoiced_airbill</value>
+                        <value>invoiced_airbill_search</value>
+                        <value>invoiced_airbill_export_html</value>
+                        <value>invoiced_airbill_export_pdf</value>
+                        <value>invoiced_airbill_export_xls</value>
+                        <!-- customer aging report -->
+                        <value>customer_aging</value>
+                        <value>customer_aging_search</value>
+                        <value>customer_aging_col_and_sale_list</value>
+                        <value>customer_aging_print</value>
+                        <value>customer_aging_export</value>
+                        <!-- customer status report -->
+                        <value>customer_status</value>
+                        <value>customer_status_search</value>
+                        <value>customer_status_weekly</value>
+                        <value>customer_status_monthly</value>
+                        <!-- customer activation report -->
+                        <value>customer_activation</value>
+                        <value>customer_activation_do_report</value>
+                        <value>customer_activation_print</value>
+                        <value>customer_activation_export</value>
+                        <!-- customer inactivity report -->
+                        <value>customer_inactivity</value>
+                        <value>customer_inactivity_do_report</value>
+                        <value>customer_inactivity_print</value>
+                        <value>customer_inactivity_export</value>
+                        <!-- customer 13 weeks activity report -->
+                        <value>customer_13weeks_activity</value>
+                        <value>customer_13weeks_activity_do_report</value>
+                        <value>customer_13weeks_activity_print</value>
+                        <value>customer_13weeks_activity_export</value>
+                        <!-- overall franchise ranking report -->
+                        <value>overall_fran_ranking</value>
+                        <value>overall_fran_ranking_do_report</value>
+                        <value>overall_fran_ranking_date_range</value>
+                        <value>overall_fran_ranking_print</value>
+                        <value>overall_fran_ranking_export</value>
+                        <!-- sales rep ranking report -->
+                        <value>sales_rep_ranking</value>
+                        <value>sales_rep_ranking_do_report</value>
+                        <value>sales_rep_ranking_date_range</value>
+                        <value>sales_rep_ranking_print</value>
+                        <value>sales_rep_ranking_export</value>
+                        <!-- webship customer history report -->
+                        <value>webship_cust_history</value>
+                        <value>webship_cust_history_do_report</value>
+                        <value>webship_cust_history_load_services</value>
+                        <value>webship_cust_history_print</value>
+                        <value>webship_cust_history_export</value>
+                        <!-- webship quote history report -->
+                        <value>webship_quote_history</value>
+                        <value>webship_quote_history_do_report</value>
+                        <value>webship_quote_history_get_customers</value>
+                        <value>webship_quote_history_print</value>
+                        <value>webship_quote_history_export</value>
+                        <!-- invoice pending airbill report -->
+                        <value>invoice_pending_airbill</value>
+                        <value>invoice_pending_airbill_do_report</value>
+                        <value>invoice_pending_airbill_delete_shipments</value>
+                        <value>invoice_pending_airbill_print</value>
+                        <value>invoice_pending_airbill_export</value>
+                        <!-- webship customer detail report -->
+                        <value>webship_customer_detail</value>
+                        <value>webship_customer_detail_do_report</value>
+                        <value>webship_customer_detail_get_customers</value>
+                        <value>webship_customer_detail_print</value>
+                        <value>webship_customer_detail_export</value>
+                        <!-- Add customer actions -->
+                        <value>add_customer_load</value>
+                        <value>add_customer_save</value>
+                        <!-- Add franchise actions -->
+                        <value>add_franchise_load</value>
+                        <value>add_franchise_save</value>
+                        <!-- Add payment actions -->
+                        <value>add_payment_show</value>
+                        <value>add_payment_save</value>
+                        <!-- Add invoice note actions -->
+                        <value>add_invoice_note</value>
+                        <value>save_invoice_note</value>
+                        <!-- Note and follow up actions -->
+                        <value>note_and_follow_up_show</value>
+                        <value>note_and_follow_up_search</value>
+                        <!-- Invoicing / Search Airbills -->
+                        <value>search_airbill</value>
+                        <value>search_airbill_load_accessorial_by_service</value>
+                        <value>search_airbill_load_service_type_by_service</value>
+                        <value>search_airbill_by_filter</value>
+                        <value>search_airbill_export_pdf</value>
+                        <value>search_airbill_export_csv</value>
+                        <!-- Invoicing / Manage Invoices/ View Edit Invoice -->
+                        <value>view_edit_invoice</value>
+                        <value>view_edit_invoice_search_invoice</value>
+                        <value>view_edit_invoice_get_invoice_detail</value>
+                        <value>view_edit_invoice_show_edit_airbill</value>
+                        <value>view_edit_invoice_show_edit_airbill_do</value>
+                        <value>view_edit_invoice_show_edit_airbill_change_service</value>
+                        <value>view_edit_invoice_show_edit_airbill_change_accessorial</value>
+                        <value>view_edit_invoice_view_pdf</value>
+                        <value>download_invoices_in_zip</value>
+                        <value>view_edit_invoice_view_printable</value>
+                        <value>view_edit_invoice_show_move_airbill</value>
+                        <value>view_edit_invoice_show_move_airbill_do</value>
+                        <value>view_edit_invoice_get_adding_invoice</value>
+                        <value>view_edit_invoice_get_customer_code</value>
+                        <value>view_edit_invoice_delete_airbill</value>
+                        <value>view_edit_invoice_delete_airbill_do</value>
+                        <value>view_edit_invoice_edit_sender_address</value>
+                        <value>view_edit_invoice_edit_sender_address_do</value>
+                        <value>view_edit_invoice_edit_receiver_address</value>
+                        <value>view_edit_invoice_edit_receiver_address_do</value>
+                        <value>view_edit_invoice_new_invoice</value>
+                        <value>view_edit_invoice_new_invoice_do</value>
+                        <value>view_edit_invoice_new_airbill_do</value>
+                        <value>view_edit_invoice_find_airbill</value>
+                        <value>view_edit_invoice_find_airbill_do</value>
+                        <value>view_edit_invoice_show_create_airbill</value>
+                        <value>view_edit_invoice_show_create_airbill_do</value>
+                        <!-- Invoicing / Manage Invoices/ Statements -->
+                        <value>statements</value>
+                        <value>statements_get_customers</value>
+                        <value>statements_get_customer_detail</value>
+                        <value>statements_get_invoice_paging</value>
+                        <value>statements_export_pdf</value>
+                        <value>statements_print</value>
+                        <!-- Quick search customer action -->
+                        <value>customer_quick_search</value>
+                        <value>customer_quick_search_do</value>
+                        <!-- Admin statistics -->
+                        <value>statistics</value>
+                        <value>statistics_service_types</value>
+                        <value>statistics_webship_logs</value>
+                        <value>statistics_shipments</value>
+                        <value>statistics_cost_vs_margins</value>
+                        <value>statistics_follow_ups</value>
+                        <value>statistics_sales_rep</value>
+                        <value>statistics_sales_graph</value>
+                        <value>statistics_save_div_info</value>
+                        <!-- Airbill Change Log -->
+                        <value>airbill_change_log</value>
+                        <value>airbill_change_log_search</value>
+                        <!-- Airbill Label -->
+                        <value>airbill_label</value>
+                        <value>airbill_label_search</value>
+                        <value>airbill_label_update_confirmation_no</value>
+
+                        <!-- Start Tab Manage Franchise Webship History -->
+                        <value>history</value>
+                        <value>history_save</value>
+                        <value>history_search</value>
+                        <value>history_shipment_note</value>
+                        <value>history_shipment_note_add</value>
+                        <value>history_tracking</value>
+                        <value>history_detail</value>
+                        <value>history_export_detail</value>
+                        <value>view_airbill</value>
+                        <value>view_shipment_receipt</value>
+                        <value>view_commercial_invoice</value>
+                        <value>view_thermal_label</value>
+                        <value>view_manifest</value>
+                        <value>view_packing_list</value>
+                        <value>history_export_pdf</value>
+                        <value>history_export_excel</value>
+                        <value>history_void_airbill</value>
+                        <value>history_do_void_airbill</value>
+                        <value>history_cancel_collection</value>
+                        <value>history_do_cancel_collection</value>
+                        <value>schedule_collection_modify</value>
+                        <value>schedule_collection_do_modify</value>
+                        <value>schedule_collection_create</value>
+                        <value>schedule_collection_do_create</value>
+                        <value>history_proceed_to_void</value>
+                        <value>history_proceed_update_collection</value>
+                        <value>send_airbill</value>
+
+                        <!-- END Tab Manage Franchise Webship History -->
+
+                        <!-- Admin quick search -->
+                        <value>admin_quick_search</value>
+                        <value>admin_quick_search_form</value>
+
+                        <!-- View TNT Connote LV3 -->
+                        <value>view_tnt_connote</value>
+
+                        <!-- send credit note -->
+                        <value>send_credit_notes</value>
+                        <value>do_send_credit_notes_by_franchise_code</value>
+                        <value>do_send_credit_notes_by_credit_code</value>
+                        <!-- freeze credit notes 1 2 -->
+                        <value>freeze_credit_notes</value>
+                        <value>do_freeze_credit_notes</value>
+                        <value>freeze_credit_notes_change_franchise_code</value>
+                        <value>do_freeze_by_credit_note_code</value>
+                    </list>
+                </entry>
+                <entry>
+                    <key>
+                        <value>Franchise_Payable_LV_1_2</value>
+                    </key>
+                    <list>
+                        <!-- Mass Edit - Recaculate Franchise Base Charge -->
+                        <value>show_recalc_franchise_base</value>
+                        <value>save_recalc_franchise_base</value>
+                        <!-- SC config -->
+                        <value>fpb_freeze_inv_sc</value>
+                        <value>fpb_send_inv_sc</value>
+                        <!-- MS config -->
+                        <value>fpb_freeze_inv_ms</value>
+                        <value>fpb_send_inv_ms</value>
+                        <!-- Receive Payment l1 l2 -->
+                        <value>receive_payment</value>
+                        <value>receive_payment_get_cus</value>
+                        <value>receive_payment_auto_apply_awb</value>
+                        <!-- Invoice OverPayment Payment l1 l2 -->
+                        <value>invoice_overpayment</value>
+                        <value>invoice_overpayment_get_data</value>
+                        <value>load_apply_overpayment</value>
+                        <value>get_paymenttype_by_paymentid</value>
+                        <value>load_overpayment_list</value>
+                        <value>inv_overpmt_delete</value>
+                        <value>inv_ovrpmt_apply_to_inv</value>
+                        <value>overpayment_invoice_detail</value>
+                        <!-- send credit note -->
+                        <value>send_credit_notes</value>
+                        <value>do_send_credit_notes_by_franchise_code</value>
+                        <value>do_send_credit_notes_by_credit_code</value>
+                        <!-- freeze/unfreeze credit notes -->
+                        <value>freeze_credit_notes</value>
+                        <value>do_freeze_credit_notes</value>
+                        <value>unfreeze_credit_notes</value>
+                        <value>do_unfreeze_credit_notes</value>
+                        <value>freeze_credit_notes_change_franchise_code</value>
+                        <value>unfreeze_send_credit_notes_change_franchise_code</value>
+                        <value>do_freeze_by_credit_note_code</value>
+                        <value>do_unfreeze_by_credit_note_code</value>
+                        <!-- freeze/unfreeze invoices -->
+                        <value>freeze_inv</value>
+                        <value>freeze_inv_by_date</value>
+                        <value>freeze_inv_by_inv_code</value>
+                        <value>freeze_inv_get_inv_dates</value>
+                        <value>unfreeze_inv</value>
+                        <value>unfreeze_inv_by_date</value>
+                        <value>unfreeze_inv_by_inv_code</value>
+                        <value>unfreeze_inv_get_inv_dates</value>
+                        <!-- csv invoices -->
+                        <value>csv_invoices</value>
+                        <value>csv_invoices_get_list_invoices</value>
+                        <value>csv_invoices_export_csv</value>
+                        <!-- manage invoice -->
+                        <value>cost_deviations</value>
+                        <value>cost_deviations_search</value>
+                        <value>cost_deviations_print</value>
+                        <value>cost_deviations_export</value>
+                        <value>airbill_margins</value>
+                        <value>airbill_margins_search</value>
+                        <value>airbill_margins_print</value>
+                        <value>airbill_margins_export</value>
+
+
+                        <!-- Invoicing / Invoice Edit Tools / Airbill Import Error Logs -->
+                        <value>import_total_report</value>
+                        <value>import_total_report_search</value>
+                        <value>import_total_report_print</value>
+                        <value>import_total_report_export</value>
+                        <value>airbill_import_error_logs</value>
+                        <value>move_invoices_dates</value>
+                        <value>move_invoices_dates_move</value>
+                        <value>move_invoices_dates_get_dates</value>
+                        <value>repair_airbill_errors</value>
+                        <!-- Invoicing / Printing tools -->
+                        <value>send_email_invoices</value>
+                        <value>send_email_invoices_get_inv_dates</value>
+                        <value>send_email_invoices_by_inv_code</value>
+                        <value>send_email_invoices_by_inv_date</value>
+
+                        <!-- Admin/Import/Reconcile Airbill -->
+                        <!-- <value>reconcile_airbill</value> -->
+                        <value>reconcile_airbill_search</value>
+                        <value>reconcile_airbill_export</value>
+
+                        <!-- Admin quick search -->
+                        <value>admin_quick_search</value>
+                        <value>admin_quick_search_form</value>
+
+                        <!-- Import rate sheet -->
+                        <value>import_rate_sheet</value>
+                        <value>get_rate_sheet_type_data</value>
+                        <value>rate_sheets_upload</value>
+                        <value>save_import_rate_sheet</value>
+
+                        <!-- Import billing -->
+                        <!-- <value>import_billing_file</value> -->
+                        <value>do_import_billing</value>
+                        <value>upload_billing_file</value>
+                        <value>save_import_billing</value>
+                        <value>import_billing_validate_import</value>
+
+                        <!-- Account / Franchise / Manage Franchise -->
+                        <value>manage_franchise</value>
+                        <value>manage_franchise_load_tab</value>
+                        <value>manage_franchise_view</value>
+                        <value>adminprofileimageupload</value>
+                        <value>manage_franchise_base_rate</value>
+                        <value>manage_franchise_account_setup</value>
+                        <value>manage_franchise_collections</value>
+                        <value>manage_franchise_history</value>
+                        <value>manage_franchise_history_search</value>
+                        <value>manage_franchise_invoice_options</value>
+                        <value>manage_franchise_markups</value>
+                        <value>manage_franchise_markups_search</value>
+                        <value>manage_franchise_markups_edit</value>
+                        <value>manage_franchise_save</value>
+                        <value>manage_franchise_base_rate_general</value>
+                        <value>manage_franchise_show_base_rate</value>
+                        <value>manage_franchise_base_rate_other</value>
+                        <value>manage_franchise_webship_send_airbill</value>
+                        <value>manage_franchise_webship</value>
+                        <value>manage_franchise_webship_search</value>
+                        <value>manage_franchise_webship_save</value>
+                        <value>manage_franchise_webship_load</value>
+                        <value>manage_franchise_webship_edit</value>
+                        <value>manage_franchise_notes</value>
+                        <value>manage_franchise_notes_search</value>
+                        <value>manage_franchise_notes_load</value>
+                        <value>manage_franchise_notes_save</value>
+                        <value>manage_franchise_notes_delete</value>
+                        <value>manage_franchise_payments</value>
+                        <value>manage_franchise_payments_search_invoices</value>
+                        <value>manage_franchise_payments_get_invoice_detail</value>
+                        <value>manage_franchise_payments_get_payments</value>
+                        <value>manage_franchise_address</value>
+                        <value>manage_franchise_address_save</value>
+                        <value>manage_franchise_base_rate_show_rate_sheet</value>
+                        <value>manage_franchise_invoice_options_save</value>
+                        <value>manage_franchise_account_setup_save</value>
+                        <value>manage_franchise_collections_save</value>
+                        <value>manage_franchises_save_franchise</value>
+
+                        <!-- Account/Franchises/Franchise List -->
+                        <value>franchise_list</value>
+                        <value>franchise_list_search</value>
+                        <value>franchise_list_export</value>
+
+                        <!-- Start Tab Manage Franchise Webship History -->
+                        <value>history</value>
+                        <value>history_search</value>
+                        <value>history_shipment_note</value>
+                        <value>history_shipment_note_add</value>
+                        <value>history_tracking</value>
+                        <value>history_detail</value>
+                        <value>history_export_detail</value>
+                        <value>view_airbill</value>
+                        <value>view_shipment_receipt</value>
+                        <value>view_commercial_invoice</value>
+                        <value>view_thermal_label</value>
+                        <value>view_manifest</value>
+                        <value>view_packing_list</value>
+                        <value>history_export_pdf</value>
+                        <value>history_export_excel</value>
+                        <value>history_void_airbill</value>
+                        <value>history_do_void_airbill</value>
+                        <value>history_cancel_collection</value>
+                        <value>history_do_cancel_collection</value>
+                        <value>schedule_collection_modify</value>
+                        <value>schedule_collection_do_modify</value>
+                        <value>schedule_collection_create</value>
+                        <value>schedule_collection_do_create</value>
+                        <value>history_proceed_to_void</value>
+                        <value>history_proceed_update_collection</value>
+                        <value>send_airbill</value>
+
+                        <!-- END Tab Manage Franchise Webship History -->
+
+                        <!-- Receive Payment l1 l2 -->
+                        <value>receive_payment</value>
+                        <value>receive_payment_get_cus</value>
+                        <value>receive_payment_auto_apply_awb</value>
+
+                        <!-- Start Bank Area -->
+                        <value>bank_list</value>
+                        <value>bank_add</value>
+                        <value>bank_edit</value>
+                        <value>bank_delete</value>
+                        <value>bank_list_get_data</value>
+
+                        <!-- Receivable / Customers / Search Payments - Deposit slip -->
+                        <value>search_payments</value>
+                        <value>search_payments_search</value>
+                        <value>search_payments_print</value>
+                        <value>search_payments_export</value>
+
+                        <!-- Reminder letters -->
+                        <value>reminder_letter</value>
+                        <value>reminder_letter_save_settings</value>
+                        <value>reminder_letter_save_email_letter</value>
+                        <value>reminder_letter_save_print_letter</value>
+                        <value>reminder_letter_generate</value>
+                        <value>reminder_letter_send_preview</value>
+                        <value>reminder_letter_send_invoice</value>
+                        <value>reminder_letter_send_all_invoices</value>
+                        <value>reminder_letter_print_invoice</value>
+                        <value>reminder_letter_print_all_invoices</value>
+
+                        <!-- customer invoice detail report -->
+                       <!--  <value>customer_invoice_detail</value> -->
+                        <value>customer_invoice_detail_do_report</value>
+                        <value>customer_credit_note_detail_do_report</value>
+                        <value>customer_invoice_detail_print</value>
+                        <value>customer_invoice_detail_export</value>
+                        <value>customer_credit_note_detail_print</value>
+                        <value>customer_credit_note_detail_export</value>
+
+                        <!-- Admin/RatesAndFees/Accessorial List -->
+                        <value>surcharge_list</value>
+                        <value>surcharge_list_get_data</value>
+                        <value>surcharge_list_edit</value>
+                        <value>surcharge_list_add</value>
+                        <!-- Admin/RatesAndFees/Accessorial Detail -->
+                        <value>surcharge_details</value>
+                        <value>surcharge_details_get_data</value>
+                        <value>surcharge_details_edit</value>
+                        <value>surcharge_details_add</value>
+                        <value>surcharge_details_delete</value>
+                        <!-- Admin/RatesAndFees/Rate Sheets -->
+                        <value>rate_sheets</value>
+                        <value>rate_sheets_get_data</value>
+                        <value>rate_sheets_delete</value>
+                        <value>rate_sheets_view_detail</value>
+                        <value>rate_sheets_save_rate_sheet</value>
+                        <!-- Admin/Rates and Fees/Set Cost Basis -->
+                        <value>set_cost_basis</value>
+                        <value>set_cost_basis_search</value>
+                        <value>set_cost_basis_set</value>
+                        <!-- Admin/Rates and Fees/Set List Rates -->
+                        <value>set_list_rates</value>
+                        <value>set_list_rates_search</value>
+                        <value>set_list_rates_set</value>
+                        <!-- Admin/Rates and Fees/Manage Cover Sheets -->
+                        <value>manage_cover_sheets</value>
+                        <value>manage_cover_sheets_get_c_sheet_data</value>
+                        <value>manage_cover_sheets_delete_cover</value>
+                        <value>manage_cover_sheets_attach</value>
+                        <value>manage_cover_sheets_remove_attach</value>
+                        <value>manage_cover_sheets_upload</value>
+
+                        <!-- Admin/Logs/System Logs -->
+                        <value>system_log</value>
+                        <value>system_log_search</value>
+                        <value>system_log_print</value>
+                        <value>system_log_export</value>
+                        <!-- Admin/Logs/System Stats -->
+                        <value>system_stats</value>
+                        <value>system_stats_recent_import</value>
+                        <value>system_stats_dhl_country_zone</value>
+                        <value>system_stats_login_log</value>
+                        <value>system_stats_error_login_log</value>
+                        <value>system_stats_webship_log</value>
+                        <value>system_stats_adjustment_log</value>
+                        <value>system_stats_tnt_zone</value>
+                        <value>system_stats_tnt_post_code</value>
+                        <value>system_stats_tnt_suburb</value>
+                        <value>system_stats_tnt_dom_remote_area</value>
+                        <value>system_stats_dhl_dom_zone</value>
+                        <value>system_stats_toll_priority_suburb</value>
+                        <value>system_stats_toll_priority_rate_sheet</value>
+                        <value>system_stats_toll_priority_remote_area</value>
+                        <value>system_stats_tnt_intl_zone</value>
+                        <value>system_stats_toll_ipec_zone</value>
+                        <value>system_stats_search</value>
+                        <value>system_stats_search_dhl</value>
+                        <value>system_stats_search_login_log</value>
+                        <value>system_stats_print_dhl_country_zone</value>
+                        <value>system_stats_export_dhl_country_zone</value>
+                        <value>system_stats_print_login_log</value>
+                        <value>system_stats_export_login_log</value>
+                        <value>system_stats_print_webship_log</value>
+                        <value>system_stats_print_adjustment_log</value>
+                        <value>system_stats_export_adjustment_log</value>
+                        <value>system_stats_print_tnt_zone</value>
+                        <value>system_stats_export_tnt_zone</value>
+                        <value>system_stats_print_tnt_postcode</value>
+                        <value>system_stats_export_tnt_postcode</value>
+                        <value>system_stats_print_tnt_dom_remote_area</value>
+                        <value>system_stats_export_tnt_dom_remote_area</value>
+                        <value>system_stats_print_tnt_suburb</value>
+                        <value>system_stats_export_tnt_suburb</value>
+                        <value>system_stats_print_dhl_domestic_zone</value>
+                        <value>system_stats_export_dhl_domestic_zone</value>
+                        <value>system_stats_print_toll_priority_suburb</value>
+                        <value>system_stats_export_toll_priority_suburb</value>
+                        <value>system_stats_print_toll_priority_rate_sheet</value>
+                        <value>system_stats_export_toll_priority_rate_sheet</value>
+                        <value>system_stats_print_toll_priority_remote_area</value>
+                        <value>system_stats_export_toll_priority_remote_area</value>
+                        <value>system_stats_print_tnt_international_zone</value>
+                        <value>system_stats_export_tnt_international_zone</value>
+                        <value>system_stats_print_toll_ipec_town_postcode</value>
+                        <value>system_stats_export_toll_ipec_town_postcode</value>
+                        <!-- Admin/System settings/System Settings -->
+                        <value>admin_system_setting</value>
+                        <value>admin_system_setting_search</value>
+                        <value>admin_system_setting_edit</value>
+                        <!-- Admin/System Settings/Menu editor -->
+                        <value>admin_menu</value>
+                        <value>admin_menu_user_level</value>
+                        <value>admin_menu_edit</value>
+                        <value>admin_menu_localize</value>
+                        <!-- Admin Email Setting -->
+                        <value>admin_email_setting</value>
+                        <value>admin_email_setting_search</value>
+                        <value>admin_email_setting_add</value>
+                        <value>admin_email_setting_edit</value>
+                        <value>admin_email_setting_delete</value>
+                        <value>admin_email_setting_update_status</value>
+                        <!-- Admin/Carriers/Carriers List -->
+                        <value>carrier_list</value>
+                        <value>carrier_list_get_data</value>
+                        <value>carrier_list_edit</value>
+                        <value>carrier_list_add</value>
+                        <value>carrier_list_delete</value>
+                        <!-- Admin/Carriers/Country List -->
+                        <value>country_list</value>
+                        <value>country_list_search</value>
+                        <value>country_list_edit</value>
+                        <value>country_list_add</value>
+                        <value>country_list_is_show</value>
+                        <!-- Admin/Administration/Franchise Settings -->
+                        <value>franchise_setting</value>
+                        <value>franchise_setting_search</value>
+                        <!-- Admin/Administration/Permission -->
+                        <value>admin_permission</value>
+                        <value>admin_permission_search</value>
+                        <value>admin_permission_update_status</value>
+                        <!-- Admin/Administration/Supplies List -->
+                        <value>admin_supply</value>
+                        <value>admin_supply_detail</value>
+                        <value>admin_supply_edit</value>
+                        <value>admin_supply_delete</value>
+                        <value>admin_supply_add</value>
+                        <value>admin_supply_localization</value>
+                        <!-- Admin/Generic Setup/Email Template -->
+                        <value>email_template</value>
+                        <value>email_template_load</value>
+                        <value>email_template_save</value>
+                        <!-- Admin/Generic Setup/Product -->
+                        <value>product_carrier_list</value>
+                        <value>product_carrier_search</value>
+                        <value>product_carrier_load</value>
+                        <value>product_carrier_save</value>
+                        <value>product_carrier_delete</value>
+                        <!-- Admin/Generic Setup/Industry -->
+                        <value>industry_list</value>
+                        <value>industry_add</value>
+                        <value>industry_edit</value>
+                        <value>industry_delete</value>
+                        <value>industry_search</value>
+                        <!-- Admin/Generic Setup/Customer Group -->
+                        <value>customer_group_list</value>
+                        <value>customer_group_add</value>
+                        <value>customer_group_edit</value>
+                        <value>customer_group_delete</value>
+                        <value>customer_group_search</value>
+                        <!-- Admin/Generic Setup/Webship Group -->
+                        <value>webship_group_list</value>
+                        <value>webship_group_add</value>
+                        <value>webship_group_edit</value>
+                        <value>webship_group_delete</value>
+                        <value>webship_group_list_get_data</value>
+                        <!-- Admin/Generic Setup/Area -->
+                        <value>area_list</value>
+                        <value>area_add</value>
+                        <value>area_edit</value>
+                        <value>area_delete</value>
+                        <value>area_search</value>
+                        <!-- Admin/Generic Setup/Localization - Language value -->
+                        <value>language_value</value>
+                        <value>language_value_get_data</value>
+                        <value>language_value_add</value>
+                        <value>language_value_edit</value>
+                        <!-- Admin/Generic Setup/Territory -->
+                        <value>territory_list</value>
+                        <value>territory_add</value>
+                        <value>territory_edit</value>
+                        <value>territory_delete</value>
+                        <value>territory_search</value>
+                        <!-- Receivables / Invoice overpayment lv1 lv2 -->
+                        <value>load_apply_overpayment</value>
+                        <value>get_paymenttype_by_paymentid</value>
+                        <value>load_overpayment_list</value>
+                        <value>inv_overpmt_delete</value>
+                        <value>inv_ovrpmt_apply_to_inv</value>
+                        <value>overpayment_invoice_detail</value>
+                    </list>
+                </entry>
+                <entry>
+                    <key>
+                        <value>Franchise_Payable_LV_6</value>
+                    </key>
+                    <list>
+                        <!-- Admin statistics -->
+                        <value>statistics</value>
+                        <value>statistics_service_types</value>
+                        <value>statistics_webship_logs</value>
+                        <value>statistics_shipments</value>
+                        <value>statistics_cost_vs_margins</value>
+                        <value>statistics_follow_ups</value>
+                        <value>statistics_sales_rep</value>
+                        <value>statistics_sales_graph</value>
+                        <value>statistics_save_div_info</value>
+
+                        <!-- Account/Customers/Manage Customers -->
+                        <value>manage_customers</value>
+                        <value>manage_customers_from_aging</value>
+                        <value>manage_customers_load_tab</value>
+                        <value>manage_customers_view</value>
+                        <value>manage_customers_get_data</value>
+                        <value>manage_customers_search</value>
+                        <value>manage_customers_load_add_cus_dialog</value>
+                        <value>manage_customers_profile_load</value>
+                        <value>manage_customers_account_setup</value>
+                        <value>manage_customers_account_setup_save</value>
+                        <value>manage_customers_address</value>
+                        <value>manage_customers_address_save</value>
+                        <value>manage_customers_base_rates</value>
+                        <value>manage_customers_base_rates_do_save</value>
+                        <value>manage_customers_invoice_options</value>
+                        <value>manage_customers_invoice_options_save</value>
+                        <value>manage_customers_payments</value>
+                        <value>manage_customers_payments_search_invoices</value>
+                        <value>manage_customers_payments_get_invoice_detail</value>
+                        <value>manage_customers_payments_get_payments</value>
+                        <value>manage_customers_collections</value>
+                        <value>manage_customers_collections_save</value>
+                        <value>manage_customers_webship</value>
+                        <value>manage_customers_webship_search</value>
+                        <value>manage_customers_webship_save</value>
+                        <value>manage_customers_webship_load</value>
+                        <value>manage_customers_webship_edit</value>
+                        <value>manage_customers_notes</value>
+                        <value>manage_customers_notes_search</value>
+                        <value>manage_customers_notes_load</value>
+                        <value>manage_customers_notes_save</value>
+                        <value>manage_customers_notes_delete</value>
+                        <value>manage_customers_history</value>
+                        <value>manage_customers_history_search</value>
+                        <value>manage_customer_profile_invoice_options_save</value>
+                        <value>manage_customer_profile_account_setup_save</value>
+                        <value>manage_customer_profile_collection_save</value>
+                        <value>manage_customers_save_customer</value>
+                        <value>manage_customers_markups</value>
+                        <value>manage_cust_base_rate_show</value>
+
+                        <!-- Start sales_reps Bank Area -->
+                        <value>manage_sales_reps_and_commissions</value>
+                        <value>manage_sales_reps_and_commissions_view_pdf</value>
+                        <value>manage_sales_reps_and_commissions_view_printable</value>
+                        <value>manage_sales_reps_and_commissions_print_details</value>
+                        <value>manage_sales_reps_and_commissions_export_xls_details</value>
+                        <value>search_sales_rep_settings</value>
+                        <value>load_sales_rep_settings</value>
+                        <value>create_sales_rep_settings</value>
+                        <value>save_sales_rep_settings</value>
+                        <value>sales_rep_generate_report</value>
+                        <value>sales_rep_generate_service_report</value>
+                        <value>sales_rep_generate_airbill_report</value>
+                        <!-- End sales_reps Area -->
+
+                        <!-- customer summary report -->
+                        <value>customer_summary</value>
+                        <value>customer_summary_search</value>
+                        <value>customer_summary_export</value>
+                        <value>customer_summary_print</value>
+
+                        <!-- START MANAGER CUSTOMER PROFILES -->
+                        <value>manager_customer_profiles</value>
+                        <value>manager_customer_profiles_save</value>
+                        <value>manager_customer_profiles_do_add</value>
+                        <value>manager_customer_account_setup</value>
+                        <value>manager_customer_collections</value>
+                        <value>manager_customer_history</value>
+                        <value>manager_customer_history_search</value>
+                        <value>manager_customer_invoice_options</value>
+                        <value>manager_customer_markups</value>
+                        <value>manager_customer_base_rate</value>
+                        <value>manager_customer_markups_search</value>
+                        <value>select_list_customer_profiles</value>
+                        <value>search_customer_profiles</value>
+                        <value>manager_customer_markups_edit</value>
+                        <value>manager_customer_base_rate_general</value>
+                        <value>manager_customer_base_rate_other</value>
+                        <value>manager_customer_show_base_rate</value>
+                        <value>manager_customer_profiles_base_rate_show_rate_sheet</value>
+                        <value>manager_customer_profiles_load_add</value>
+                        <!-- END MANAGER CUSTOMER PROFILES -->
+
+                        <!-- Admin quick search -->
+                        <value>admin_quick_search</value>
+                        <value>admin_quick_search_form</value>
+
+                        <!-- Start Tab Manage Franchise Webship History -->
+                        <value>history</value>
+                        <value>history_save</value>
+                        <value>history_search</value>
+                        <value>history_shipment_note</value>
+                        <value>history_shipment_note_add</value>
+                        <value>history_tracking</value>
+                        <value>history_detail</value>
+                        <value>history_export_detail</value>
+                        <value>view_airbill</value>
+                        <value>view_shipment_receipt</value>
+                        <value>view_commercial_invoice</value>
+                        <value>view_thermal_label</value>
+                        <value>view_manifest</value>
+                        <value>view_packing_list</value>
+                        <value>history_export_pdf</value>
+                        <value>history_export_excel</value>
+                        <value>history_void_airbill</value>
+                        <value>history_do_void_airbill</value>
+                        <value>history_cancel_collection</value>
+                        <value>history_do_cancel_collection</value>
+                        <value>schedule_collection_modify</value>
+                        <value>schedule_collection_do_modify</value>
+                        <value>schedule_collection_create</value>
+                        <value>schedule_collection_do_create</value>
+                        <value>history_proceed_to_void</value>
+                        <value>history_proceed_update_collection</value>
+                        <value>send_airbill</value>
+                        <!-- END Tab Manage Franchise Webship History -->
+                        <value>airbill_label</value>
+                        <value>airbill_label_search</value>
+                    </list>
+                </entry>
+                <entry>
+                    <key>
+                        <value>Franchise_Payable_LV_10</value>
+                    </key>
+                    <!-- Carrier Adjustments -->
+                    <list>
+                        <value>carrier_adjustments</value>
+                        <value>carrier_adjustments_get_data</value>
+                        <value>carrier_adjustments_submitted</value>
+                        <value>carrier_adjustments_submitted_re</value>
+                        <value>carrier_adjustments_pending</value>
+                        <value>carrier_adjustments_pending_re</value>
+                        <value>carrier_adjustments_do_export</value>
+                    </list>
+                </entry>
+            </map>
+        </property>
+        <property name="permissionMap">
+            <map>
+                <entry>
+                    <key>
+                        <value>1</value>
+                    </key>
+                    <list>
+                        <value>Franchise_Payable_LV_1_2</value>
+                        <value>Franchise_Payable_LV_FROM_3</value>
+                    </list>
+                </entry>
+                <entry>
+                    <key>
+                        <value>2</value>
+                    </key>
+                    <list>
+                        <value>Franchise_Payable_LV_1_2</value>
+                        <value>Franchise_Payable_LV_FROM_3</value>
+                    </list>
+                </entry>
+                <entry>
+                    <key>
+                        <value>3</value>
+                    </key>
+                    <list>
+                        <value>Franchise_Payable_LV_3</value>
+                        <value>Franchise_Payable_LV_FROM_3</value>
+                    </list>
+                </entry>
+                <entry>
+                    <key>
+                        <value>4</value>
+                    </key>
+                    <list>
+                        <value>Franchise_Payable_LV_FROM_3</value>
+                    </list>
+                </entry>
+                <entry>
+                    <key>
+                        <value>5</value>
+                    </key>
+                    <list>
+                        <value>Franchise_Payable_LV_FROM_3</value>
+                    </list>
+                </entry>
+                <entry>
+                    <key>
+                        <value>6</value>
+                    </key>
+                    <list>
+                        <value>Franchise_Payable_LV_6</value>
+                    </list>
+                </entry>
+                <entry>
+                    <key>
+                        <value>7</value>
+                    </key>
+                    <list>
+                        <value>Franchise_Payable_LV_FROM_3</value>
+                    </list>
+                </entry>
+                <entry>
+                    <key>
+                        <value>8</value>
+                    </key>
+                    <list>
+                        <value>Franchise_Payable_LV_FROM_3</value>
+                    </list>
+                </entry>
+                <entry>
+                    <key>
+                        <value>9</value>
+                    </key>
+                    <list>
+                        <value>Franchise_Payable_LV_FROM_3</value>
+                    </list>
+                </entry>
+                <entry>
+                    <key>
+                        <value>10</value>
+                    </key>
+                    <list>
+                        <value>Franchise_Payable_LV_10</value>
+                    </list>
+                </entry>
+            </map>
+        </property>
+        <property name="enablePermissionCheck" value="true"/>
+        <property name="ignoredServletPaths">
+            <list>
+                <value>/accessdenied.ix</value>
+                <value>/login.ix</value>
+                <value>/logout.ix</value>
+                <value>/do_admin_login.ix</value>
+                <value>/recache.ix</value>
+                <value>/fill_period.ix</value>
+                <value>/fill_monthly.ix</value>
+                <!-- Download billing -->
+                <value>/download_billing_file.ix</value>
+                <!-- Generate ET File -->
+                <value>/generate_toll_et_file.ix</value>
+                <value>/generate_toll_ipec_et_file.ix</value>
+                <value>/generate_tnt_et_file.ix</value>
+            </list>
+        </property>
+        <property name="redirectPath" value="accessdenied.ix"/>
+        <property name="loginPage" value="login.ix"/>
+    </bean>
+</beans>

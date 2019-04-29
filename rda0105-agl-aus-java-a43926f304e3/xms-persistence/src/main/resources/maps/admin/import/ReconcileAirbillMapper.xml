@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ReconcileAirbill">
+    <resultMap id="ReconcileAirbillMap" type="ReconcileAirbillVo">
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="import_date" property="importDate"/>
+        <result column="customer_cost" property="customerCost"/>
+        <result column="franchise_cost" property="franchiseCost"/>
+        <result column="carrier_cost" property="carrierCost"/>
+    </resultMap>
+
+    <select id="getReconcileAirbillByFilter"
+            parameterType="com.gms.xms.filter.admin.imports.reconcileairbill.ReconcileAirbillFilter"
+            resultMap="ReconcileAirbillMap">
+        select
+        sb.shipmentid,
+        sb.airbill_number,
+        i.invoice_code,
+        sb.import_date,
+        sum(sb.carrier_cost+sb.tax_amount) as carrier_cost,
+        sum(sb.customer_cost+sb.customer_tax_amount) as customer_cost,
+        sum(sb.franchise_cost+sb.franchise_tax_amount) as franchise_cost
+        from xms_tbl_shipment_billing as sb
+        left join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and si.airbill_number =
+        sb.airbill_number
+        left join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        where sb.airbill_number in (${airbillList})
+        <if test="userLevel>=3">
+            and left(i.customer_code,3) in (${franchiseList})
+        </if>
+        group by sb.shipmentid, sb.airbill_number
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countReconcileAirbillByFilter"
+            parameterType="com.gms.xms.filter.admin.imports.reconcileairbill.ReconcileAirbillFilter" resultType="long">
+        select
+        count(*)
+        from
+        (select
+        sb.shipmentid,
+        sb.airbill_number,
+        i.invoice_code,
+        sb.import_date,
+        sum(sb.carrier_cost+sb.tax_amount) as carrier_cost,
+        sum(sb.customer_cost+sb.customer_tax_amount) as customer_cost,
+        sum(sb.franchise_cost+sb.franchise_tax_amount) as franchise_cost
+        from xms_tbl_shipment_billing as sb
+        left join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and si.airbill_number =
+        sb.airbill_number
+        left join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        where sb.airbill_number in (${airbillList})
+        <if test="userLevel>=3">
+            and left(i.customer_code,3) in (${franchiseList})
+        </if>
+        group by sb.shipmentid, sb.airbill_number
+        ) as r
+    </select>
+
+    <select id="sumReconcileAirbillByFilter"
+            parameterType="com.gms.xms.filter.admin.imports.reconcileairbill.ReconcileAirbillFilter"
+            resultMap="ReconcileAirbillMap">
+        select
+        sum(carrier_cost) as carrier_cost,
+        sum(customer_cost) as customer_cost,
+        sum(franchise_cost) as franchise_cost
+        from
+        (select
+        sb.shipmentid,
+        sb.airbill_number,
+        i.invoice_code,
+        sb.import_date,
+        sum(sb.carrier_cost+sb.tax_amount) as carrier_cost,
+        sum(sb.customer_cost+sb.customer_tax_amount) as customer_cost,
+        sum(sb.franchise_cost+sb.franchise_tax_amount) as franchise_cost
+        from xms_tbl_shipment_billing as sb
+        left join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and si.airbill_number =
+        sb.airbill_number
+        left join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        where sb.airbill_number in (${airbillList})
+        <if test="userLevel>=3">
+            and left(i.customer_code,3) in (${franchiseList})
+        </if>
+        group by sb.shipmentid, sb.airbill_number
+        ) as r
+    </select>
+</mapper>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="FranPabDeduct">
+    <resultMap id="FranPabDeductMap" type="FranPabDeductVo">
+        <result column="rpt_txn_id" property="rptTxnId" jdbcType="VARCHAR"/>
+        <result column="franchise_code" property="franchiseCode" jdbcType="VARCHAR"/>
+        <result column="customer_code" property="customerCode" jdbcType="BIGINT"/>
+        <result column="customer_name" property="customerName" jdbcType="VARCHAR"/>
+        <result column="invoice_code" property="invoiceCode" jdbcType="VARCHAR"/>
+        <result column="invoice_date" property="invoiceDate" jdbcType="DATE"/>
+        <result column="invoice_date_61" property="invoiceDate61" jdbcType="DATE"/>
+        <result column="airbill_number" property="airbillNumber" jdbcType="VARCHAR"/>
+        <result column="customer_payment" property="customerPayment" jdbcType="DECIMAL"/>
+        <result column="cust_cost" property="custCost" jdbcType="DECIMAL"/>
+        <result column="cust_tax" property="custTax" jdbcType="DECIMAL"/>
+        <result column="fran_cost" property="franCost" jdbcType="DECIMAL"/>
+        <result column="fran_tax" property="franTax" jdbcType="DECIMAL"/>
+        <result column="franchise_charge" property="franchiseCharge" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <select id="selectByFilter" resultMap="FranPabDeductMap" parameterType="FranPabDeductFilter">
+        select * from tmp_xms_tbl_fran_pab_deduct
+        where rpt_txn_id = #{rptTxnId} and airbill_number = #{airbillNumber}
+    </select>
+
+    <select id="selectByRptTxnId" resultMap="FranPabDeductMap" parameterType="String">
+        select * from tmp_xms_tbl_fran_pab_deduct
+        where rpt_txn_id = #{rptTxnId}
+    </select>
+
+    <select id="getFranchiseChargeByRptTxnIdBefore6x" resultMap="FranPabDeductMap" parameterType="String">
+        <![CDATA[
+		SELECT * FROM
+			(SELECT
+				rpt_txn_id ,
+				franchise_code ,
+				customer_code ,
+				customer_name ,
+				invoice_code ,
+				invoice_date ,
+				DATE_ADD(invoice_date,INTERVAL 60 DAY) as invoice_date_61 ,
+				airbill_number ,
+				(rev_paid+prev_paid) as customer_payment ,
+				cust_cost ,
+				cust_tax ,
+				fran_cost ,
+				fran_tax ,
+				total_cust_credit,
+				total_cust_carrier_credit,
+				total_fran_carrier_credit,
+				IF( total_cust_credit - ((cust_cost + cust_tax - total_cust_carrier_credit) - (fran_cost + fran_tax - total_fran_carrier_credit))<0,
+	    			IF( cur_cust_credit >0 , 
+	    				0,
+	    				IF( total_cust_credit - cur_cust_credit - ((cust_cost + cust_tax - total_cust_carrier_credit) - (fran_cost + fran_tax - total_fran_carrier_credit))<=0,
+	    					0,
+	    					-1*(total_cust_credit - cur_cust_credit - ((cust_cost + cust_tax - total_cust_carrier_credit) - (fran_cost + fran_tax - total_fran_carrier_credit)))	
+						)
+					),
+					total_cust_credit - ((cust_cost + cust_tax - total_cust_carrier_credit) - (fran_cost + fran_tax - total_fran_carrier_credit))
+					-
+					IF( total_cust_credit - cur_cust_credit - ((cust_cost + cust_tax - total_cust_carrier_credit) - (fran_cost + fran_tax - total_fran_carrier_credit))<=0,
+    					0,
+    					(total_cust_credit - cur_cust_credit - ((cust_cost + cust_tax - total_cust_carrier_credit) - (fran_cost + fran_tax - total_fran_carrier_credit)))	
+					)
+			    ) AS franchise_charge
+			FROM tmp_xms_tbl_fran_pab_margin
+			WHERE rpt_txn_id = #{rptTxnId}) as R
+		WHERE franchise_charge>0
+		]]>
+    </select>
+
+    <select id="getFranchiseChargeByRptTxnIdAfter6x" resultMap="FranPabDeductMap" parameterType="String">
+        <![CDATA[
+		SELECT * FROM
+			(SELECT
+				rpt_txn_id ,
+				franchise_code ,
+				customer_code ,
+				customer_name ,
+				invoice_code ,
+				invoice_date ,
+				DATE_ADD(invoice_date,INTERVAL 60 DAY) as invoice_date_61 ,
+				airbill_number ,
+				(rev_paid+prev_paid) as customer_payment ,
+				cust_cost ,
+				cust_tax ,
+				fran_cost ,
+				fran_tax ,
+				total_cust_credit,
+				total_cust_carrier_credit,
+				total_fran_carrier_credit,
+				cur_cust_credit AS franchise_charge
+			FROM tmp_xms_tbl_fran_pab_margin61
+			WHERE rpt_txn_id = #{rptTxnId}) as R
+		WHERE franchise_charge>0
+		]]>
+    </select>
+
+    <insert id="insert" parameterType="FranPabDeductVo">
+        insert into tmp_xms_tbl_fran_pab_deduct (rpt_txn_id, franchise_code, customer_code, customer_name, invoice_code,
+        invoice_date, invoice_date_61, airbill_number, customer_payment, cust_cost, cust_tax, fran_cost, fran_tax,
+        franchise_charge)
+        values (#{rptTxnId}, #{franchiseCode}, #{customerCode}, #{customerName}, #{invoiceCode},
+        #{invoiceDate}, #{invoiceDate61}, #{airbillNumber}, #{customerPayment}, #{custCost}, #{custTax}, #{franCost},
+        #{franTax}, #{franchiseCharge})
+    </insert>
+
+    <update id="updateFranchiseCharge" parameterType="FranPabDeductVo">
+        update tmp_xms_tbl_fran_pab_deduct
+        set franchise_charge = #{franchiseCharge}
+        where rpt_txn_id = #{rptTxnId} and airbill_number = #{airbillNumber}
+    </update>
+</mapper>

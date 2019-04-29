@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerAging">
+    <resultMap id="CustomerAgingMap" type="CustomerAgingVo">
+        <result column="customer_name" property="customerName"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="sales_rep_name" property="salesRepName"/>
+        <result column="total_due" property="totalDue"/>
+        <result column="total_overdue" property="totalOverdue"/>
+        <result column="range_0" property="range0"/>
+        <result column="range_1_15" property="range1To15"/>
+        <result column="range_16_30" property="range16To30"/>
+        <result column="range_31_45" property="range31To45"/>
+        <result column="range_46_60" property="range46To60"/>
+        <result column="range_61_90" property="range61To90"/>
+        <result column="range_91_120" property="range91To120"/>
+        <result column="range_120" property="range120"/>
+        <result column="avg_invoice_age" property="avgInvoiceAge"/>
+        <result column="max_invoice_age" property="maxInvoiceAge"/>
+        <result column="avg_days_overdue" property="avgDaysOverdue"/>
+        <result column="max_days_overdue" property="maxDaysOverdue"/>
+        <result column="avg_days_to_pay" property="avgDaysToPay"/>
+        <result column="total_overpaid" property="totalOverpaid"/>
+        <result column="terms" property="terms"/>
+        <result column="unpaid_invoices" property="unpaidInvoices"/>
+    </resultMap>
+
+    <select id="selectByFilter" parameterType="CustomerAgingFilter" resultMap="CustomerAgingMap">
+        select
+        r.customer_name,
+        r.customer_code,
+        r.sales_rep_name,
+        r.total_due,
+        r.total_overdue,
+        r.range_0,
+        r.range_1_15,
+        r.range_16_30,
+        r.range_31_45,
+        r.range_46_60,
+        r.range_61_90,
+        r.range_91_120,
+        r.range_120,
+        r.avg_invoice_age,
+        r.max_invoice_age,
+        r.avg_days_overdue,
+        r.max_days_overdue,
+        r.total_overpaid,
+        r.terms,
+        r.avg_days_to_pay,
+        group_concat(DISTINCT cai.invoice_code ORDER BY cai.invoice_code ASC SEPARATOR ',') as unpaid_invoices
+        from
+        (select
+        rpt_txn_id,
+        customer_name,
+        customer_code,
+        sales_rep_name,
+        total_due,
+        total_overdue,
+        range_0,
+        range_1_15,
+        range_16_30,
+        range_31_45,
+        range_46_60,
+        range_61_90,
+        range_91_120,
+        range_120,
+        avg_invoice_age,
+        max_invoice_age,
+        avg_days_overdue,
+        max_days_overdue,
+        total_overpaid,
+        terms,
+        avg_days_to_pay
+        from tmp_customer_aging
+        where rpt_txn_id = #{rptTxnId}
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+        ) as r
+        left join tmp_customer_aging_invoice as cai on cai.customer_code = r.customer_code
+        and cai.rpt_txn_id = r.rpt_txn_id and cai.total_due>0
+        group by r.customer_code
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+    </select>
+
+    <select id="countByFilter" parameterType="CustomerAgingFilter" resultType="long">
+        select count(*) from tmp_customer_aging
+        where rpt_txn_id = #{rptTxnId}
+    </select>
+
+    <select id="sumByFilter" parameterType="CustomerAgingFilter" resultMap="CustomerAgingMap">
+        select
+        sum(total_due) as total_due,
+        sum(total_overdue) as total_overdue,
+        sum(range_0) as range_0,
+        sum(range_1_15) as range_1_15,
+        sum(range_16_30) as range_16_30,
+        sum(range_31_45) as range_31_45,
+        sum(range_46_60) as range_46_60,
+        sum(range_61_90) as range_61_90,
+        sum(range_91_120) as range_91_120,
+        sum(range_120) as range_120,
+        sum(total_overpaid) as total_overpaid
+        from tmp_customer_aging
+        where rpt_txn_id = #{rptTxnId}
+    </select>
+
+    <select id="countByRptTxnId" parameterType="String" resultType="int">
+        select count(*) from tmp_customer_aging
+        where rpt_txn_id = #{rptTxnId}
+    </select>
+
+    <select id="selectByCustomerCode" parameterType="String" resultMap="CustomerAgingMap">
+        <![CDATA[
+		select
+			sum(total_due) as total_due,
+		    sum(if(days_overdue>0,total_due,0)) as total_overdue,
+			sum(if(invoice_age<=0,total_due,0)) as range_0,
+		    sum(if(invoice_age between 1 and 15,total_due,0)) as range_1_15,
+		    sum(if(invoice_age between 16 and 30,total_due,0)) as range_16_30,
+		    sum(if(invoice_age between 31 and 45,total_due,0)) as range_31_45,
+		    sum(if(invoice_age between 46 and 60,total_due,0)) as range_46_60,
+		    sum(if(invoice_age between 61 and 90,total_due,0)) as range_61_90,
+		    sum(if(invoice_age between 91 and 120,total_due,0)) as range_91_120,
+		    sum(if(invoice_age>120,total_due,0)) as range_120
+		from
+			(select 
+				c.customer_code,
+				i.invoiceid,
+				i.invoice_code,
+				i.invoice_date,
+				ifnull(tc.total_cost,0)-ifnull(tp.total_paid,0) as total_due,
+				datediff(date(now()), i.invoice_date) as invoice_age,
+				(datediff(date(now()), i.invoice_date) - ifnull(it.days,0)) as days_overdue
+			from 
+				(select customer_code, invoice_terms from xms_tbl_customer
+				where customer_code = #{customerCode}
+					union 
+				select franchise_code, invoice_terms from xms_tbl_franchise
+				where franchise_code = #{customerCode}
+				) as c
+			left join xms_tbl_invoice as i on i.customer_code = c.customer_code
+			left join xms_tbl_invoice_terms as it on it.invoice_terms_id = c.invoice_terms
+			left join 
+				(select i.invoiceid, sum(sb.customer_cost+sb.customer_tax_amount) as total_cost from xms_tbl_invoice as i
+				inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+				inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+				where i.customer_code = #{customerCode}
+				group by i.invoiceid
+				) as tc on tc.invoiceid = i.invoiceid
+			left join
+				(select i.invoiceid, sum(ip.amount) as total_paid from xms_tbl_invoice as i
+				inner join xms_tbl_invoice_payment as ip on ip.invoiceid = i.invoiceid
+				where i.customer_code = #{customerCode}
+				group by i.invoiceid
+				) as tp on tp.invoiceid = i.invoiceid
+			) as r
+		group by customer_code
+		]]>
+    </select>
+</mapper>

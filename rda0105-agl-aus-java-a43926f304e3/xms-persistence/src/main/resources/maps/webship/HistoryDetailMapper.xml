@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="HistoryDetail">
+    <select id="selectHistoryDetailInfo" parameterType="HistoryDetailFilter" resultType="HistoryDetailInfoVo">
+        SELECT
+        sm.shipmentId,
+        sm.term_of_trade as termOfTrade,
+        sm.receivertaxid as receiverTaxId,
+        sm.deliverydatecode as deliveryDateCode,
+        sm.service_area_code_destination as serviceAreaCodeDestination,
+        sm.internalservicecode AS internalServiceCode,
+        sm.deliverytimecode as deliveryTimeCode,
+        sm.awb_barcode as awbBarcode,
+        sm.origin_desti_barcode as originDestiBarcode,
+        sm.dhl_routing_barcode as dhlRoutingBarcode,
+        sm.reasonforexport as reasonForExport,
+        sm.productcontentcode as productContentCode,
+        sm.customer_code as customerCode,
+        sm.dhlroutingdataid as dhlRoutingDataId,
+        sm.dhl_routing_code as dhlRoutingCode,
+        sm.billing_account as billingAccount,
+        sm.status as status,
+        sm.airbill_number as airbillNumber,
+        sm.content_description as contentDescription,
+        sm.senderaddressid as sAddressId,
+        sm.dimension_unit as dimensionUnit,
+        sm.weight_unit AS weightUnit,
+        sm.receiveraddressid As rAddressId,
+        sm.withinsurance AS withInsurance,
+        sm.service_area_code_origin AS serviceAreaCodeOrigin,
+        sm.awb_productcontentcode AS awbProductContentCode,
+        sm.billing_code AS billingCode,
+        sm.non_standard_charge AS nonStandardCharge,
+        sm.manual_handling_surcharge AS manualHandlingSurcharge,
+        sm.contents as contents,
+        sm.total_custom_value as totalCustomValue,
+        IFNULL(sm.no_of_pieces, 0) AS noOfPieces,
+        pac.packagename AS PackageType,
+        sm.special_deliveryinst as specialDeliveryinst,
+        sm.reference as referenceNo,
+        sm.zone AS zone,
+        sm.shipment_date AS shipmentDate,
+        sm.airbill_number AS tracking,
+        sm.courier_message AS courierMessage,
+        sm.currency_code as currencyCode,
+        sm.bound_status as bound,
+        CASE IFNULL( sc.schedule_collection_id, 0 )
+        WHEN 0 THEN sm.dhl_note ELSE sc.confirmation_no END AS confirmationNo,
+        CONCAT(
+        pic.dimWeight, ' ', sm.weight_unit, '(s)'
+        ) AS dimWeight,
+        <if test="defaultOriginCountry == 16">
+            CONCAT(
+            CASE WHEN sv.service_id IN ( 15, 2, 3,52 )
+            THEN
+            FORMAT(CEIL(IFNULL(pic.actualWeight, 0)), 2)
+            ELSE
+            FORMAT(IFNULL(pic.actualWeight, 0), 2)
+            END
+            ,' ',sm.weight_unit,'(s)'
+            ) AS actualWeight,
+        </if>
+        <if test="defaultOriginCountry != 16">
+            CONCAT(ROUND(pic.actualWeight,2), ' ', sm.weight_unit, '(s)') AS actualWeight,
+        </if>
+
+        sender.companyname as sCompanyName,
+        sender.contact_name as sContactName,
+        sender.address as sAddress,
+        IF(sender.address2 != '', sender.address2, '') as sAddress2,
+        sender.city as sCity,
+        sender.postal_code as sPostalCode,
+        sender.state as sState,
+        sCountry.countryname as sCountryName,
+        sender.phone as sPhone,
+        reciver.companyname as rCompanyName,
+        reciver.contact_name as rContactName,
+        reciver.address as rAddress,
+        IF(reciver.address2 != '', reciver.address2, '') as rAddress2,
+        reciver.city as rCity,
+        reciver.postal_code as rPostalCode,
+        reciver.state as rState,
+        rCountry.countryname as rCountryName,
+        rCountry.countrycode as rCountryCode,
+        reciver.phone as rPhone,
+        sm.base_charge AS baseCharge,
+        sc.schedule_collection_id as schId,
+        sc.pickup_date as pickupDate,
+        sc.pickup_time as pickupTime,
+        sc.pickup_time_no_later as pickupTimeNoLater,
+        pic.actualWeight as totalWeight,
+        sc.special_instructions as specialInstructions,
+        sc.addressid AS scAddressId,
+        sc.confirmation_no as scConfirmationNo,
+        sc.location as location,
+        sc.location_code_id as locationCodeId,
+        IFNULL(sc.description,'Front Desk') as scDescription,
+        sc.create_date as createDate,
+        sc.status AS scStatus,
+        sv.service_id as serviceId,
+        pac.packageid as packageId,
+        sm_t.shipment_type_name AS ServiceType,
+        sm_t.shipment_type_id as shipmentTypeId,
+        sm_t.service_code as serviceCode,
+        sm_t.service_group as serviceGroup,
+        toll.conn_number as connNumber,
+        sv.service_name as serviceName,
+        cz.zone_code as zoneCode,
+        cz.zone_name as zoneName,
+        IFNULL(cs.primary_port,"") as primaryPort,
+        IFNULL(cs.secondary_port,"") as secondaryPort,
+        IFNULL(tro.origin_depot,"") as originDepot,
+        IFNULL(tid.depotcode,"") as depotcCode,
+        IFNULL(cus.gstid,"") as gstId
+        FROM xms_tbl_shipment as sm
+        INNER JOIN xms_tbl_shipment_type as sm_t ON sm.shipment_type_id = sm_t.shipment_type_id
+        INNER JOIN xms_tbl_service AS sv ON sv.service_id=sm_t.serviceid
+        LEFT JOIN xms_tbl_toll_connote as toll ON sm.shipmentid = toll.shipmentid
+        INNER JOIN xms_tbl_package as pac ON sm.packageid = pac.packageid
+        LEFT JOIN (select * from xms_tbl_schedule_collection tmp_sc where tmp_sc.status = 1) AS sc ON sc.shipmentid =
+        sm.shipmentid
+        LEFT JOIN
+        (
+        SELECT pic_tmp.shipmentid, SUM(IFNULL(pic_tmp.weight,0)) as weight, SUM(IFNULL(pic_tmp.dead_weight,0)) AS
+        actualWeight,
+        SUM(
+        ROUND(
+        IF(
+        sm_tmp.dimension_unit = 'cm',
+        IF(
+        sm_tmp.weight_unit = 'kg',
+        (pic_tmp.dimension_h * pic_tmp.dimension_l * pic_tmp.dimension_w) / #{weightValue},
+        ((pic_tmp.dimension_h * pic_tmp.dimension_l * pic_tmp.dimension_w) / #{weightValue}) / #{lbToKg}
+        ),
+        IF(
+        sm_tmp.weight_unit = 'kg',
+        ((pic_tmp.dimension_h * pic_tmp.dimension_l * pic_tmp.dimension_w) / #{weightValue}) * #{inToCm} * #{inToCm} *
+        #{inToCm} ,
+        ((pic_tmp.dimension_h * pic_tmp.dimension_l * pic_tmp.dimension_w) / #{weightValue}) * #{inToCm} * #{inToCm} *
+        #{inToCm} / #{lbToKg}
+        )
+        ),2)
+        ) AS dimWeight
+        FROM xms_tbl_piece AS pic_tmp
+        LEFT JOIN xms_tbl_shipment AS sm_tmp ON sm_tmp.shipmentid = pic_tmp.shipmentid
+        WHERE pic_tmp.shipmentid = #{shipmentId}
+        GROUP BY pic_tmp.shipmentid
+        ) AS pic ON sm.shipmentid = pic.shipmentid
+        INNER JOIN xms_tbl_address AS sender ON sender.addressid = sm.senderaddressid
+        INNER JOIN xms_tbl_address AS reciver ON reciver.addressid = sm.receiveraddressid
+        INNER JOIN xms_tbl_country AS sCountry ON sCountry.countryid = sender.country
+        INNER JOIN xms_tbl_country AS rCountry ON rCountry.countryid = reciver.country
+        <![CDATA[
+	LEFT JOIN xms_tbl_carrier_suburb AS cs ON cs.post_code = reciver.postal_code AND cs.carrier = sv.service_id AND cs.primary_port <> ''
+	]]>
+        LEFT JOIN xms_tbl_carrier_post_code AS cpc ON reciver.postal_code = cpc.post_code AND sv.service_id =
+        cpc.carrier
+        LEFT JOIN xms_tbl_carrier_zone AS cz ON cpc.zone_code = cz.zone_code AND sv.service_id = cz.carrier
+        LEFT JOIN xms_tbl_tnt_route_origin as tro ON tro.service_group= sm_t.service_group and tro.origin_postcode =
+        sender.postal_code
+        LEFT JOIN xms_tbl_toll_ipec_depotcode as tid ON tid.suburb=reciver.city AND tid.postcode=reciver.postal_code
+        LEFT JOIN xms_tbl_customer as cus ON cus.customer_code = sm.customer_code
+        WHERE sm.shipmentid = #{shipmentId}
+        limit 1
+    </select>
+
+    <select id="selectPieceInfo" parameterType="HistoryDetailFilter" resultType="HistoryDetailPieceVo">
+        SELECT
+        COUNT(pic.piece_id) as pieces,
+        CONCAT(ROUND(SUM(pic.dead_weight),2),' ', sm.weight_unit, '(s)') AS deadWeight,
+        CONCAT(pic.dimension_l, ' x ',pic.dimension_w, ' x ', pic.dimension_h, ' ', sm.dimension_unit, '(s)') AS
+        dimension,
+        CONCAT(
+        SUM(
+        ROUND(
+        IF(
+        sm.dimension_unit = 'cm',
+        IF(
+        sm.weight_unit = 'kg',
+        (pic.dimension_h * pic.dimension_l * pic.dimension_w) / #{weightValue},
+        ((pic.dimension_h * pic.dimension_l * pic.dimension_w) / #{weightValue}) / #{lbToKg}
+        ),
+        IF(
+        sm.weight_unit = 'kg',
+        ((pic.dimension_h * pic.dimension_l * pic.dimension_w) / #{weightValue}) * #{inToCm} * #{inToCm} * #{inToCm} ,
+        ((pic.dimension_h * pic.dimension_l * pic.dimension_w) / #{weightValue}) * #{inToCm} * #{inToCm} * #{inToCm} /
+        #{lbToKg}
+        )
+        ),2)
+        )
+        , ' ', sm.weight_unit, '(s)'
+        ) AS cubicWeight
+        FROM xms_tbl_piece AS pic
+        LEFT JOIN xms_tbl_shipment AS sm ON pic.shipmentid = sm.shipmentid
+        WHERE pic.shipmentid = #{shipmentId}
+        GROUP BY pic.weight, dimension
+    </select>
+
+    <select id="selectHistoryDetailAccessorial" parameterType="HistoryDetailFilter"
+            resultType="HistoryDetailAccessorialVo">
+        SELECT sm_d.shipmentid shipmentId, sm_d.accessorialid accessorialId,
+        sm_d.amount amount, ac_d.default_charge defaultCharge,
+        ac.description, ac.`code`, ac.typeid typeId, ac.carrier carrierId, sm_d.type
+        FROM xms_tbl_shipment_detail AS sm_d
+        INNER JOIN xms_tbl_accessorial AS ac ON sm_d.accessorialid = ac.accessorialid
+        LEFT JOIN
+        (
+        SELECT * FROM
+        (
+        SELECT ac_d_tmp.default_charge, ac_d_tmp.accessorialid, sm_d_tmp.shipmentid, ac_d_tmp.apply_start_date
+        FROM xms_tbl_accessorial_detail ac_d_tmp
+        INNER JOIN xms_tbl_shipment_detail AS sm_d_tmp ON sm_d_tmp.accessorialid = ac_d_tmp.accessorialid
+        WHERE sm_d_tmp.shipmentid = #{shipmentId}
+        ORDER BY ac_d_tmp.apply_start_date DESC
+        ) as ac_d_tmp1 GROUP BY ac_d_tmp1.accessorialid
+        ) AS ac_d ON ac_d.accessorialid = sm_d.accessorialid
+        WHERE sm_d.shipmentid= #{shipmentId} ;
+    </select>
+</mapper>

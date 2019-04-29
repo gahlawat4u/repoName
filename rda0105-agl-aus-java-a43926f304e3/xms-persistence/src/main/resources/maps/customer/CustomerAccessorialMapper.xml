@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerAccessorial">
+    <resultMap id="CustomerAccessorialMap" type="CustomerAccessorialVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="accessorialid" property="accessorialid"/>
+        <result column="amount" property="amount"/>
+    </resultMap>
+
+    <select id="select" parameterType="com.gms.xms.filter.customer.CustomerAccessorialFilter"
+            resultMap="CustomerAccessorialMap">
+        select * from xms_tbl_customer_accessorial
+        where customer_code = #{customerCode} and accessorialid = #{accessorialId}
+    </select>
+
+    <insert id="insert" parameterType="CustomerAccessorialVo">
+        insert into xms_tbl_customer_accessorial
+        (customer_code, accessorialid, amount)
+        values(#{customerCode},#{accessorialid},#{amount})
+    </insert>
+
+    <update id="update" parameterType="CustomerAccessorialVo">
+        update xms_tbl_customer_accessorial
+        set amount = #{amount}
+        where customer_code = #{customerCode} and accessorialid = #{accessorialid}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="CustomerAccessorialVo" resultMap="CustomerAccessorialMap">
+        select * from xms_tbl_customer_accessorial
+        where customer_code = #{customerCode} and accessorialid = #{accessorialid}
+    </select>
+
+    <delete id="delete" parameterType="com.gms.xms.filter.customer.CustomerAccessorialFilter">
+        delete from xms_tbl_customer_accessorial
+        where customer_code = #{customerCode} and accessorialid = #{accessorialId}
+    </delete>
+
+    <select id="delete_SelectForLog" parameterType="com.gms.xms.filter.customer.CustomerAccessorialFilter"
+            resultMap="CustomerAccessorialMap">
+        select * from xms_tbl_customer_accessorial
+        where customer_code = #{customerCode} and accessorialid = #{accessorialId}
+    </select>
+</mapper>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="QuotePiece">
+    <resultMap id="QuotePieceMap" type="QuotePieceVo">
+        <id column="quote_piece_id" property="quotePieceId"/>
+        <result column="quoteid" property="quoteId"/>
+        <result column="weight" property="weight"/>
+        <result column="dimension_l" property="dimensionL"/>
+        <result column="dimension_w" property="dimensionW"/>
+        <result column="dimension_h" property="dimensionH"/>
+        <result column="custom_value" property="customValue"/>
+    </resultMap>
+
+    <resultMap type="QuotePieceVo" id="QuotePieceResult" extends="QuotePieceMap">
+        <result column="quantity" property="quantity"/>
+    </resultMap>
+
+    <select id="selectQuotePieceListByQuoteId" resultMap="QuotePieceResult" parameterType="Long">
+        SELECT
+        *, COUNT(*) AS quantity
+        FROM
+        (SELECT
+        `quote_piece_id`,
+        weight,
+        dimension_l,
+        dimension_w,
+        dimension_h,
+        custom_value,
+        wql.weight_unit AS weightunit,
+        CONCAT(dimension_l, ' x ', dimension_w, ' x ', dimension_h, ' ', wql.dimension_unit, '(s) ', weight,
+        wql.weight_unit, '(s)') AS dim
+        FROM
+        xms_tbl_quote_piece AS qp
+        LEFT JOIN xms_tbl_webship_quote_log AS wql ON wql.quoteid = qp.quoteid
+        WHERE
+        wql.quoteid = #{quoteId}) AS tbl
+        GROUP BY dim
+        ORDER BY `quote_piece_id`
+    </select>
+
+    <insert id="insert" parameterType="QuotePieceVo">
+        insert into xms_tbl_quote_piece
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="quotePieceId != null">
+                quote_piece_id,
+            </if>
+            <if test="quoteId != null">
+                quoteid,
+            </if>
+            <if test="weight != null">
+                weight,
+            </if>
+            <if test="dimensionL != null">
+                dimension_l,
+            </if>
+            <if test="dimensionW != null">
+                dimension_w,
+            </if>
+            <if test="dimensionH != null">
+                dimension_h,
+            </if>
+            <if test="customValue != null">
+                custom_value,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="quotePieceId != null">
+                #{quotePieceId},
+            </if>
+            <if test="quoteId != null">
+                #{quoteId},
+            </if>
+            <if test="weight != null">
+                #{weight},
+            </if>
+            <if test="dimensionL != null">
+                #{dimensionL},
+            </if>
+            <if test="dimensionW != null">
+                #{dimensionW},
+            </if>
+            <if test="dimensionH != null">
+                #{dimensionH},
+            </if>
+            <if test="customValue != null">
+                #{customValue},
+            </if>
+        </trim>
+    </insert>
+</mapper>

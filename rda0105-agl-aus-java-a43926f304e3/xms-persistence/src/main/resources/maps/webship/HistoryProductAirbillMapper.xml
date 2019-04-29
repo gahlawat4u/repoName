@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="HistoryProductAirbill">
+    <select id="selectHistoryProductAirbill" parameterType="long" resultType="HistoryProductAirbillVo">
+        SELECT d.description as description, d.code as code, c.countryname as country, d.qty as qty, d.amount as amount
+        FROM xms_tbl_shipment_product_detail as d
+        left join xms_tbl_country as c on d.country_of_origin=c.countryid where shipmentid =#{shipmentId};
+    </select>
+</mapper>

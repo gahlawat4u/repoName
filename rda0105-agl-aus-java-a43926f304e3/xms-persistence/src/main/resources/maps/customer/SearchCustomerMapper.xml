@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="SearchCustomer">
+    <resultMap id="SearchCustomerMap" type="CustomerAddressVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+    </resultMap>
+
+    <select id="selectCustomerByCode" parameterType="com.gms.xms.filter.customer.SearchCustomerFilter"
+            resultMap="SearchCustomerMap">
+        select
+        c.customer_code,
+        ca.customer_name
+        from
+        (select customer_code from xms_tbl_customer
+        where customer_code like concat('',#{customerCode},'%')
+        and franchise_code in (${franchiseList})
+        union
+        select franchise_code as customer_code from xms_tbl_franchise
+        where franchise_code like concat('',#{customerCode},'%')
+        and left(franchise_code,3) in (${franchiseList})
+        ) as c
+        left join xms_tbl_customer_address as ca on ca.customer_code = c.customer_code
+        order by customer_code, customer_name
+    </select>
+</mapper>

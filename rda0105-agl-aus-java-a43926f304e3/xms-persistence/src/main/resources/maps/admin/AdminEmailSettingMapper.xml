@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="AdminEmailSetting">
+    <resultMap id="AdminEmailSettingMap" type="AdminEmailSettingVo">
+        <id column="id" property="id"/>
+        <result column="email_setting_id" property="emailSettingId"/>
+        <result column="admin_email_id" property="adminEmailId"/>
+        <result column="status" property="status"/>
+    </resultMap>
+    <delete id="delete" parameterType="int">
+        DELETE FROM
+        xms_tbl_admin_email_setting
+        WHERE admin_email_id = #{id};
+    </delete>
+    <select id="delete_SelectForLog" parameterType="int" resultMap="AdminEmailSettingMap">
+        SELECT * FROM
+        xms_tbl_admin_email_setting
+        WHERE admin_email_id = #{id};
+    </select>
+
+    <insert id="insert" parameterType="AdminEmailSettingVo"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into xms_tbl_admin_email_setting
+        (email_setting_id,admin_email_id)
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="emailSettingId != null">
+                #{emailSettingId},
+            </if>
+            <if test="adminEmailId != null">
+                #{adminEmailId},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateStatus" parameterType="AdminEmailSettingVo">
+        update xms_tbl_admin_email_setting
+
+        <set>
+            <if test="status == true">
+                status = 1
+            </if>
+            <if test="status == false">
+                status = 0
+            </if>
+        </set>
+
+        <where>
+            1 = 1
+            <if test="adminEmailId != null">
+                AND admin_email_id = #{adminEmailId}
+            </if>
+            <if test="emailSettingId != null">
+                And email_setting_id = #{emailSettingId}
+            </if>
+        </where>
+    </update>
+    <select id="updateStatus_SelectForLog" parameterType="AdminEmailSettingVo" resultMap="AdminEmailSettingMap">
+        select * from xms_tbl_admin_email_setting
+        <where>
+            1 = 1
+            <if test="adminEmailId != null">
+                AND admin_email_id = #{adminEmailId}
+            </if>
+            <if test="emailSettingId != null">
+                And email_setting_id = #{emailSettingId}
+            </if>
+        </where>
+    </select>
+</mapper>

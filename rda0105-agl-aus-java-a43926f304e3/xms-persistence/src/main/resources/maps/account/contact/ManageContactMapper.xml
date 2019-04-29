@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ManageContact">
+    <resultMap id="ManageContactMap" type="ManageContactVo">
+        <result column="prospectid" property="prospectId"/>
+        <result column="company_name" property="companyName"/>
+        <result column="contact_name" property="contactName"/>
+        <result column="address1" property="address1"/>
+        <result column="address2" property="address2"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="postal_code" property="postalCode"/>
+        <result column="statusname" property="saleStage"/>
+        <result column="customer_code" property="customerCode"/>
+    </resultMap>
+
+    <select id="getManageContactByFilter" parameterType="com.gms.xms.filter.account.contact.ManageContactFilter"
+            resultMap="ManageContactMap">
+        select
+        *,
+        case status
+        when 0 then 'Prospect'
+        when
+        1
+        then
+        (case qualified_status
+        when 0 then 'Qualified'
+        when 1 then 'Opportunity'
+        when 2 then 'Rejected Qualified'
+        end)
+        when 2 then 'Set Scheduled Visit'
+        when 3 then 'Visit'
+        when 4 then 'Proposal'
+        when 5 then 'Success'
+        when 6 then 'Shipping'
+        when 7 then 'Rejected Opportunity'
+        when 8 then 'Renewal'
+        end as statusname,
+        case status
+        when
+        1
+        then
+        (case qualified_status
+        when 0 then 10
+        when 1 then 11
+        when 2 then 12
+        end)
+        else status
+        end as statusno
+        from
+        xms_tbl_prospect
+        where
+        1 = 1 and active = '1'
+        <if test="#{companyName}!=null and #{companyName}!=''">
+            <![CDATA[ and company_name like '%${companyName}%']]>
+        </if>
+        <if test="#{contactName}!=null and #{contactName}!=''">
+            <![CDATA[ and contact_name like '%${contactName}%']]>
+        </if>
+        <if test="#{address1}!=null and #{address1}!=''">
+            <![CDATA[ and address1 like '%${address1}%']]>
+        </if>
+        <if test="#{address2}!=null and #{address2}!=''">
+            <![CDATA[ and address2 like '%${address2}%']]>
+        </if>
+        <if test="#{phone}!=null and #{phone}!=''">
+            <![CDATA[ and phone like '%${phone}%']]>
+        </if>
+        <if test="#{email}!=null and #{email}!=''">
+            <![CDATA[ and email like '%${email}%']]>
+        </if>
+        <if test="#{postalCode}!=null and #{postalCode}!=''">
+            <![CDATA[ and postal_code like '%${postalCode}%']]>
+        </if>
+        <if test="#{saleStage}!=null and #{saleStage}!=''">
+            <if test="saleStage=='prospect'">
+                <![CDATA[ and status = '0']]>
+            </if>
+            <if test="saleStage=='qualified'">
+                <![CDATA[ and status = '1' and qualified_status = '0']]>
+            </if>
+            <if test="saleStage=='opportunity'">
+                <![CDATA[ and status = '1' and qualified_status = '1']]>
+            </if>
+            <if test="saleStage=='rejected_qualified'">
+                <![CDATA[ and status = '1' and qualified_status = '2']]>
+            </if>
+            <if test="saleStage=='set_appointment'">
+                <![CDATA[ and status = '2']]>
+            </if>
+            <if test="saleStage=='visit'">
+                <![CDATA[ and status = '3']]>
+            </if>
+            <if test="saleStage=='proposal'">
+                <![CDATA[ and status = '4']]>
+            </if>
+            <if test="saleStage=='success'">
+                <![CDATA[ and status = '5']]>
+            </if>
+            <if test="saleStage=='shipping'">
+                <![CDATA[ and status = '6']]>
+            </if>
+            <if test="saleStage=='rejected_opportunity'">
+                <![CDATA[ and status = '7']]>
+            </if>
+            <if test="saleStage=='renewal'">
+                <![CDATA[ and status = '8']]>
+            </if>
+        </if>
+        and prospectid in (${prospectList})
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countManageContactByFilter" parameterType="com.gms.xms.filter.account.contact.ManageContactFilter"
+            resultType="long">
+        select
+        count(*)
+        from
+        (select
+        *,
+        case status
+        when 0 then 'Prospect'
+        when
+        1
+        then
+        (case qualified_status
+        when 0 then 'Qualified'
+        when 1 then 'Opportunity'
+        when 2 then 'Rejected Qualified'
+        end)
+        when 2 then 'Set Scheduled Visit'
+        when 3 then 'Visit'
+        when 4 then 'Proposal'
+        when 5 then 'Success'
+        when 6 then 'Shipping'
+        when 7 then 'Rejected Opportunity'
+        when 8 then 'Renewal'
+        end as statusname,
+        case status
+        when
+        1
+        then
+        (case qualified_status
+        when 0 then 10
+        when 1 then 11
+        when 2 then 12
+        end)
+        else status
+        end as statusno
+        from
+        xms_tbl_prospect
+        where
+        1 = 1 and active = '1'
+        <if test="#{companyName}!=null and #{companyName}!=''">
+            <![CDATA[ and company_name like '%${companyName}%']]>
+        </if>
+        <if test="#{contactName}!=null and #{contactName}!=''">
+            <![CDATA[ and contact_name like '%${contactName}%']]>
+        </if>
+        <if test="#{address1}!=null and #{address1}!=''">
+            <![CDATA[ and address1 like '%${address1}%']]>
+        </if>
+        <if test="#{address2}!=null and #{address2}!=''">
+            <![CDATA[ and address2 like '%${address2}%']]>
+        </if>
+        <if test="#{phone}!=null and #{phone}!=''">
+            <![CDATA[ and phone like '%${phone}%']]>
+        </if>
+        <if test="#{email}!=null and #{email}!=''">
+            <![CDATA[ and email like '%${email}%']]>
+        </if>
+        <if test="#{postalCode}!=null and #{postalCode}!=''">
+            <![CDATA[ and postal_code like '%${postalCode}%']]>
+        </if>
+        <if test="#{saleStage}!=null and #{saleStage}!=''">
+            <if test="saleStage=='prospect'">
+                <![CDATA[ and status = '0']]>
+            </if>
+            <if test="saleStage=='qualified'">
+                <![CDATA[ and status = '1' and qualified_status = '0']]>
+            </if>
+            <if test="saleStage=='opportunity'">
+                <![CDATA[ and status = '1' and qualified_status = '1']]>
+            </if>
+            <if test="saleStage=='rejected_qualified'">
+                <![CDATA[ and status = '1' and qualified_status = '2']]>
+            </if>
+            <if test="saleStage=='set_appointment'">
+                <![CDATA[ and status = '2']]>
+            </if>
+            <if test="saleStage=='visit'">
+                <![CDATA[ and status = '3']]>
+            </if>
+            <if test="saleStage=='proposal'">
+                <![CDATA[ and status = '4']]>
+            </if>
+            <if test="saleStage=='success'">
+                <![CDATA[ and status = '5']]>
+            </if>
+            <if test="saleStage=='shipping'">
+                <![CDATA[ and status = '6']]>
+            </if>
+            <if test="saleStage=='rejected_opportunity'">
+                <![CDATA[ and status = '7']]>
+            </if>
+            <if test="saleStage=='renewal'">
+                <![CDATA[ and status = '8']]>
+            </if>
+        </if>
+        and prospectid in (${prospectList})
+        ) as r
+    </select>
+    <select id="getProspectByLogin" parameterType="com.gms.xms.txndb.vo.UserVo" resultType="long">
+        <if test="_parameter!=null">
+            <!-- Corporate Super Admin and Corporate Admin -->
+            <if test="userLevelId==1 or userLevelId==2">
+                select prospectid from xms_tbl_prospect where active='1'
+            </if>
+            <!-- Franchise, Account - show all prospect of sales rep that same franchise code -->
+            <if test="8>userLevelId and userLevelId!=1 and userLevelId!=2">
+                select distinct
+                p.prospectid
+                from
+                xms_tbl_prospect as p
+                where
+                p.active = '1'
+                and sales_person_id in (select
+                userid
+                from
+                xms_tbl_user
+                where
+                substring(user_code, 1, 3) = #{userLevelCode})
+                union select distinct
+                h.prospectid
+                from
+                xms_tbl_prospect_history as h
+                where
+                userid in (select
+                userid
+                from
+                xms_tbl_user
+                where
+                substring(user_code, 1, 3) = #{userLevelCode})
+            </if>
+            <!-- Sale Manager- show all prospect of their sales rep for sales manager -->
+            <if test="userLevelId==8">
+                select distinct
+                p.prospectid
+                from
+                xms_tbl_prospect as p
+                where
+                p.active = '1'
+                and sales_person_id in (select
+                userid
+                from
+                xms_tbl_user
+                where
+                parent_user_id = #{userId})
+                union select distinct
+                h.prospectid
+                from
+                xms_tbl_prospect_history as h
+                where
+                userid in (select
+                userid
+                from
+                xms_tbl_user
+                where
+                parent_user_id = #{userId})
+            </if>
+            <!-- Tele- show their imported prospect for telemarketer -->
+            <if test="userLevelId==9">
+                select distinct
+                p.prospectid
+                from
+                xms_tbl_prospect as p
+                left join
+                xms_tbl_prospect_history as h on p.prospectid = h.prospectid
+                where
+                p.active = '1' and userid = #{userId}
+            </if>
+            <!-- Sale Rep - show their imported prospect and assigned prospect for sales rep -->
+            <if test="userLevelId==11">
+                select distinct
+                p.prospectid
+                from
+                xms_tbl_prospect as p
+                where
+                p.active = '1'
+                and sales_person_id = #{userId}
+                union select distinct
+                h.prospectid
+                from
+                xms_tbl_prospect_history as h
+                where
+                (userid = #{userId});
+            </if>
+        </if>
+    </select>
+</mapper>

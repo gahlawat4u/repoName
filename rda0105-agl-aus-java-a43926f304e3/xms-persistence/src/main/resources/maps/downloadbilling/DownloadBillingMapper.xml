@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="DownloadBilling">
+    <select id="checkDownloadFile" parameterType="string" resultType="int">
+        select count(*) from xms_tbl_download_log where filename = #{fileName}
+    </select>
+
+    <select id="selectCustomerCodeFromShipment" parameterType="long" resultType="long">
+        select
+        customer_code
+        from xms_tbl_shipment
+        where shipmentid = #{shipmentId}
+    </select>
+
+    <select id="selectInvoiceByAirbillNumber" parameterType="string" resultMap="Invoice.Invoice">
+        select
+        *
+        from xms_tbl_invoice
+        where invoiceid in
+        (select
+        invoiceid
+        from xms_tbl_shipment_invoice
+        where airbill_number = #{airbillNumber})
+        limit 1
+    </select>
+
+    <insert id="saveDownloadTest" parameterType="com.gms.xms.txndb.vo.admin.downloadbilling.DownloadTestVo">
+        insert into xms_tbl_download_test
+        (filename, filesize, download_time)
+        values
+        (#{fileName}, #{fileSize}, #{downloadTime})
+    </insert>
+
+    <insert id="saveDownloadLog" parameterType="com.gms.xms.txndb.vo.admin.downloadbilling.DownloadLogVo"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into xms_tbl_download_log
+        (filename, download_date)
+        values
+        (#{fileName}, #{downloadDate})
+    </insert>
+
+    <delete id="deleteShipmentBilling" parameterType="com.gms.xms.txndb.vo.ShipmentBillingVo">
+        delete from xms_tbl_shipment_billing
+        where
+        airbill_number = #{airbillNumber}
+        and description = #{description}
+        and shipmentid = #{shipmentId}
+    </delete>
+
+    <select id="deleteShipmentBilling_SelectForLog" parameterType="com.gms.xms.txndb.vo.ShipmentBillingVo"
+            resultMap="ShipmentBilling.ShipmentBillingMap">
+        select * from xms_tbl_shipment_billing
+        where
+        airbill_number = #{airbillNumber}
+        and description = #{description}
+        and shipmentid = #{shipmentId}
+    </select>
+
+    <delete id="deleteShipmentInvoice" parameterType="com.gms.xms.txndb.vo.ShipmentBillingVo">
+        delete from xms_tbl_shipment_invoice
+        where
+        airbill_number = #{airbillNumber}
+        and shipmentid = #{shipmentId}
+    </delete>
+
+    <select id="deleteShipmentInvoice_SelectForLog" parameterType="com.gms.xms.txndb.vo.ShipmentBillingVo"
+            resultMap="ShipmentInvoice.ShipmentInvoiceMap">
+        select * from xms_tbl_shipment_invoice
+        where
+        airbill_number = #{airbillNumber}
+        and shipmentid = #{shipmentId}
+    </select>
+</mapper>

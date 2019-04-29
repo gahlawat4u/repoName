@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="xms-admin-2.0">
+        <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
+        <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
+        <dependent-module archiveName="xms-weblib-2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/xms-weblib/xms-weblib">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="xms-workflow-2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/xms-workflow/xms-workflow">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="xms-delivery-2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/xms-delivery/xms-delivery">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="xms-cache-2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/xms-cache/xms-cache">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="xms-persistence-2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/xms-persistence/xms-persistence">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="xms-dto-2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/xms-dto/xms-dto">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="xms-common-2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/xms-common/xms-common">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <property name="context-root" value="xms-admin"/>
+        <property name="java-output-path" value="/xms-admin/target/classes"/>
+    </wb-module>
+</project-modules>

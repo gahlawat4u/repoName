@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="WebshipCustomerDetail">
+    <resultMap id="WebshipCustomerDetailMap" type="WebshipCustomerDetailVo">
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="shipment_date" property="shipmentDate"/>
+        <result column="term_of_trade" property="termOfTrade"/>
+        <result column="courier_message" property="courierMessage"/>
+        <result column="pre_clearance" property="preClearance"/>
+        <result column="sender_company_name" property="senderCompanyName"/>
+        <result column="sender_contact_name" property="senderContactName"/>
+        <result column="sender_address1" property="senderAddress1"/>
+        <result column="sender_address2" property="senderAddress2"/>
+        <result column="sender_city" property="senderCity"/>
+        <result column="sender_postal_code" property="senderPostalCode"/>
+        <result column="sender_state" property="senderState"/>
+        <result column="sender_country_name" property="senderCountryName"/>
+        <result column="receiver_company_name" property="receiverCompanyName"/>
+        <result column="receiver_contact_name" property="receiverContactName"/>
+        <result column="receiver_address1" property="receiverAddress1"/>
+        <result column="receiver_address2" property="receiverAddress2"/>
+        <result column="receiver_city" property="receiverCity"/>
+        <result column="receiver_postal_code" property="receiverPostalCode"/>
+        <result column="receiver_state" property="receiverState"/>
+        <result column="receiver_country_name" property="receiverCountryName"/>
+        <result column="no_of_pieces" property="noOfPieces"/>
+        <result column="weight" property="weight"/>
+        <result column="weight_unit" property="weightUnit"/>
+        <result column="quoted" property="quoted"/>
+        <result column="service_type" property="serviceType"/>
+        <result column="with_insurance" property="withInsurance"/>
+        <collection property="charges" javaType="List" ofType="WebshipCustomerDetailChargeVo">
+            <result column="sb_description" property="description"/>
+            <result column="is_base_charge" property="isBaseCharge"/>
+            <result column="sb_cust_cost" property="customerCost"/>
+            <result column="sb_fran_cost" property="franchiseCost"/>
+            <result column="sb_margin" property="margin"/>
+        </collection>
+    </resultMap>
+
+    <select id="getWebshipCustomerDetailReport"
+            parameterType="com.gms.xms.filter.reports.webship.WebshipCustomerDetailFilter"
+            resultMap="WebshipCustomerDetailMap">
+        <![CDATA[
+		select 
+			result.*,
+		    smb.description as sb_description,
+		    smb.is_base_charge,
+		    smb.customer_cost as sb_cust_cost,
+		    smb.franchise_cost as sb_fran_cost, 
+		    (smb.customer_cost-smb.franchise_cost) as sb_margin
+		from
+			(select 
+				i.invoice_code,
+				r3.shipmentid,
+				r3.airbill_number,
+				r3.customer_code,
+				r3.shipment_date,
+				r3.term_of_trade,
+				r3.courier_message,
+				ifnull(r3.with_insurance,0) as with_insurance,
+				if(count(acc.accessorialid)>0,1,0) as pre_clearance,
+				sender.companyname as sender_company_name,
+				sender.contact_name as sender_contact_name,
+				sender.address as sender_address1,
+				sender.address2 as sender_address2,
+				sender.city as sender_city,
+				sender.postal_code as sender_postal_code,
+				sender.state as sender_state,
+				sc.countryname as sender_country_name,
+				receiver.companyname as receiver_company_name,
+				receiver.contact_name as receiver_contact_name,
+				receiver.address as receiver_address1,
+				receiver.address2 as receiver_address2,
+				receiver.city as receiver_city,
+				receiver.postal_code as receiver_postal_code,
+				receiver.state as receiver_state,
+				rc.countryname as receiver_country_name,
+				r3.no_of_pieces,
+				ifnull(r3.billing_weight,r3.piece_weight) as weight,
+				r3.weight_unit,
+				ifnull(r3.with_insurance+r3.base_charge+r3.total_acc_amount+r3.non_standard_charge,0) as quoted,
+				r3.description as service_type
+			from
+				(select 
+					r2.*,
+					sum(smd.amount) as total_acc_amount
+				from
+					(select 
+						r.*,
+						sum(pc.weight) as piece_weight
+					from
+						(select 
+							sm.shipmentid,
+							sm.airbill_number,
+							sm.shipment_date,
+							sm.customer_code,
+							sm.weight_unit,
+							sm.term_of_trade,
+							sm.courier_message,
+							ifnull(sm.withinsurance,0) as with_insurance,
+							ifnull(sm.base_charge,0) as base_charge,
+							ifnull(sm.non_standard_charge,0) as non_standard_charge,
+							ifnull(sb.pal,sm.no_of_pieces) as no_of_pieces,
+							sb.weight as billing_weight,
+							ifnull(sb.senderaddressid,sm.senderaddressid) as senderaddressid,
+							ifnull(sb.receiveraddressid,sm.receiveraddressid) as receiveraddressid,
+							sb.description
+						from xms_tbl_shipment as sm
+						left join xms_tbl_shipment_billing as sb on sb.shipmentid = sm.shipmentid and sb.airbill_number = sm.airbill_number and sb.accessorial_count = 0
+						left join xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+						where sm.shipmentid!=0 and sm.status=0
+							and sm.shipment_date>=#{startDate,jdbcType=DATE} and sm.shipment_date<date_add(#{endDate,jdbcType=DATE},interval 1 day)
+							and left(sm.customer_code,3) in (${franchiseList})
+						]]>
+        <if test="customerCode!=null and customerCode!=''">
+            and sm.customer_code = #{customerCode}
+        </if>
+        <if test="serviceId!=null and serviceId!=''">
+            and (sb.carrier = #{serviceId} or (sb.carrier is null and st.serviceid = #{serviceId}))
+        </if>
+        ) as r
+        left join xms_tbl_piece as pc on pc.shipmentid = r.shipmentid
+        group by r.shipmentid
+        ) as r2
+        left join xms_tbl_shipment_detail as smd on smd.shipmentid = r2.shipmentid
+        group by r2.shipmentid
+        ) as r3
+        inner join xms_tbl_address as sender on sender.addressid = r3.senderaddressid
+        inner join xms_tbl_country as sc on sc.countryid = sender.country
+        inner join xms_tbl_address as receiver on receiver.addressid = r3.receiveraddressid
+        inner join xms_tbl_country as rc on rc.countryid = receiver.country
+        left join xms_tbl_shipment_invoice as si on si.shipmentid = r3.shipmentid and si.airbill_number =
+        r3.airbill_number
+        left join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        left join xms_tbl_shipment_detail as sd on sd.shipmentid = r3.shipmentid
+        left join xms_tbl_accessorial as acc on acc.accessorialid = sd.accessorialid and acc.description
+        ='Pre-Clearance' and acc.carrier=1
+        group by r3.shipmentid
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+        ) as result
+        left join xms_tbl_shipment_billing as smb on smb.shipmentid = result.shipmentid and smb.airbill_number =
+        result.airbill_number
+    </select>
+
+    <select id="countWebshipCustomerDetailReport"
+            parameterType="com.gms.xms.filter.reports.webship.WebshipCustomerDetailFilter" resultType="long">
+        <![CDATA[
+		select 
+			count(*)
+		from xms_tbl_shipment as sm
+		left join xms_tbl_shipment_billing as sb on sb.shipmentid = sm.shipmentid and sb.airbill_number = sm.airbill_number and sb.accessorial_count = 0
+		left join xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+		where sm.shipmentid!=0 and sm.status=0
+			and sm.shipment_date>=#{startDate,jdbcType=DATE} and sm.shipment_date<date_add(#{endDate,jdbcType=DATE},interval 1 day)
+			and left(sm.customer_code,3) in (${franchiseList})
+		]]>
+        <if test="customerCode!=null and customerCode!=''">
+            and sm.customer_code = #{customerCode}
+        </if>
+        <if test="serviceId!=null and serviceId!=''">
+            and (sb.carrier = #{serviceId} or (sb.carrier is null and st.serviceid = #{serviceId}))
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="HistoryTracking">
+    <select id="listTrackingShipment" parameterType="DeliveredTrackingListFilter"
+            resultType="HistoryTrackingListShipmentVo">
+        SELECT
+        sm.shipmentid AS shipmentId,
+        sm.airbill_number AS airbillNumber,
+        IFNULL(st.shipment_type_name, '') AS shipmentTypeName,
+        IFNULL( track.track_status, 0 ) AS trackStatus
+        FROM
+        xms_tbl_shipment AS sm
+        LEFT JOIN xms_tbl_shipment_type AS st ON sm.shipment_type_id = st.shipment_type_id
+        LEFT JOIN (
+        SELECT DISTINCT shipmentid, track_status
+        FROM xms_tbl_tracking
+        ) AS track ON sm.shipmentid = track.shipmentid
+        WHERE
+        sm.shipmentid = #{shipmentId}
+        AND sm.STATUS = 0
+        <![CDATA[
+		AND datediff(now(), sm.shipment_date) <= 180
+		AND datediff(now(), sm.shipment_date) >= #{day}
+		]]>
+    </select>
+</mapper>

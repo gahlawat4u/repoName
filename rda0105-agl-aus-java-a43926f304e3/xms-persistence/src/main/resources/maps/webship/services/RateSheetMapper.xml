@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="RateSheet">
+    <resultMap id="RateSheetMap" type="RateSheetVo">
+        <id column="sheet_id" property="sheetId"/>
+        <result column="sheet_name" property="sheetName"/>
+        <result column="create_date" property="createDate"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="cells" property="cells"/>
+        <result column="source_zone" property="sourceZone"/>
+        <result column="carrier_cost" property="carrierCost"/>
+        <result column="is_per_weight" property="isPerWeight"/>
+        <result column="content" property="content"/>
+        <result column="bound" property="bound"/>
+    </resultMap>
+    <resultMap type="RateSheetsPageVo" id="RateSheetPage">
+        <id column="sheetId" property="sheetId"/>
+        <result column="rateSheetName" property="rateSheetName"/>
+        <result column="importDate" property="importDate"/>
+        <result column="totalCells" property="totalCells"/>
+        <result column="serviceName" property="serviceName"/>
+        <result column="carrierName" property="carrierName"/>
+    </resultMap>
+    <resultMap type="RateSheetVo" id="RateSheetFullInfoMap" extends="RateSheetMap">
+        <association property="shipmentType" javaType="ShipmentTypeVo" autoMapping="true"
+                     resultMap="ShipmentType.ShipmentTypeWithCarrierZone"></association>
+        <collection property="rateSheetCols" column="rateSheetCols.sheet_id" javaType="ArrayList"
+                    ofType="RateSheetColumnVo" autoMapping="true"
+                    resultMap="RateSheetColumn.RateSheetColumnMap"></collection>
+        <collection property="rateSheetRows" column="rateSheetRows.sheet_id" javaType="ArrayList"
+                    ofType="RateSheetRowVo" autoMapping="true" resultMap="RateSheetRow.RateSheetRowMap"></collection>
+        <collection property="rateSheetDetails" column="rateSheetDetails.sheet_id" javaType="ArrayList"
+                    ofType="RateSheetDetailVo" autoMapping="true"
+                    resultMap="RateSheetDetail.RateSheetDetailMap"></collection>
+    </resultMap>
+
+    <select id="selectRateSheetFull" parameterType="long" resultMap="RateSheetFullInfoMap" resultType="RateSheetVo">
+        SELECT
+        DISTINCT rateSheet.*, rateSheetDetails.*, rateSheetCols.*, rateSheetRows.*, smt.*, cz.*
+        FROM
+        xms_tbl_rate_sheet AS rateSheet
+        INNER JOIN xms_tbl_shipment_type AS smt ON rateSheet.shipment_type_id = smt.shipment_type_id
+        LEFT OUTER JOIN xms_tbl_rate_sheet_column AS rateSheetCols ON rateSheetCols.sheet_id = rateSheet.sheet_id
+        LEFT OUTER JOIN xms_tbl_rate_sheet_row AS rateSheetRows ON rateSheetRows.sheet_id = rateSheet.sheet_id
+        LEFT OUTER JOIN xms_tbl_carrier_zone AS cz ON smt.serviceid = cz.carrier AND cz.zone_code =
+        rateSheetRows.char_row_name
+        LEFT OUTER JOIN xms_tbl_rate_sheet_detail AS rateSheetDetails ON rateSheetDetails.sheet_id = rateSheet.sheet_id
+        AND rateSheetCols.column_id = rateSheetDetails.column_id AND rateSheetRows.row_id = rateSheetDetails.row_id
+        WHERE
+        rateSheet.sheet_id = #{sheetId}
+    </select>
+
+    <select id="selectRateSheetFullTntDom" parameterType="long" resultMap="RateSheetFullInfoMap"
+            resultType="RateSheetVo">
+        SELECT
+        DISTINCT rateSheet.*, rateSheetDetails.*, rateSheetCols.*, rateSheetRows.*, smt.*, cz.*
+        FROM
+        xms_tbl_rate_sheet AS rateSheet
+        INNER JOIN xms_tbl_shipment_type AS smt ON rateSheet.shipment_type_id = smt.shipment_type_id
+        LEFT OUTER JOIN xms_tbl_rate_sheet_column AS rateSheetCols ON rateSheetCols.sheet_id = rateSheet.sheet_id
+        LEFT OUTER JOIN xms_tbl_rate_sheet_row AS rateSheetRows ON rateSheetRows.sheet_id = rateSheet.sheet_id
+        LEFT OUTER JOIN xms_tbl_carrier_zone AS cz ON smt.serviceid = cz.carrier AND cz.zone_code =
+        rateSheetRows.char_row_name
+        LEFT OUTER JOIN xms_tbl_rate_sheet_detail AS rateSheetDetails ON rateSheetDetails.sheet_id = rateSheet.sheet_id
+        AND rateSheetCols.column_id = rateSheetDetails.column_id AND rateSheetRows.row_id = rateSheetDetails.row_id
+        WHERE
+        rateSheet.sheet_id = #{sheetId} GROUP BY rateSheetRows.row_id ORDER BY rateSheetRows.char_row_name
+    </select>
+
+    <select id="selectCountColumn" resultType="int" parameterType="RateSheetFilter">
+        SELECT
+        COUNT(*)
+        FROM
+        xms_tbl_rate_sheet AS rs
+        LEFT JOIN
+        xms_tbl_rate_sheet_column AS rsc ON (rs.sheet_id = rsc.sheet_id)
+        WHERE
+        rs.sheet_id = #{sheetId}
+        AND rsc.column_name = #{columnName}
+    </select>
+
+    <select id="selectRateSheetsListPage" resultMap="RateSheetPage" parameterType="RateSheetsPageFilter">
+        SELECT
+        rs.sheet_id as sheetId,
+        rs.sheet_name as rateSheetName,
+        rs.create_date as importDate,
+        rs.cells as totalCells,
+        IF(rs.content = 0,
+        'Document',
+        'Package') AS type,
+        st.shipment_type_name as serviceName,
+        s.service_name as carrierName
+        FROM
+        xms_tbl_rate_sheet AS rs
+        LEFT JOIN
+        xms_tbl_shipment_type AS st ON st.shipment_type_id = rs.shipment_type_id
+        LEFT JOIN
+        xms_tbl_service AS s ON s.service_id = st.serviceid
+        <where>
+            <if test="rateSheetName != null and rateSheetName != ''">
+                rs.sheet_name like '%${rateSheetName}%'
+            </if>
+            <if test="carrierName != null and carrierName != ''">
+                AND s.service_name like '%${carrierName}%'
+            </if>
+            <if test="serviceName != null and serviceName != ''">
+                AND st.shipment_type_name like '%${serviceName}%'
+            </if>
+            <if test="type != null and type != ''">
+                AND rs.content = #{type}
+            </if>
+            <if test="importDate != null and importDate != ''">
+                AND date(rs.create_date) = date(#{importDate})
+            </if>
+            <if test="totalCells != null and totalCells != ''">
+                AND rs.cells = #{totalCells}
+            </if>
+        </where>
+        <if test="startRecord != null and recordSize != 0">
+            LIMIT #{startRecord}, #{recordSize}
+        </if>
+    </select>
+
+    <select id="selectCountRateSheetsListPage" resultType="int">
+        SELECT
+        COUNT(*)
+        FROM
+        xms_tbl_rate_sheet AS rs
+        LEFT JOIN
+        xms_tbl_shipment_type AS st ON st.shipment_type_id = rs.shipment_type_id
+        LEFT JOIN
+        xms_tbl_service AS s ON s.service_id = st.serviceid
+        <where>
+            <if test="rateSheetName != null and rateSheetName != ''">
+                rs.sheet_name like '%${rateSheetName}%'
+            </if>
+            <if test="carrierName != null and carrierName != ''">
+                AND s.service_name like '%${carrierName}%'
+            </if>
+            <if test="serviceName != null and serviceName != ''">
+                AND st.shipment_type_name like '%${serviceName}%'
+            </if>
+            <if test="type != null and type != ''">
+                AND rs.content = #{type}
+            </if>
+            <if test="importDate != null and importDate != ''">
+                AND date(rs.create_date) = date(#{importDate})
+            </if>
+            <if test="totalCells != null and totalCells != ''">
+                AND rs.cells = #{totalCells}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectTotalUsed" parameterType="long" resultType="int">
+        SELECT
+        COUNT(*)
+        FROM
+        xms_tbl_shipment_type
+        WHERE
+        carrier_document_rate = #{sheetId}
+        OR carrier_document_inbound_rate = #{sheetId}
+        OR carrier_package_rate = #{sheetId}
+        OR carrier_package_perweight_rate = #{sheetId}
+        OR carrier_package_inbound_rate = #{sheetId}
+        OR carrier_package_inbound_perweight_rate = #{sheetId}
+        OR non_carrier_document_rate = #{sheetId}
+        OR non_carrier_document_inbound_rate = #{sheetId}
+        OR non_carrier_package_rate =
+        #{sheetId}
+        OR non_carrier_package_perweight_rate = #{sheetId}
+        OR non_carrier_package_inbound_rate = #{sheetId}
+        OR non_carrier_package_inbound_perweight_rate = #{sheetId}
+    </select>
+
+    <select id="selectBySheetId" parameterType="long" resultMap="RateSheetMap">
+        select * from xms_tbl_rate_sheet
+        where sheet_id = #{sheetId}
+    </select>
+
+    <delete id="deleteRateSheet" parameterType="long">
+        delete from xms_tbl_rate_sheet
+        where sheet_id = #{sheetId}
+    </delete>
+
+    <select id="deleteRateSheet_SelectForLog" parameterType="long" resultMap="RateSheetMap">
+        select * from xms_tbl_rate_sheet
+        where sheet_id = #{sheetId}
+    </select>
+    <select id="checkRateSheet" parameterType="com.gms.xms.txndb.vo.RateSheetVo" resultMap="RateSheetMap">
+        select * from xms_tbl_rate_sheet
+        where shipment_type_id = #{shipmentTypeId}
+        and sheet_name = #{sheetName}
+        and carrier_cost = #{carrierCost}
+        and is_per_weight = #{isPerWeight}
+        and content = #{content}
+        and bound = #{bound}
+    </select>
+    <insert id="insertRateSheet" parameterType="com.gms.xms.txndb.vo.RateSheetVo" useGeneratedKeys="true"
+            keyProperty="sheetId">
+        insert into xms_tbl_rate_sheet (sheet_name, create_date, shipment_type_id, cells, source_zone, carrier_cost,
+        is_per_weight, content, bound)
+        values (#{sheetName}, #{createDate}, #{shipmentTypeId}, #{cells}, #{sourceZone}, #{carrierCost}, #{isPerWeight},
+        #{content}, #{bound})
+    </insert>
+    <update id="updateRateSheet" parameterType="com.gms.xms.txndb.vo.RateSheetVo">
+        update xms_tbl_rate_sheet
+        <set>
+            <if test="sheetName!=null">
+                sheet_name = #{sheetName},
+            </if>
+            <if test="createDate!=null">
+                create_date = #{createDate},
+            </if>
+            <if test="shipmentTypeId!=null">
+                shipment_type_id = #{shipmentTypeId},
+            </if>
+            <if test="cells!=null">
+                cells = #{cells},
+            </if>
+            <if test="sourceZone!=null">
+                source_zone = #{sourceZone},
+            </if>
+            <if test="carrierCost=null">
+                carrier_cost = #{carrierCost},
+            </if>
+            <if test="isPerWeight!=null">
+                is_per_weight = #{isPerWeight},
+            </if>
+            <if test="content!=null">
+                content = #{content},
+            </if>
+            <if test="bound!=null">
+                bound = #{bound},
+            </if>
+        </set>
+        where sheet_id = #{sheetId}
+    </update>
+</mapper>

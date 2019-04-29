@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ImportTotalReport">
+    <resultMap id="ImportTotalReportMap" type="ImportTotalReportVo">
+        <result column="invoiceid" property="invoiceId"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="customer_cost" property="customerCost"/>
+        <result column="franchise_cost" property="franchiseCost"/>
+        <result column="carrier_cost" property="carrierCost"/>
+        <result column="margin" property="margin"/>
+        <result column="airbill_count" property="airbillCount"/>
+    </resultMap>
+
+    <select id="getImportTotalReportByFilter" parameterType="com.gms.xms.filter.invoicing.ImportTotalReportFilter"
+            resultMap="ImportTotalReportMap">
+        select
+        i.invoiceid,
+        i.invoice_code,
+        sum(sb.customer_cost+sb.customer_tax_amount) as customer_cost,
+        sum(sb.franchise_cost+sb.franchise_tax_amount) as franchise_cost,
+        sum(sb.carrier_cost+round(sb.carrier_cost*sb.carrier_tax_percent/100,2)) as carrier_cost,
+        sum(sb.customer_cost+sb.customer_tax_amount-sb.carrier_cost-round(sb.carrier_cost*sb.carrier_tax_percent/100,2))
+        as margin,
+        ifnull(awbc.airbill_count,0) as airbill_count
+        from xms_tbl_shipment_billing as sb
+        inner join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and sb.airbill_number =
+        si.airbill_number
+        inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        left join
+        (select
+        invoiceid,
+        count(*) as airbill_count
+        from xms_tbl_shipment_invoice
+        group by invoiceid
+        ) as awbc on awbc.invoiceid= i.invoiceid
+        where left(i.customer_code,3) in (${franchiseList})
+        <![CDATA[ and sb.import_date>=date(#{startDate}) and sb.import_date<date(date_add(#{endDate},interval 1 day)) ]]>
+        <if test="carrier!=null">
+            and sb.carrier = #{carrier}
+        </if>
+        group by i.invoice_code
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countImportTotalReportByFilter" parameterType="com.gms.xms.filter.invoicing.ImportTotalReportFilter"
+            resultType="long">
+        select
+        count(*)
+        from
+        (select
+        i.invoiceid,
+        i.invoice_code,
+        sum(sb.customer_cost+sb.customer_tax_amount) as customer_cost,
+        sum(sb.franchise_cost+sb.franchise_tax_amount) as franchise_cost,
+        sum(sb.carrier_cost+round(sb.carrier_cost*sb.carrier_tax_percent/100,2)) as carrier_cost,
+        sum(sb.customer_cost+sb.customer_tax_amount-sb.carrier_cost-round(sb.carrier_cost*sb.carrier_tax_percent/100,2))
+        as margin,
+        ifnull(awbc.airbill_count,0) as airbill_count
+        from xms_tbl_shipment_billing as sb
+        inner join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and sb.airbill_number =
+        si.airbill_number
+        inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        left join
+        (select
+        invoiceid,
+        count(*) as airbill_count
+        from xms_tbl_shipment_invoice
+        group by invoiceid
+        ) as awbc on awbc.invoiceid= i.invoiceid
+        where left(i.customer_code,3) in (${franchiseList})
+        <![CDATA[ and sb.import_date>=date(#{startDate}) and sb.import_date<date(date_add(#{endDate},interval 1 day)) ]]>
+        <if test="carrier!=null">
+            and sb.carrier = #{carrier}
+        </if>
+        group by i.invoice_code
+        ) as r
+    </select>
+
+    <select id="sumImportTotalReportByFilter" parameterType="com.gms.xms.filter.invoicing.ImportTotalReportFilter"
+            resultMap="ImportTotalReportMap">
+        select
+        sum(customer_cost) as customer_cost,
+        sum(franchise_cost) as franchise_cost,
+        sum(carrier_cost) as carrier_cost,
+        sum(margin) as margin,
+        sum(airbill_count) as airbill_count
+        from
+        (select
+        i.invoiceid,
+        i.invoice_code,
+        sum(sb.customer_cost+sb.customer_tax_amount) as customer_cost,
+        sum(sb.franchise_cost+sb.franchise_tax_amount) as franchise_cost,
+        sum(sb.carrier_cost+round(sb.carrier_cost*sb.carrier_tax_percent/100,2)) as carrier_cost,
+        sum(sb.customer_cost+sb.customer_tax_amount-sb.carrier_cost-round(sb.carrier_cost*sb.carrier_tax_percent/100,2))
+        as margin,
+        ifnull(awbc.airbill_count,0) as airbill_count
+        from xms_tbl_shipment_billing as sb
+        inner join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and sb.airbill_number =
+        si.airbill_number
+        inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        left join
+        (select
+        invoiceid,
+        count(*) as airbill_count
+        from xms_tbl_shipment_invoice
+        group by invoiceid
+        ) as awbc on awbc.invoiceid= i.invoiceid
+        where left(i.customer_code,3) in (${franchiseList})
+        <![CDATA[ and sb.import_date>=date(#{startDate}) and sb.import_date<date(date_add(#{endDate},interval 1 day)) ]]>
+        <if test="carrier!=null">
+            and sb.carrier = #{carrier}
+        </if>
+        group by i.invoice_code
+        ) as r
+    </select>
+
+    <select id="getImportDateList" resultType="java.util.Date">
+        select
+        distinct date(sb.import_date) as import_date
+        from xms_tbl_shipment_billing as sb
+        order by sb.import_date desc limit 10
+    </select>
+</mapper>

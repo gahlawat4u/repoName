@@ -1,0 +1,37 @@
+package com.gms.xms.workflow.task.common;
+
+import com.gms.xms.common.constants.Attributes;
+import com.gms.xms.common.constants.ErrorCode;
+import com.gms.xms.common.context.ContextBase;
+import com.gms.xms.common.utils.GsonUtils;
+import com.gms.xms.persistence.dao.CustomerAddressDao;
+import com.gms.xms.txndb.vo.CustomerAddressFilter;
+import com.gms.xms.workflow.core.Task;
+import com.google.gson.reflect.TypeToken;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.util.Map;
+
+public class ResetCustomerPasswordByCodeNameMailTask implements Task {
+    private static final Log log = LogFactory.getLog(ResetCustomerPasswordByCodeNameMailTask.class);
+
+    @Override
+    public boolean execute(ContextBase context) throws Exception {
+        CustomerAddressDao dao = new CustomerAddressDao();
+        try {
+            context.put(Attributes.ERROR_CODE, ErrorCode.SUCCESS);
+            Map<String, String> addInfo = GsonUtils.fromGson(context.get(Attributes.STR_ADD_INFO), new TypeToken<Map<String, String>>() {
+            }.getType());
+            CustomerAddressFilter filter = GsonUtils.fromGson(context.get(Attributes.CUSTOMER_ADDRESS_FILTER), CustomerAddressFilter.class);
+            dao.resetPasswordByCodeNameMail(addInfo, filter);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            context.put(Attributes.ERROR_CODE, ErrorCode.ERROR);
+            context.put(Attributes.ERROR_MESSAGE, e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+}

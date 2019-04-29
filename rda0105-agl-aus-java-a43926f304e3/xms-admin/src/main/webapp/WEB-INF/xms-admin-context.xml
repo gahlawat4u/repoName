@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean id="franchisePayableSCController"
+          class="com.gms.xms.weblib.controller.franchisepayable.FranchisePayableSCController" scope="request"/>
+    <bean id="franchisePayableMSController"
+          class="com.gms.xms.weblib.controller.franchisepayable.FranchisePayableMSController" scope="request"/>
+    <bean id="receivePaymentsController" class="com.gms.xms.weblib.controller.receivables.ReceivePaymentsController"
+          scope="request"/>
+    <bean id="invoiceOverpaymentController"
+          class="com.gms.xms.weblib.controller.receivables.InvoiceOverpaymentController" scope="request"/>
+    <bean id="applyOverpaymentController" class="com.gms.xms.weblib.controller.receivables.ApplyOverpaymentController"
+          scope="request"/>
+    <bean id="applyOverpaymentToAWBController"
+          class="com.gms.xms.weblib.controller.receivables.ApplyOverpaymentToAWBController" scope="request"/>
+    <bean id="reminderLettersController" class="com.gms.xms.weblib.controller.receivables.ReminderLettersController"
+          scope="request"/>
+    <bean id="searchPaymentsDepositController"
+          class="com.gms.xms.weblib.controller.receivables.SearchPaymentsDepositController" scope="request"/>
+    <bean id="manageAdjustmentController" class="com.gms.xms.weblib.controller.adjustment.ManageAdjustmentController"
+          scope="request"/>
+    <bean id="manageAdjustmentRequestController"
+          class="com.gms.xms.weblib.controller.adjustmentrequest.ManageAdjustmentRequestController" scope="request"/>
+    <bean id="adjustmentController" class="com.gms.xms.weblib.controller.adjustment.AdjustmentController"
+          scope="request"/>
+    <bean id="adjustmentRequestController"
+          class="com.gms.xms.weblib.controller.adjustmentrequest.AdjustmentRequestController" scope="request"/>
+    <bean id="editAdjustmentController" class="com.gms.xms.weblib.controller.adjustment.EditAdjustmentController"
+          scope="request"/>
+    <bean id="editAdjustmentRequestController"
+          class="com.gms.xms.weblib.controller.adjustmentrequest.EditAdjustmentRequestController" scope="request"/>
+    <bean id="adjustmentNoteController" class="com.gms.xms.weblib.controller.adjustment.AdjustmentNoteController"
+          scope="request"/>
+    <bean id="adjustmentRequestNoteController"
+          class="com.gms.xms.weblib.controller.adjustmentrequest.AdjustmentRequestNoteController" scope="request"/>
+    <bean id="creditNotesController" class="com.gms.xms.weblib.controller.invoicing.CreditNotesController"
+          scope="request"/>
+    <bean id="sendCreditNoteController" class="com.gms.xms.weblib.controller.invoicing.SendCreditNoteController"
+          scope="request"/>
+    <bean id="freezeCreditNotesController" class="com.gms.xms.weblib.controller.invoicing.FreezeCreditNotesController"
+          scope="request"/>
+    <bean id="unfreezeCreditNotesController"
+          class="com.gms.xms.weblib.controller.invoicing.UnfreezeCreditNotesController" scope="request"/>
+    <bean id="manageCarrierAdjustmentController"
+          class="com.gms.xms.weblib.controller.adjustment.ManageCarrierAdjustmentController" scope="request"/>
+    <bean id="errorHandlerController" class="com.gms.xms.weblib.controller.ErrorHandlerController" scope="request"/>
+    <bean id="customerAgingController" class="com.gms.xms.weblib.controller.receivables.CustomerAgingController"
+          scope="request"/>
+    <bean id="customerSummaryController"
+          class="com.gms.xms.weblib.controller.reports.customer.CustomerSummaryController" scope="request"/>
+    <bean id="customerStatusController" class="com.gms.xms.weblib.controller.reports.customer.CustomerStatusController"
+          scope="request"/>
+    <bean id="customerActivationController"
+          class="com.gms.xms.weblib.controller.reports.customer.CustomerActivationController" scope="request"/>
+    <bean id="customerInactivityController"
+          class="com.gms.xms.weblib.controller.reports.customer.CustomerInactivityController" scope="request"/>
+    <bean id="customer13WeeksActivityController"
+          class="com.gms.xms.weblib.controller.reports.customer.Customer13WeeksActivityController" scope="request"/>
+    <bean id="customerInvoiceDetailController"
+          class="com.gms.xms.weblib.controller.reports.customer.CustomerInvoiceDetailController" scope="request"/>
+    <bean id="overallFranchiseRankingController"
+          class="com.gms.xms.weblib.controller.reports.ranking.OverallFranchiseRankingController" scope="request"/>
+    <bean id="salesRepRankingController" class="com.gms.xms.weblib.controller.reports.ranking.SalesRepRankingController"
+          scope="request"/>
+    <bean id="webshipCustomerHistoryController"
+          class="com.gms.xms.weblib.controller.reports.webship.WebshipCustomerHistoryController" scope="request"/>
+    <bean id="webshipQuoteHistoryController"
+          class="com.gms.xms.weblib.controller.reports.webship.WebshipQuoteHistoryController" scope="request"/>
+    <bean id="invoicePendingAirbillController"
+          class="com.gms.xms.weblib.controller.reports.webship.InvoicePendingAirbillController" scope="request"/>
+    <bean id="webshipCustomerDetailController"
+          class="com.gms.xms.weblib.controller.reports.webship.WebshipCustomerDetailController" scope="request"/>
+    <bean id="searchCustomerController" class="com.gms.xms.weblib.controller.account.customers.SearchCustomerController"
+          scope="request"/>
+    <bean id="customerListController" class="com.gms.xms.weblib.controller.account.customers.CustomerListController"
+          scope="request"/>
+    <bean id="manageCustomersController"
+          class="com.gms.xms.weblib.controller.account.customers.ManageCustomersController" scope="request"/>
+    <bean id="customerAccountSetupController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.CustomerAccountSetupController"
+          scope="request"/>
+    <bean id="manageCustomerAddressController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.ManageCustomerAddressController"
+          scope="request"/>
+    <bean id="manageCustomerBaseRateController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.ManageCustomerBaseRateController"
+          scope="request"/>
+    <bean id="customerInvoiceOptionsController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.CustomerInvoiceOptionsController"
+          scope="request"/>
+    <bean id="manageCustomerMarkupController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.ManageCustomerMarkupController"
+          scope="request"/>
+    <bean id="manageCustomerWebshipHistoryController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.ManageCustomerWebshipHistoryController"
+          scope="request"/>
+    <bean id="manageCustomerWebshipHistoryTrackingController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.ManageCustomerWebshipHistoryTrackingController"
+          scope="request"/>
+    <bean id="manageCustomerWebshipHistoryDetailController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.ManageCustomerWebshipHistoryDetailController"
+          scope="request"/>
+    <bean id="manageCustomerWebshipHistoryScheduleController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.ManageCustomerWebshipHistoryScheduleController"
+          scope="request"/>
+    <bean id="manageCustomerWebshipHistoryShipmentNoteController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.ManageCustomerWebshipHistoryShipmentNoteController"
+          scope="request"/>
+    <bean id="customerPaymentsController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.CustomerPaymentsController" scope="request"/>
+    <bean id="manageCustomerCollectionController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.ManageCustomerCollectionController"
+          scope="request"/>
+    <bean id="manageCustomerWebshipController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.ManageCustomerWebshipController"
+          scope="request"/>
+    <bean id="manageCustomerNotesController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.ManageCustomerNotesController" scope="request"/>
+    <bean id="manageCustomerHistoryController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.ManageCustomerHistoryController"
+          scope="request"/>
+    <bean id="manageUsersController" class="com.gms.xms.weblib.controller.account.users.ManageUsersController"
+          scope="request"/>
+    <bean id="franchiseListController" class="com.gms.xms.weblib.controller.account.franchises.FranchiseListController"
+          scope="request"/>
+    <bean id="addCustomerController" class="com.gms.xms.weblib.controller.account.customers.AddCustomerController"
+          scope="request"/>
+    <bean id="surchargeListController" class="com.gms.xms.weblib.controller.admin.accessorial.SurchargeListController"
+          scope="request"/>
+    <bean id="surchargeDetailsController"
+          class="com.gms.xms.weblib.controller.admin.accessorial.SurchargeDetailsController" scope="request"/>
+    <bean id="carrierListController" class="com.gms.xms.weblib.controller.admin.carrier.CarrierListController"
+          scope="request"/>
+    <bean id="serviceListController" class="com.gms.xms.weblib.controller.admin.carrier.ServiceListController"
+          scope="request"/>
+    <bean id="countryListController" class="com.gms.xms.weblib.controller.admin.carrier.CountryListController"
+          scope="request"/>
+    <bean id="adminEmailSettingController"
+          class="com.gms.xms.weblib.controller.admin.systemsetting.AdminEmailSettingController" scope="request"/>
+    <bean id="franchiseSettingController"
+          class="com.gms.xms.weblib.controller.admin.systemsetting.FranchiseSettingController" scope="request"/>
+    <bean id="rateSheetsController" class="com.gms.xms.weblib.controller.admin.ratesheets.RateSheetsController"
+          scope="request"/>
+    <bean id="rateSheetsDetailController"
+          class="com.gms.xms.weblib.controller.admin.ratesheets.RateSheetsDetailController" scope="request"/>
+    <bean id="systemStatsController" class="com.gms.xms.weblib.controller.admin.systemsetting.SystemStatsController"
+          scope="request"/>
+    <bean id="systemStatsExportController"
+          class="com.gms.xms.weblib.controller.admin.systemsetting.SystemStatsExportController" scope="request"/>
+    <bean id="systemLogController" class="com.gms.xms.weblib.controller.admin.systemsetting.SystemLogController"
+          scope="request"/>
+    <bean id="administrationController"
+          class="com.gms.xms.weblib.controller.admin.administration.AdministrationController" scope="request"/>
+    <bean id="setCostBasisTableController"
+          class="com.gms.xms.weblib.controller.admin.ratesheets.SetCostBasisTableController" scope="request"/>
+    <bean id="setListRatesController" class="com.gms.xms.weblib.controller.admin.ratesheets.SetListRatesController"
+          scope="request"/>
+    <bean id="manageCoverSheetsController"
+          class="com.gms.xms.weblib.controller.admin.ratesheets.ManageCoverSheetsController" scope="request"/>
+    <bean id="territoryListController" class="com.gms.xms.weblib.controller.admin.territory.TerritoryListController"
+          scope="request"/>
+    <bean id="areaListController" class="com.gms.xms.weblib.controller.admin.area.AreaListController" scope="request"/>
+    <bean id="customergroupListController"
+          class="com.gms.xms.weblib.controller.admin.customergroup.CustomerGroupListController" scope="request"/>
+    <bean id="industryListController" class="com.gms.xms.weblib.controller.admin.industry.IndustryListController"
+          scope="request"/>
+    <bean id="adminSystemSettingController"
+          class="com.gms.xms.weblib.controller.admin.systemsetting.AdminSystemSettingController" scope="request"/>
+    <bean id="productCarrierListController"
+          class="com.gms.xms.weblib.controller.admin.product.ProductCarrierListController" scope="request"/>
+    <bean id="productListController" class="com.gms.xms.weblib.controller.admin.product.ProductListController"
+          scope="request"/>
+    <bean id="emailTemplateController" class="com.gms.xms.weblib.controller.admin.emailtemplate.EmailTemplateController"
+          scope="request"/>
+    <bean id="webshipGroupListController"
+          class="com.gms.xms.weblib.controller.admin.webshipgroup.WebshipGroupListController" scope="request"/>
+    <bean id="menuController" class="com.gms.xms.weblib.controller.admin.menu.MenuController" scope="request"/>
+    <bean id="customerProfilesController"
+          class="com.gms.xms.weblib.controller.admin.customerprofiles.CustomerProfilesController" scope="request"/>
+    <bean id="customerProfilesAddNewController"
+          class="com.gms.xms.weblib.controller.admin.customerprofiles.CustomerProfilesAddNewController"
+          scope="request"/>
+    <bean id="customerProfilesBaseRateController"
+          class="com.gms.xms.weblib.controller.admin.customerprofiles.CustomerProfilesBaseRateController"
+          scope="request"/>
+    <bean id="customerProfilesCollectionsController"
+          class="com.gms.xms.weblib.controller.admin.customerprofiles.CustomerProfilesCollectionsController"
+          scope="request"/>
+    <bean id="customerProfilesHistoryController"
+          class="com.gms.xms.weblib.controller.admin.customerprofiles.CustomerProfilesHistoryController"
+          scope="request"/>
+    <bean id="customerProfilesInvoiceOptionsController"
+          class="com.gms.xms.weblib.controller.admin.customerprofiles.CustomerProfilesInvoiceOptionsController"
+          scope="request"/>
+    <bean id="customerProfilesMarkupsController"
+          class="com.gms.xms.weblib.controller.admin.customerprofiles.CustomerProfilesMarkupsController"
+          scope="request"/>
+    <bean id="customerProfilesAccountSetupController"
+          class="com.gms.xms.weblib.controller.admin.customerprofiles.CustomerProfilesAccountSetupController"
+          scope="request"/>
+    <bean id="customerProfilesBaseRateGeneralController"
+          class="com.gms.xms.weblib.controller.admin.customerprofiles.baserate.CustomerProfilesBaseRateGeneralController"
+          scope="request"/>
+    <bean id="customerProfilesBaseRateOtherController"
+          class="com.gms.xms.weblib.controller.admin.customerprofiles.baserate.CustomerProfilesBaseRateOtherController"
+          scope="request"/>
+    <bean id="bankListController" class="com.gms.xms.weblib.controller.receivables.BankListController" scope="request"/>
+    <bean id="manageSaleRepController" class="com.gms.xms.weblib.controller.salereps.ManageSaleRepController"
+          scope="request"/>
+    <bean id="manageFranchiseController"
+          class="com.gms.xms.weblib.controller.account.franchises.manage.ManageFranchiseController" scope="request"/>
+    <bean id="manageFranchiseBaseRateController"
+          class="com.gms.xms.weblib.controller.account.franchises.manage.ManageFranchiseBaseRateController"
+          scope="request"/>
+    <bean id="manageFranchiseCollectionsController"
+          class="com.gms.xms.weblib.controller.account.franchises.manage.ManageFranchiseCollectionsController"
+          scope="request"/>
+    <bean id="manageFranchiseHistoryController"
+          class="com.gms.xms.weblib.controller.account.franchises.manage.ManageFranchiseHistoryController"
+          scope="request"/>
+    <bean id="manageFranchiseInvoiceOptionsController"
+          class="com.gms.xms.weblib.controller.account.franchises.manage.ManageFranchiseInvoiceOptionsController"
+          scope="request"/>
+    <bean id="manageFranchiseMarkupsController"
+          class="com.gms.xms.weblib.controller.account.franchises.manage.ManageFranchiseMarkupsController"
+          scope="request"/>
+    <bean id="manageFranchiseAccountSetupController"
+          class="com.gms.xms.weblib.controller.account.franchises.manage.ManageFranchiseAccountSetupController"
+          scope="request"/>
+    <bean id="manageFranchiseBaseRateGeneralController"
+          class="com.gms.xms.weblib.controller.account.franchises.manage.ManageFranchiseBaseRateGeneralController"
+          scope="request"/>
+    <bean id="manageFranchiseBaseRateOtherController"
+          class="com.gms.xms.weblib.controller.account.franchises.manage.ManageFranchiseBaseRateOtherController"
+          scope="request"/>
+    <bean id="manageFranchisePaymentsController"
+          class="com.gms.xms.weblib.controller.account.franchises.manage.ManageFranchisePaymentsController"
+          scope="request"/>
+    <bean id="manageFranchiseAddressController"
+          class="com.gms.xms.weblib.controller.account.franchises.manage.ManageFranchiseAddressController"
+          scope="request"/>
+    <bean id="manageFranchiseWebshipController"
+          class="com.gms.xms.weblib.controller.account.franchises.manage.ManageFranchiseWebshipController"
+          scope="request"/>
+    <bean id="manageFranchiseNotesController"
+          class="com.gms.xms.weblib.controller.account.franchises.manage.ManageFranchiseNotesController"
+          scope="request"/>
+    <bean id="languageValueController" class="com.gms.xms.weblib.controller.admin.languagevalue.LanguageValueController"
+          scope="request"/>
+    <bean id="viewEditInvoiceController"
+          class="com.gms.xms.weblib.controller.invoicing.manageinvoice.ViewEditInvoiceController" scope="request"/>
+    <bean id="viewEditInvoiceEditAirbillController"
+          class="com.gms.xms.weblib.controller.invoicing.manageinvoice.ViewEditInvoiceEditAirbillController"
+          scope="request"/>
+    <bean id="viewEditInvoiceMoveAirbillController"
+          class="com.gms.xms.weblib.controller.invoicing.manageinvoice.ViewEditInvoiceMoveAirbillController"
+          scope="request"/>
+    <bean id="statementsController" class="com.gms.xms.weblib.controller.invoicing.manageinvoice.StatementsController"
+          scope="request"/>
+    <bean id="searchAirbillsController" class="com.gms.xms.weblib.controller.invoicing.SearchAirbillsController"
+          scope="request"/>
+    <bean id="costDeviationController"
+          class="com.gms.xms.weblib.controller.invoicing.pricevalidation.CostDeviationController" scope="request"/>
+    <bean id="airbillMarginsController"
+          class="com.gms.xms.weblib.controller.invoicing.pricevalidation.AirbillMarginsController" scope="request"/>
+    <bean id="importTotalReportController"
+          class="com.gms.xms.weblib.controller.invoicing.invoiceediting.ImportTotalReportController" scope="request"/>
+    <bean id="repairAirbillErrorsController"
+          class="com.gms.xms.weblib.controller.invoicing.invoiceediting.RepairAirbillErrorsController" scope="request"/>
+    <bean id="moveInvoicesDatesController"
+          class="com.gms.xms.weblib.controller.invoicing.invoiceediting.MoveInvoicesDatesController" scope="request"/>
+    <bean id="freezeInvoicesController" class="com.gms.xms.weblib.controller.invoicing.FreezeInvoicesController"
+          scope="request"/>
+    <bean id="unfreezeInvoicesController" class="com.gms.xms.weblib.controller.invoicing.UnfreezeInvoicesController"
+          scope="request"/>
+    <bean id="csvInvoicesController" class="com.gms.xms.weblib.controller.invoicing.CsvInvoicesController"
+          scope="request"/>
+    <bean id="airbillImportErrorLogsController"
+          class="com.gms.xms.weblib.controller.invoicing.AirbillImportErrorLogsController" scope="request"/>
+    <bean id="sendEmailInvoicesController" class="com.gms.xms.weblib.controller.invoicing.SendEmailInvoicesController"
+          scope="request"/>
+    <bean id="reconcileAirbillController" class="com.gms.xms.weblib.controller.admin.imports.ReconcileAirbillController"
+          scope="request"/>
+    <bean id="viewEditInvoiceEditAddressController"
+          class="com.gms.xms.weblib.controller.invoicing.manageinvoice.ViewEditInvoiceEditAddressController"
+          scope="request"/>
+    <!-- START MANAGE FRANCHISE WEBSHIP HISTORY -->
+    <bean id="historyController" class="com.gms.xms.weblib.controller.webship.history.HistoryController"
+          scope="request"/>
+    <bean id="historyDetailController" class="com.gms.xms.weblib.controller.webship.history.HistoryDetailController"
+          scope="request"/>
+    <bean id="historyTrackingController" class="com.gms.xms.weblib.controller.webship.history.HistoryTrackingController"
+          scope="request"/>
+    <bean id="historyShipmentNoteController"
+          class="com.gms.xms.weblib.controller.webship.history.HistoryShipmentNoteController" scope="request"/>
+    <bean id="historyScheduleController" class="com.gms.xms.weblib.controller.webship.history.HistoryScheduleController"
+          scope="request"/>
+    <!-- END MANAGE FRANCHISE WEBSHIP HISTORY -->
+
+    <!-- Schedule Collection -->
+    <bean id="scheduleCollectionController"
+          class="com.gms.xms.weblib.controller.webship.schedule.ScheduleCollectionController" scope="request"/>
+    <bean id="webshipLabelReportController"
+          class="com.gms.xms.weblib.controller.reports.selfinsurance.WebshipLabelReportController" scope="request"/>
+    <bean id="invoicedAirbillReportController"
+          class="com.gms.xms.weblib.controller.reports.selfinsurance.InvoicedAirbillReportController" scope="request"/>
+    <bean id="manageCustBaseRateController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.ManageCustBaseRateController" scope="request"/>
+    <bean id="manageContactController" class="com.gms.xms.weblib.controller.account.contact.ManageContactController"
+          scope="request"/>
+    <bean id="manageCustProfileBaseRateController"
+          class="com.gms.xms.weblib.controller.admin.customerprofiles.baserate.ManageCustProfileBaseRateController"
+          scope="request"/>
+    <bean id="addWeightBreakController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.AddWeightBreakController" scope="request"/>
+    <bean id="manageFranBaseRateController"
+          class="com.gms.xms.weblib.controller.account.customers.manage.ManageFranBaseRateController" scope="request"/>
+    <bean id="viewRateSheetController" class="com.gms.xms.weblib.controller.admin.ratesheets.ViewRateSheetController"
+          scope="request"/>
+    <bean id="addFranchiseController" class="com.gms.xms.weblib.controller.account.franchises.AddFranchiseController"
+          scope="request"/>
+    <bean id="addPaymentController" class="com.gms.xms.weblib.controller.admin.payment.AddPaymentController"
+          scope="request"/>
+    <bean id="noteController" class="com.gms.xms.weblib.controller.admin.note.NoteController" scope="request"/>
+    <bean id="noteAndFollowUpController" class="com.gms.xms.weblib.controller.admin.note.NoteAndFollowUpController"
+          scope="request"/>
+
+    <!-- Admin quick search -->
+    <bean id="adminQuickSearchController"
+          class="com.gms.xms.weblib.controller.admin.quicksearch.AdminQuickSearchController" scope="request"/>
+
+    <!-- Import rate sheet -->
+    <bean id="importRateSheetController"
+          class="com.gms.xms.weblib.controller.admin.ratesheets.ImportRateSheetController" scope="request"/>
+
+    <!-- Mass edit -->
+    <bean id="changeWeightController" class="com.gms.xms.weblib.controller.massedit.ChangeWeightController"
+          scope="request"/>
+    <bean id="recalcBaseChargeController" class="com.gms.xms.weblib.controller.massedit.RecalcBaseChargeController"
+          scope="request"/>
+    <bean id="recalcCustomerBaseChargeController"
+          class="com.gms.xms.weblib.controller.massedit.RecalcCustomerBaseChargeController" scope="request"/>
+    <bean id="changeSenderAddressController"
+          class="com.gms.xms.weblib.controller.massedit.ChangeSenderAddressController" scope="request"/>
+    <bean id="changeCustomerController" class="com.gms.xms.weblib.controller.massedit.ChangeCustomerController"
+          scope="request"/>
+    <bean id="addAccessorialChargeController"
+          class="com.gms.xms.weblib.controller.massedit.AddAccessorialChargeController" scope="request"/>
+    <bean id="recalcFranchiseBaseCostController"
+          class="com.gms.xms.weblib.controller.massedit.RecalcFranchiseBaseCostController" scope="request"/>
+    <bean id="moveAirbillController" class="com.gms.xms.weblib.controller.massedit.MoveAirbillController"
+          scope="request"/>
+    <bean id="changeZoneController" class="com.gms.xms.weblib.controller.massedit.ChangeZoneController"
+          scope="request"/>
+    <bean id="changeServiceTypeController" class="com.gms.xms.weblib.controller.massedit.ChangeServiceTypeController"
+          scope="request"/>
+    <bean id="recalcAccessorialMarkupController"
+          class="com.gms.xms.weblib.controller.massedit.RecalcAccessorialMarkupController" scope="request"/>
+    <bean id="markupAccessorialController" class="com.gms.xms.weblib.controller.massedit.MarkupAccessorialController"
+          scope="request"/>
+    <bean id="changeAccessorialTypeController"
+          class="com.gms.xms.weblib.controller.massedit.ChangeAccessorialTypeController" scope="request"/>
+    <bean id="deleteAirbillController" class="com.gms.xms.weblib.controller.massedit.DeleteAirbillController"
+          scope="request"/>
+    <bean id="recalcCustomerCostController" class="com.gms.xms.weblib.controller.massedit.RecalcCustomerCostController"
+          scope="request"/>
+    <bean id="forceQuotedChargeController" class="com.gms.xms.weblib.controller.massedit.ForceQuotedChargeController"
+          scope="request"/>
+    <bean id="forceQuotedAccessorialChargeController"
+          class="com.gms.xms.weblib.controller.massedit.ForceQuotedAccessorialChargeController" scope="request"/>
+    <bean id="forceMarkupCustomerCostController"
+          class="com.gms.xms.weblib.controller.massedit.ForceMarkupCustomerCostController" scope="request"/>
+
+    <!-- Import billing -->
+    <bean id="importBillingController" class="com.gms.xms.weblib.controller.admin.importbilling.ImportBillingController"
+          scope="request"/>
+    <bean id="downloadBillingController"
+          class="com.gms.xms.weblib.controller.admin.importbilling.DownloadBillingController" scope="request"/>
+
+    <bean id="quickSearchCustomerController"
+          class="com.gms.xms.weblib.controller.customer.QuickSearchCustomerController" scope="request"/>
+    <bean id="statisticsController" class="com.gms.xms.weblib.controller.admin.StatisticsController" scope="request"/>
+    <bean id="adminLoginController" class="com.gms.xms.weblib.controller.admin.AdminLoginController" scope="request"/>
+    <bean id="airbillChangeLogController" class="com.gms.xms.weblib.controller.admin.AirbillChangeLogController"
+          scope="request"/>
+    <bean id="airbillLabelController" class="com.gms.xms.weblib.controller.admin.AirbillLabelController"
+          scope="request"/>
+    <!--  System Recache -->
+    <bean id="recacheController" class="com.gms.xms.weblib.controller.admin.RecacheController" scope="request"/>
+
+    <!-- Generate ET File -->
+    <bean id="generateTollETFileController" class="com.gms.xms.weblib.controller.generate.GenerateTollETFileController"
+          scope="request"/>
+    <bean id="generateTollIpecETFileController"
+          class="com.gms.xms.weblib.controller.generate.GenerateTollIpecETFileController" scope="request"/>
+    <bean id="generateTntETFileController" class="com.gms.xms.weblib.controller.generate.GenerateTntETFileController"
+          scope="request"/>
+
+    <!-- Fill Period/Monthly -->
+    <bean id="fillPeriodController" class="com.gms.xms.weblib.controller.admin.period.FillPeriodController"
+          scope="request"/>
+</beans>

@@ -1,0 +1,12 @@
+Deployment instructions for XI-56:
+
+1. Ticket info
+    - Ticket number : XI-56
+    - Title : AU - Invoice should be reinstated to the original version
+    - Link : https://xms-agl.atlassian.net/browse/XI-56
+    - Developer : HungNH
+
+2. Deployment instructions
+    - This ticket didn't require source code changes for fixing the issues, so we don't have to deploy the source code.
+    - Just run the SQL file "XI-56.sql" against the database to fix the issue, since this ticket is all about dirty data
+    - Notice : If you want to reverse the effect of "XI-56.sql", run "XI-56-for-reversed.sql" against the database.

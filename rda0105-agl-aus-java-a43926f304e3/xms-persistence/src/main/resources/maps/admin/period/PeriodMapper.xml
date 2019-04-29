@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Period">
+    <resultMap id="PeriodMap" type="com.gms.xms.dto.PeriodVo">
+        <result column="start_date" property="startDate"/>
+        <result column="end_date" property="endDate"/>
+        <result column="franchise_payable_status" property="franchisePayableStatus"/>
+        <result column="freeze_calculate_status" property="freezeCalculateStatus"/>
+        <result column="franchise_payable_revenue_share" property="franchisePayableRevenueShare"/>
+        <result column="franchise_receivables_revenue_share" property="franchiseReceivablesRevenueShare"/>
+        <result column="rpt_txn_id" property="rptTxnId"/>
+    </resultMap>
+    <insert id="fillPeriod">
+        insert into xms_tbl_period (start_date, end_date, franchise_payable_status, freeze_calculate_status,
+        franchise_payable_revenue_share, franchise_receivables_revenue_share, rpt_txn_id)
+        select
+        date_add(date_sub(max_end_date,interval weekday(max_end_date) day),interval 7 day) as start_date,
+        date_add(date_sub(max_end_date,interval weekday(max_end_date) day),interval 13 day) as end_date,
+        0,
+        0,
+        0,
+        0,
+        ''
+        from
+        (select max(end_date) as max_end_date from xms_tbl_period
+        ) as p
+    </insert>
+</mapper>

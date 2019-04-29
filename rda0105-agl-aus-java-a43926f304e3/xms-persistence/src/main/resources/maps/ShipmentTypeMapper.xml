@@ -1,0 +1,937 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ShipmentType">
+    <resultMap id="ShipmentType" type="ShipmentTypeVo">
+        <id column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="service_priority" property="servicePriority"/>
+        <result column="shipment_type_name" property="shipmentTypeName"/>
+        <result column="edi_description" property="ediDescription"/>
+        <result column="service_code" property="serviceCode"/>
+        <result column="basic_charge" property="basicCharge"/>
+        <result column="document" property="document"/>
+        <result column="document_inbound" property="documentInbound"/>
+        <result column="package" property="_package"/>
+        <result column="package_inbound" property="packageInbound"/>
+        <result column="pak" property="pak"/>
+        <result column="pak_inbound" property="pakInbound"/>
+        <result column="allow_non_carrier" property="allowNonCarrier"/>
+        <result column="allow_carrier" property="allowCarrier"/>
+        <result column="carrier_document_rate" property="carrierDocumentRate"/>
+        <result column="carrier_document_inbound_rate" property="carrierDocumentInboundRate"/>
+        <result column="carrier_package_rate" property="carrierPackageRate"/>
+        <result column="carrier_package_perweight_rate" property="carrierPackagePerWeightRate"/>
+        <result column="carrier_package_inbound_rate" property="carrierPackageInboundRate"/>
+        <result column="carrier_package_inbound_perweight_rate" property="carrierPackageInboundPerWeightRate"/>
+        <result column="carrier_pak_rate" property="carrierPakRate"/>
+        <result column="carrier_pak_inbound_rate" property="carrierPakInboundRate"/>
+        <result column="carrier_pak_perweight_rate" property="carrierPakPerWeightRate"/>
+        <result column="carrier_pak_inbound_perweight_rate" property="carrierPakInboundPerWeightRate"/>
+        <result column="modified_date" property="modifiedDate"/>
+        <result column="non_carrier_document_rate" property="nonCarrierDocumentRate"/>
+        <result column="non_carrier_document_inbound_rate" property="nonCarrierDocumentInboundRate"/>
+        <result column="non_carrier_package_rate" property="nonCarrierPackageRate"/>
+        <result column="non_carrier_package_perweight_rate" property="nonCarrierPackagePerWeightRate"/>
+        <result column="non_carrier_package_inbound_rate" property="nonCarrierPackageInboundRate"/>
+        <result column="non_carrier_package_inbound_perweight_rate" property="nonCarrierPackageInboundPerWeightRate"/>
+        <result column="non_carrier_pak_rate" property="nonCarrierPakRate"/>
+        <result column="non_carrier_pak_inbound_rate" property="nonCarrierPakInboundRate"/>
+        <result column="non_carrier_pak_perweight_rate" property="nonCarrierPakPerWeightRate"/>
+        <result column="non_carrier_pak_inbound_perweight_rate" property="nonCarrierPakInboundPerWeightRate"/>
+        <result column="serviceid" property="serviceId"/>
+        <result column="no_of_rate" property="noOfRate"/>
+        <result column="localizationid" property="localizationId"/>
+        <result column="perweight_status" property="perWeightStatus"/>
+        <result column="show_status" property="showStatus"/>
+        <result column="show_domestic" property="showDomestic"/>
+        <result column="global_product_code_doc" property="globalProductCodeDoc"/>
+        <result column="global_product_code_non_doc" property="globalProductCodeNonDoc"/>
+        <result column="local_product_code_doc" property="localProductCodeDoc"/>
+        <result column="local_product_code_non_doc" property="localProductCodeNonDoc"/>
+        <result column="doc_outbound_tax" property="docOutboundTax"/>
+        <result column="nondoc_outbound_tax" property="nonDocOutboundTax"/>
+        <result column="doc_inbound_tax" property="docInboundTax"/>
+        <result column="nondoc_inbound_tax" property="nonDocInboundTax"/>
+        <result column="allow_change_name" property="allowChangeName"/>
+        <result column="start_with_carrier_name" property="startWithCarrierName"/>
+        <result column="per_kg" property="perKg"/>
+        <result column="service_group" property="serviceGroup"/>
+   </resultMap>
+
+    <resultMap type="ShipmentTypeVo" id="ShipmentTypeWithCarrierZone" extends="ShipmentType">
+        <collection property="carrierZones" ofType="CarrierZoneVo" javaType="ArrayList" autoMapping="true"
+                    resultMap="CarrierZone.CarrierZoneMap" column="carrier"></collection>
+    </resultMap>
+
+    <resultMap type="ShipmentTypeVo" id="ShipmentTypeExt" extends="ShipmentType">
+        <association property="service" resultMap="Service.ServiceMap"></association>
+    </resultMap>
+
+    <resultMap id="simpleShipmentTypeMap" type="ShipmentTypeVo">
+        <id column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="shipment_type_name" property="shipmentTypeName"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="ShipmentType">
+        SELECT * FROM xms_tbl_shipment_type
+    </select>
+
+    <select id="selectByServiceIdRename" parameterType="int" resultMap="ShipmentType">
+        <![CDATA[
+		SELECT
+			st.shipment_type_id,
+			concat(
+				st.shipment_type_id,
+				',',
+				pac.content,
+				',',
+				pac.bound,
+				',',
+				sv.service_id
+			) AS service_code,
+		
+		IF (
+			pac.package_type_name != '',
+			concat(
+				st.shipment_type_name,
+				' - ',
+				pac.package_type_name
+			),
+			st.shipment_type_name
+		) AS shipment_type_name
+		FROM
+			xms_tbl_shipment_type AS st
+		INNER JOIN xms_tbl_service AS sv ON sv.service_id = st.serviceid
+		INNER JOIN (
+			SELECT
+				1 AS doc,
+				0 AS doc_in,
+				0 AS pack,
+				0 AS pack_in,
+				0 AS pak,
+				0 AS pak_in,
+				'Document' AS package_type_name,
+				1 AS package_type,
+				0 AS content,
+				0 AS bound
+			UNION
+				SELECT
+					0 AS doc,
+					1 AS doc_in,
+					0 AS pack,
+					0 AS pack_in,
+					0 AS pak,
+					0 AS pak_in,
+					'Document (Inbound)' AS package_type_name,
+					2 AS package_type,
+					0 AS content,
+					1 AS bound
+				UNION
+					SELECT
+						0 AS doc,
+						0 AS doc_in,
+						1 AS pack,
+						0 AS pack_in,
+						0 AS pak,
+						0 AS pak_in,
+						'Package' AS package_type_name,
+						3 AS package_type,
+						1 AS content,
+						0 AS bound
+					UNION
+						SELECT
+							0 AS doc,
+							0 AS doc_in,
+							0 AS pack,
+							1 AS pack_in,
+							0 AS pak,
+							0 AS pak_in,
+							'Package (Inbound)' AS package_type_name,
+							4 AS package_type,
+							1 AS content,
+							1 AS bound
+						UNION
+							SELECT
+								0 AS doc,
+								0 AS doc_in,
+								0 AS pack,
+								0 AS pack_in,
+								1 AS pak,
+								0 AS pak_in,
+								'Pak' AS package_type_name,
+								5 AS package_type,
+								2 AS content,
+								0 AS bound
+							UNION
+								SELECT
+									0 AS doc,
+									0 AS doc_in,
+									0 AS pack,
+									0 AS pack_in,
+									0 AS pak,
+									1 AS pak_in,
+									'Pak (Inbound)' AS package_type_name,
+									6 AS package_type,
+									2 AS content,
+									1 AS bound
+								UNION
+									SELECT
+										0 AS doc,
+										0 AS doc_in,
+										0 AS pack,
+										0 AS pack_in,
+										0 AS pak,
+										0 AS pak_in,
+										'' AS package_type_name,
+										7 AS package_type,
+										- 1 AS content,
+										0 AS bound
+		) AS pac ON (
+			pac.doc = st.document
+			AND st.document = 1
+		)
+		OR (
+			pac.doc_in = st.document_inbound
+			AND st.document_inbound = 1
+		)
+		OR (
+			pac.pack = st.package
+			AND st.package = 1
+		)
+		OR (
+			pac.pack_in = st.package_inbound
+			AND st.package_inbound = 1
+		)
+		OR (pac.pak = st.pak AND st.pak = 1)
+		OR (
+			pac.pak_in = st.pak_inbound
+			AND st.pak_inbound = 1
+		)
+		OR (
+			st.document = 0
+			AND st.document_inbound = 0
+			AND st.package = 0
+			AND st.package_inbound = 0
+			AND pac.content =- 1
+		)
+		WHERE
+			sv.service_id = #{serviceId}
+		HAVING
+			shipment_type_name != ''
+		ORDER BY
+			shipment_type_name;
+	]]>
+    </select>
+
+    <select id="selectByServiceId" resultMap="ShipmentType" parameterType="ShipmentTypeFilter">
+        SELECT * FROM xms_tbl_shipment_type
+        WHERE (1=1)
+        <if test="serviceId == 0 and listService != null">
+            AND serviceid not in (${listService})
+        </if>
+        <if test="serviceId != 0">
+            AND serviceid = #{serviceId}
+        </if>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectCountByServiceId" resultType="int" parameterType="int">
+        SELECT COUNT(*) FROM xms_tbl_shipment_type
+        WHERE serviceid = #{serviceId}
+    </select>
+
+    <select id="checkDuplicateShipmentType" resultMap="ShipmentType" parameterType="ShipmentTypeFilter">
+        SELECT * FROM xms_tbl_shipment_type
+        WHERE (shipment_type_name = #{shipmentTypeName} OR edi_description = #{ediDescription}) AND serviceid =
+        #{serviceId}
+    </select>
+
+    <select id="selectShowServiceByServiceId" resultMap="ShipmentType" parameterType="int">
+        SELECT * FROM xms_tbl_shipment_type
+        WHERE shipment_type_id IN
+        (SELECT shipment_type_id FROM xms_tbl_account_service
+        WHERE serviceid = #{serviceId})
+        AND show_status = 1
+        ORDER BY service_priority
+    </select>
+
+    <select id="selectShowServiceWebshipByFilter" resultMap="ShipmentType" parameterType="ShipmentTypeFilter">
+        select
+        *
+        from
+        xms_tbl_shipment_type
+        where
+        shipment_type_id in (select
+        shipment_type_id
+        from
+        xms_tbl_account_service
+        where
+        customer_code = #{customerCode}
+        and serviceid = #{serviceId})
+        and show_status = 1
+        order by service_priority
+    </select>
+
+    <select id="selectById" resultMap="ShipmentType" parameterType="int">
+        SELECT * FROM xms_tbl_shipment_type as st
+        left join xms_tbl_service as sv on sv.service_id=st.serviceid
+        where st.shipment_type_id=#{shipmentTypeId}
+    </select>
+
+    <select id="selectByCustomerCode" resultMap="ShipmentType" parameterType="String">
+        select
+        st.shipment_type_id,
+        if(st.start_with_carrier_name=1,concat(s.service_name,' ',st.shipment_type_name),st.shipment_type_name) as
+        shipment_type_name
+        from xms_tbl_shipment_type as st
+        inner join xms_tbl_account_service as acs on acs.shipment_type_id = st.shipment_type_id
+        inner join xms_tbl_service as s on s.service_id = st.serviceid
+        where acs.customer_code = #{customerCode} and st.show_status = 1
+    </select>
+
+    <select id="selectByServiceType" parameterType="int" resultMap="ShipmentTypeExt">
+        SELECT * FROM xms_tbl_shipment_type as st
+        left join xms_tbl_service as sv on sv.service_id=st.serviceid
+        where st.shipment_type_id=#{serviceTypeId};
+    </select>
+
+    <select id="selectByServiceTypeExt" parameterType="int" resultMap="ShipmentTypeExt">
+        SELECT * FROM xms_tbl_shipment_type as st
+        left join xms_tbl_service as sv on sv.service_id=st.serviceid
+        where st.shipment_type_id=#{serviceTypeId};
+    </select>
+
+    <select id="selectByServiceTypeUsingServiceGroup" parameterType="int" resultMap="ShipmentTypeExt">
+        SELECT * FROM xms_tbl_shipment_type as st
+        left join xms_tbl_service as sv on sv.service_id=st.serviceid
+        where st.serviceid=#{serviceId} and st.service_group like '%multiple' limit 1;
+    </select>
+
+    <select id="selectTotalUsedRecord" parameterType="int" resultType="int">
+        SELECT
+        SUM(count) AS total
+        FROM
+        (SELECT
+        COUNT(*) AS count
+        FROM
+        xms_tbl_rate_sheet
+        WHERE
+        shipment_type_id = #{shipmentTypeId} UNION SELECT
+        COUNT(*)
+        FROM
+        xms_tbl_customer_base_rate
+        WHERE
+        shipment_type_id = #{shipmentTypeId} UNION SELECT
+        COUNT(*)
+        FROM
+        xms_tbl_prospects_base_rate
+        WHERE
+        shipment_type_id = #{shipmentTypeId} UNION SELECT
+        COUNT(*)
+        FROM
+        xms_tbl_customer_profile_base_rate
+        WHERE
+        shipment_type_id = #{shipmentTypeId} UNION SELECT
+        COUNT(*)
+        FROM
+        xms_tbl_shipment
+        WHERE
+        shipment_type_id = #{shipmentTypeId}) AS sum
+    </select>
+
+    <select id="getServicesByCarrier" parameterType="int" resultMap="simpleShipmentTypeMap">
+        select shipment_type_id, shipment_type_name from xms_tbl_shipment_type
+        where shipment_type_id != 0 and show_status != 2
+      <!--   <if test="carrierId != null">   -->
+         <if test="_parameter!=null">  
+           and serviceid = #{carrierId}
+        </if>
+    </select>
+
+ 
+
+    <select id="selectByShipmentTypeName" resultMap="ShipmentType" parameterType="string">
+        select * from xms_tbl_shipment_type
+        where shipment_type_name = #{shipmentTypeName}
+    </select>
+
+    <select id="selectByShipmentTypeNameAndCarrier" resultMap="ShipmentType"
+            parameterType="com.gms.xms.txndb.vo.ShipmentTypeFilter">
+        select * from xms_tbl_shipment_type
+        where shipment_type_name = #{shipmentTypeName}
+        and serviceid = #{serviceId}
+        limit 1
+    </select>
+
+    <select id="selectByServiceCodeAndCarrier" resultMap="ShipmentType"
+            parameterType="com.gms.xms.txndb.vo.ShipmentTypeFilter">
+        <bind name="serviceCode" value="'%' + _parameter.getServiceCode() + '%'"/>
+        select * from xms_tbl_shipment_type
+        where service_code like #{serviceCode}
+        and serviceid = #{serviceId}
+        limit 1
+    </select>
+
+    <select id="selectByServiceCodeAndCarrierTollIpec" resultMap="ShipmentType"
+            parameterType="com.gms.xms.txndb.vo.ShipmentTypeFilter">
+        select * from xms_tbl_shipment_type
+        where service_code = #{serviceCode}
+        and serviceid = #{serviceId}
+        limit 1
+    </select>
+
+    <select id="selectByServiceCodeAndCarrierStartrack" resultMap="ShipmentType"
+            parameterType="com.gms.xms.txndb.vo.ShipmentTypeFilter">
+        select * from xms_tbl_shipment_type
+        where service_code = #{serviceCode}
+        and serviceid = #{serviceId}
+    </select>
+
+    <select id="selectByEdiDescription" resultMap="ShipmentType"
+            parameterType="com.gms.xms.txndb.vo.ShipmentTypeFilter">
+        select * from xms_tbl_shipment_type
+        where edi_description like concat('%',#{ediDescription},'%')
+        <if test="serviceId!=null">
+            and serviceid = #{serviceId}
+        </if>
+        limit 1
+    </select>
+
+    <select id="selectByServiceGroupAndServiceId" resultMap="ShipmentType" parameterType="ShipmentTypeFilter">
+        SELECT
+        *
+        FROM
+        xms_tbl_shipment_type
+        WHERE
+        serviceid = #{serviceId} AND service_group = #{serviceGroup}
+    </select>
+
+    <insert id="insertShipmentType" parameterType="ShipmentTypeVo">
+        insert into xms_tbl_shipment_type
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="shipmentTypeId != null">
+                shipment_type_id,
+            </if>
+            <if test="servicePriority != null">
+                service_priority,
+            </if>
+            <if test="shipmentTypeName != null">
+                shipment_type_name,
+            </if>
+            <if test="ediDescription != null">
+                edi_description,
+            </if>
+            <if test="serviceCode != null">
+                service_code,
+            </if>
+            <if test="basicCharge != null">
+                basic_charge,
+            </if>
+            <if test="document != null">
+                document,
+            </if>
+            <if test="documentInbound != null">
+                document_inbound,
+            </if>
+            <if test="package != null">
+                package,
+            </if>
+            <if test="packageInbound != null">
+                package_inbound,
+            </if>
+            <if test="pak != null">
+                pak,
+            </if>
+            <if test="pakInbound != null">
+                pak_inbound,
+            </if>
+            <if test="allowNonCarrier != null">
+                allow_non_carrier,
+            </if>
+            <if test="allowCarrier != null">
+                allow_carrier,
+            </if>
+            <if test="carrierDocumentRate != null">
+                carrier_document_rate,
+            </if>
+            <if test="carrierDocumentInboundRate != null">
+                carrier_document_inbound_rate,
+            </if>
+            <if test="carrierPackageRate != null">
+                carrier_package_rate,
+            </if>
+            <if test="carrierPackagePerWeightRate != null">
+                carrier_package_perweight_rate,
+            </if>
+            <if test="carrierPackageInboundRate != null">
+                carrier_package_inbound_rate,
+            </if>
+            <if test="carrierPackageInboundPerWeightRate != null">
+                carrier_package_inbound_perweight_rate,
+            </if>
+            <if test="carrierPakRate != null">
+                carrier_pak_rate,
+            </if>
+            <if test="carrierPakInboundRate != null">
+                carrier_pak_inbound_rate,
+            </if>
+            <if test="carrierPakPerWeightRate != null">
+                carrier_pak_perweight_rate,
+            </if>
+            <if test="carrierPakInboundPerWeightRate != null">
+                carrier_pak_inbound_perweight_rate,
+            </if>
+            <if test="modifiedDate != null">
+                modified_date,
+            </if>
+            <if test="nonCarrierDocumentRate != null">
+                non_carrier_document_rate,
+            </if>
+            <if test="nonCarrierDocumentInboundRate != null">
+                non_carrier_document_inbound_rate,
+            </if>
+            <if test="nonCarrierPackageRate != null">
+                non_carrier_package_rate,
+            </if>
+            <if test="nonCarrierPackagePerWeightRate != null">
+                non_carrier_package_perweight_rate,
+            </if>
+            <if test="nonCarrierPackageInboundRate != null">
+                non_carrier_package_inbound_rate,
+            </if>
+            <if test="nonCarrierPackageInboundPerWeightRate != null">
+                non_carrier_package_inbound_perweight_rate,
+            </if>
+            <if test="nonCarrierPakRate != null">
+                non_carrier_pak_rate,
+            </if>
+            <if test="nonCarrierPakInboundRate != null">
+                non_carrier_pak_inbound_rate,
+            </if>
+            <if test="nonCarrierPakPerWeightRate != null">
+                non_carrier_pak_perweight_rate,
+            </if>
+            <if test="nonCarrierPakInboundPerWeightRate != null">
+                non_carrier_pak_inbound_perweight_rate,
+            </if>
+            <if test="serviceId != null">
+                serviceid,
+            </if>
+            <if test="noOfRate != null">
+                no_of_rate,
+            </if>
+            <if test="localizationId != null">
+                localizationId,
+            </if>
+            <if test="perWeightStatus != null">
+                perweight_status,
+            </if>
+            <if test="showStatus != null">
+                show_status,
+            </if>
+            <if test="showDomestic != null">
+                show_domestic,
+            </if>
+            <if test="globalProductCodeDoc != null">
+                global_product_code_doc,
+            </if>
+            <if test="globalProductCodeNonDoc != null">
+                global_product_code_non_doc,
+            </if>
+            <if test="localProductCodeDoc != null">
+                local_product_code_doc,
+            </if>
+            <if test="localProductCodeNonDoc != null">
+                local_product_code_non_doc,
+            </if>
+            <if test="docOutboundTax != null">
+                doc_outbound_tax,
+            </if>
+            <if test="nonDocOutboundTax != null">
+                nondoc_outbound_tax,
+            </if>
+            <if test="docInboundTax != null">
+                doc_inbound_tax,
+            </if>
+            <if test="nonDocInboundTax != null">
+                nondoc_inbound_tax,
+            </if>
+            <if test="allowChangeName != null">
+                allow_change_name,
+            </if>
+            <if test="startWithCarrierName != null">
+                start_with_carrier_name,
+            </if>
+            <if test="perKg != null">
+                per_kg,
+            </if>
+            <if test="serviceGroup != null">
+                service_group,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="shipmentTypeId != null">
+                #{shipmentTypeId},
+            </if>
+            <if test="servicePriority != null">
+                #{servicePriority},
+            </if>
+            <if test="shipmentTypeName != null">
+                #{shipmentTypeName},
+            </if>
+            <if test="ediDescription != null">
+                #{ediDescription},
+            </if>
+            <if test="serviceCode != null">
+                #{serviceCode},
+            </if>
+            <if test="basicCharge != null">
+                #{basicCharge},
+            </if>
+            <if test="document != null">
+                #{document},
+            </if>
+            <if test="documentInbound != null">
+                #{documentInbound},
+            </if>
+            <if test="package != null">
+                #{package},
+            </if>
+            <if test="packageInbound != null">
+                #{packageInbound},
+            </if>
+            <if test="pak != null">
+                #{pak},
+            </if>
+            <if test="pakInbound != null">
+                #{pakInbound},
+            </if>
+            <if test="allowNonCarrier != null">
+                #{allowNonCarrier},
+            </if>
+            <if test="allowCarrier != null">
+                #{allowCarrier},
+            </if>
+            <if test="carrierDocumentRate != null">
+                #{carrierDocumentRate},
+            </if>
+            <if test="carrierDocumentInboundRate != null">
+                #{carrierDocumentInboundRate},
+            </if>
+            <if test="carrierPackageRate != null">
+                #{carrierPackageRate},
+            </if>
+            <if test="carrierPackagePerWeightRate != null">
+                #{carrierPackagePerWeightRate},
+            </if>
+            <if test="carrierPackageInboundRate != null">
+                #{carrierPackageInboundRate},
+            </if>
+            <if test="carrierPackageInboundPerWeightRate != null">
+                #{carrierPackageInboundPerWeightRate},
+            </if>
+            <if test="carrierPakRate != null">
+                #{carrierPakRate},
+            </if>
+            <if test="carrierPakInboundRate != null">
+                #{carrierPakInboundRate},
+            </if>
+            <if test="carrierPakPerWeightRate != null">
+                #{carrierPakPerWeightRate},
+            </if>
+            <if test="carrierPakInboundPerWeightRate != null">
+                #{carrierPakInboundPerWeightRate},
+            </if>
+            <if test="modifiedDate != null">
+                #{modifiedDate},
+            </if>
+            <if test="nonCarrierDocumentRate != null">
+                #{nonCarrierDocumentRate},
+            </if>
+            <if test="nonCarrierDocumentInboundRate != null">
+                #{nonCarrierDocumentInboundRate},
+            </if>
+            <if test="nonCarrierPackageRate != null">
+                #{nonCarrierPackageRate},
+            </if>
+            <if test="nonCarrierPackagePerWeightRate != null">
+                #{nonCarrierPackagePerWeightRate},
+            </if>
+            <if test="nonCarrierPackageInboundRate != null">
+                #{nonCarrierPackageInboundRate},
+            </if>
+            <if test="nonCarrierPackageInboundPerWeightRate != null">
+                #{nonCarrierPackageInboundPerWeightRate},
+            </if>
+            <if test="nonCarrierPakRate != null">
+                #{nonCarrierPakRate},
+            </if>
+            <if test="nonCarrierPakInboundRate != null">
+                #{nonCarrierPakInboundRate},
+            </if>
+            <if test="nonCarrierPakPerWeightRate != null">
+                #{nonCarrierPakPerWeightRate},
+            </if>
+            <if test="nonCarrierPakInboundPerWeightRate != null">
+                #{nonCarrierPakInboundPerWeightRate},
+            </if>
+            <if test="serviceId != null">
+                #{serviceId},
+            </if>
+            <if test="noOfRate != null">
+                #{noOfRate},
+            </if>
+            <if test="localizationId != null">
+                #{localizationId},
+            </if>
+            <if test="perWeightStatus != null">
+                #{perWeightStatus},
+            </if>
+            <if test="showStatus != null">
+                #{showStatus},
+            </if>
+            <if test="showDomestic != null">
+                #{showDomestic},
+            </if>
+            <if test="globalProductCodeDoc != null">
+                #{globalProductCodeDoc},
+            </if>
+            <if test="globalProductCodeNonDoc != null">
+                #{globalProductCodeNonDoc},
+            </if>
+            <if test="localProductCodeDoc != null">
+                #{localProductCodeDoc},
+            </if>
+            <if test="localProductCodeNonDoc != null">
+                #{localProductCodeNonDoc},
+            </if>
+            <if test="docOutboundTax != null">
+                #{docOutboundTax},
+            </if>
+            <if test="nonDocOutboundTax != null">
+                #{nonDocOutboundTax},
+            </if>
+            <if test="docInboundTax != null">
+                #{docInboundTax},
+            </if>
+            <if test="nonDocInboundTax != null">
+                #{nonDocInboundTax},
+            </if>
+            <if test="allowChangeName != null">
+                #{allowChangeName},
+            </if>
+            <if test="startWithCarrierName != null">
+                #{startWithCarrierName},
+            </if>
+            <if test="perKg != null">
+                #{perKg},
+            </if>
+            <if test="serviceGroup != null">
+                #{serviceGroup},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateShipmentType" parameterType="ShipmentTypeVo">
+        update xms_tbl_shipment_type
+        <set>
+            <if test="servicePriority != null">
+                service_priority = #{servicePriority},
+            </if>
+            <if test="shipmentTypeName != null">
+                shipment_type_name = #{shipmentTypeName},
+            </if>
+            <if test="ediDescription != null">
+                edi_description = #{ediDescription},
+            </if>
+            <if test="serviceCode != null">
+                service_code = #{serviceCode},
+            </if>
+            <if test="basicCharge != null">
+                basic_charge = #{basicCharge},
+            </if>
+            <if test="document != null">
+                document = #{document},
+            </if>
+            <if test="documentInbound != null">
+                document_inbound = #{documentInbound},
+            </if>
+            <if test="package != null">
+                package = #{package},
+            </if>
+            <if test="packageInbound != null">
+                package_inbound = #{packageInbound},
+            </if>
+            <if test="pak != null">
+                pak = #{pak},
+            </if>
+            <if test="pakInbound != null">
+                pak_inbound = #{pakInbound},
+            </if>
+            <if test="allowNonCarrier != null">
+                allow_non_carrier = #{allowNonCarrier},
+            </if>
+            <if test="allowCarrier != null">
+                allow_carrier = #{allowCarrier},
+            </if>
+            <if test="carrierDocumentRate != null">
+                carrier_document_rate = #{carrierDocumentRate},
+            </if>
+            <if test="carrierDocumentInboundRate != null">
+                carrier_document_inbound_rate =
+                #{carrierDocumentInboundRate},
+            </if>
+            <if test="carrierPackageRate != null">
+                carrier_package_rate = #{carrierPackageRate},
+            </if>
+            <if test="carrierPackagePerWeightRate != null">
+                carrier_package_perweight_rate =
+                #{carrierPackagePerWeightRate},
+            </if>
+            <if test="carrierPackageInboundRate != null">
+                carrier_package_inbound_rate =
+                #{carrierPackageInboundRate},
+            </if>
+            <if test="carrierPackageInboundPerWeightRate != null">
+                carrier_package_inbound_perweight_rate =
+                #{carrierPackageInboundPerWeightRate},
+            </if>
+            <if test="carrierPakRate != null">
+                carrier_pak_rate = #{carrierPakRate},
+            </if>
+            <if test="carrierPakInboundRate != null">
+                carrier_pak_inbound_rate = #{carrierPakInboundRate},
+            </if>
+            <if test="carrierPakPerWeightRate != null">
+                carrier_pak_perweight_rate =
+                #{carrierPakPerWeightRate},
+            </if>
+            <if test="carrierPakInboundPerWeightRate != null">
+                carrier_pak_inbound_perweight_rate =
+                #{carrierPakInboundPerWeightRate},
+            </if>
+            <if test="modifiedDate != null">
+                modified_date = #{modifiedDate},
+            </if>
+            <if test="nonCarrierDocumentRate != null">
+                non_carrier_document_rate =
+                #{nonCarrierDocumentRate},
+            </if>
+            <if test="nonCarrierDocumentInboundRate != null">
+                non_carrier_document_inbound_rate =
+                #{nonCarrierDocumentInboundRate},
+            </if>
+            <if test="nonCarrierPackageRate != null">
+                non_carrier_package_rate = #{nonCarrierPackageRate},
+            </if>
+            <if test="nonCarrierPackagePerWeightRate != null">
+                non_carrier_package_perweight_rate =
+                #{nonCarrierPackagePerWeightRate},
+            </if>
+            <if test="nonCarrierPackageInboundRate != null">
+                non_carrier_package_inbound_rate =
+                #{nonCarrierPackageInboundRate},
+            </if>
+            <if test="nonCarrierPackageInboundPerWeightRate != null">
+                non_carrier_package_inbound_perweight_rate =
+                #{nonCarrierPackageInboundPerWeightRate},
+            </if>
+            <if test="nonCarrierPakRate != null">
+                non_carrier_pak_rate = #{nonCarrierPakRate},
+            </if>
+            <if test="nonCarrierPakInboundRate != null">
+                non_carrier_pak_inbound_rate =
+                #{nonCarrierPakInboundRate},
+            </if>
+            <if test="nonCarrierPakPerWeightRate != null">
+                non_carrier_pak_perweight_rate =
+                #{nonCarrierPakPerWeightRate},
+            </if>
+            <if test="nonCarrierPakInboundPerWeightRate != null">
+                non_carrier_pak_inbound_perweight_rate =
+                #{nonCarrierPakInboundPerWeightRate},
+            </if>
+            <if test="serviceId != null">
+                serviceid = #{serviceId},
+            </if>
+            <if test="noOfRate != null">
+                no_of_rate = #{noOfRate},
+            </if>
+            <if test="localizationId != null">
+                localizationId = #{localizationId},
+            </if>
+            <if test="perWeightStatus != null">
+                perweight_status = #{perWeightStatus},
+            </if>
+            <if test="showStatus != null">
+                show_status = #{showStatus},
+            </if>
+            <if test="showDomestic != null">
+                show_domestic = #{showDomestic},
+            </if>
+            <if test="globalProductCodeDoc != null">
+                global_product_code_doc = #{globalProductCodeDoc},
+            </if>
+            <if test="globalProductCodeNonDoc != null">
+                global_product_code_non_doc =
+                #{globalProductCodeNonDoc},
+            </if>
+            <if test="localProductCodeDoc != null">
+                local_product_code_doc = #{localProductCodeDoc},
+            </if>
+            <if test="localProductCodeNonDoc != null">
+                local_product_code_non_doc =
+                #{localProductCodeNonDoc},
+            </if>
+            <if test="docOutboundTax != null">
+                doc_outbound_tax = #{docOutboundTax},
+            </if>
+            <if test="nonDocOutboundTax != null">
+                nondoc_outbound_tax = #{nonDocOutboundTax},
+            </if>
+            <if test="docInboundTax != null">
+                doc_inbound_tax = #{docInboundTax},
+            </if>
+            <if test="nonDocInboundTax != null">
+                nondoc_inbound_tax = #{nonDocInboundTax},
+            </if>
+            <if test="allowChangeName != null">
+                allow_change_name = #{allowChangeName},
+            </if>
+            <if test="startWithCarrierName != null">
+                start_with_carrier_name = #{startWithCarrierName},
+            </if>
+            <if test="perKg != null">
+                per_kg = #{perKg},
+            </if>
+            <if test="serviceGroup != null">
+                service_group = #{serviceGroup},
+            </if>
+        </set>
+        where shipment_type_id = #{shipmentTypeId}
+    </update>
+
+    <select id="updateShipmentType_SelectForLog" parameterType="ShipmentTypeVo" resultMap="ShipmentType">
+        select * from xms_tbl_shipment_type
+        where shipment_type_id = #{shipmentTypeId}
+    </select>
+
+    <delete id="deleteShipmentType" parameterType="int">
+        DELETE FROM `xms_tbl_shipment_type`
+        WHERE shipment_type_id = #{shipmentTypeId};
+    </delete>
+
+    <select id="deleteShipmentType_SelectForLog" parameterType="int" resultMap="ShipmentType">
+        SELECT * FROM `xms_tbl_shipment_type`
+        WHERE shipment_type_id = #{shipmentTypeId};
+    </select>
+    <select id="getShipmentTypeByCode" parameterType="com.gms.xms.txndb.vo.webship.ShipmentTypeVo"
+            resultMap="ShipmentType">
+        select shipment_type_id, shipment_type_name, service_group, service_code from xms_tbl_shipment_type
+        where service_code like concat('%',#{serviceCode},'%') and serviceid = #{serviceId}
+        limit 1
+    </select>
+</mapper>

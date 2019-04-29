@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerAddressBook">
+    <resultMap id="CustomerAddressBook" type="CustomerAddressBookVo">
+        <id column="addressid" property="addressId"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="webshipid" property="webshipId"/>
+        <result column="contact_name" property="contactName"/>
+        <result column="company_name" property="companyName"/>
+        <result column="address1" property="address1"/>
+        <result column="address2" property="address2"/>
+        <result column="city" property="city"/>
+        <result column="state" property="state"/>
+        <result column="postal_code" property="postalCode"/>
+        <result column="country" property="country"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="department" property="department"/>
+        <result column="fax" property="fax"/>
+        <result column="default_service_type" property="defaultServiceType"/>
+        <result column="default_package_type" property="defaultPackageType"/>
+        <result column="default_billing_type" property="defaultBillingType"/>
+        <result column="account_number" property="accountNumber"/>
+        <result column="isresidential" property="isResidential"/>
+    </resultMap>
+
+    <resultMap id="AddressBookMap" type="AddressBookVo" extends="CustomerAddressBook">
+        <result column="countryname" property="countryName"/>
+    </resultMap>
+
+    <select id="selectAddressBookList" resultMap="AddressBookMap"
+            parameterType="AddressBookFilter">
+        SELECT
+        ab.*, c.countryname
+        FROM
+        xms_tbl_customer_address_book AS ab
+        LEFT
+        JOIN
+        xms_tbl_country AS c ON ab.country = c.countryid
+        WHERE
+        ab.customer_code = #{customerCode}
+        AND ab.webshipid = #{webshipId}
+        ORDER BY ab.addressid
+        <if test="startRecord != null and recordSize != 0">
+            LIMIT #{startRecord}, #{recordSize}
+        </if>
+    </select>
+
+    <select id="selectAddressBookRecordCount" resultType="long"
+            parameterType="AddressBookFilter">
+        SELECT COUNT(*) FROM xms_tbl_customer_address_book
+        WHERE
+        customer_code = #{customerCode}
+        AND webshipid = #{webshipId}
+    </select>
+
+    <select id="selectCustomerAddressBookByFilter" resultMap="AddressBookMap"
+            parameterType="AddressBookFilter">
+        SELECT
+        ab.*, c.countryname
+        FROM
+        xms_tbl_customer_address_book AS ab
+        LEFT
+        JOIN
+        xms_tbl_country AS c ON ab.country = c.countryid
+        WHERE
+        ab.customer_code = #{customerCode}
+        AND ab.webshipid = #{webshipId}
+        <if test="contactName != null">
+            <bind name="contactNameBinded" value="+ '%' + _parameter.getContactName() + '%'"/>
+            AND ab.contact_name like #{contactNameBinded}
+        </if>
+        <if test="companyName != null">
+            <bind name="companyNameBinded" value="_parameter.getCompanyName() + '%'"/>
+            AND ab.company_name like #{companyNameBinded}
+        </if>
+        <if test="address1 != null">
+            <bind name="address1Binded" value="_parameter.getAddress1() + '%'"/>
+            AND ab.address1 like #{address1Binded}
+        </if>
+        <if test="address2 != null">
+            <bind name="address2Binded" value="_parameter.getAddress2() + '%'"/>
+            AND ab.address2 like #{address2Binded}
+        </if>
+        <if test="city != null">
+            <bind name="cityBinded" value="_parameter.getCity() + '%'"/>
+            AND ab.city like #{cityBinded}
+        </if>
+
+        <if test="country != 0 and country != null">
+            AND ab.country = #{country}
+        </if>
+
+        <if test="state != null">
+            <bind name="stateBinded" value="_parameter.getState() + '%'"/>
+            AND ab.state like #{stateBinded}
+        </if>
+        <if test="postalCode != null">
+            <bind name="postalCodeBinded" value="_parameter.getPostalCode() + '%'"/>
+            AND ab.postal_code like #{postalCodeBinded}
+        </if>
+        <if test="phone != null">
+            <bind name="phoneBinded" value=" _parameter.getPhone() + '%'"/>
+            AND ab.phone like #{phoneBinded}
+        </if>
+        <if test="startRecord != null and recordSize != null">
+            LIMIT #{startRecord}, #{recordSize}
+        </if>
+    </select>
+
+    <select id="selectCustomerAddressBookCountByFilter" resultType="long"
+            parameterType="CustomerAddressBookFilter">
+        SELECT COUNT(*) FROM xms_tbl_customer_address_book
+        WHERE customer_code
+        = #{customerCode}
+        AND webshipid = #{webshipId}
+        <if test="contactName != null">
+            <bind name="contactNameBinded" value="_parameter.getContactName() + '%'"/>
+            AND contact_name like #{contactNameBinded}
+        </if>
+        <if test="companyName != null">
+            <bind name="companyNameBinded" value="_parameter.getCompanyName() + '%'"/>
+            AND company_name like #{companyNameBinded}
+        </if>
+        <if test="address1 != null">
+            <bind name="address1Binded" value="_parameter.getAddress1() + '%'"/>
+            AND address1 like #{address1Binded}
+        </if>
+        <if test="address2 != null">
+            <bind name="address2Binded" value="_parameter.getAddress2() + '%'"/>
+            AND address2 like #{address2Binded}
+        </if>
+        <if test="city != null">
+            <bind name="cityBinded" value="_parameter.getCity() + '%'"/>
+            AND city like #{cityBinded}
+        </if>
+
+        <if test="country != 0 and country != null">
+            AND country = #{country}
+        </if>
+
+        <if test="state != null">
+            <bind name="stateBinded" value="_parameter.getState() + '%'"/>
+            AND state like #{stateBinded}
+        </if>
+        <if test="postalCode != null">
+            <bind name="postalCodeBinded" value=" _parameter.getPostalCode() + '%'"/>
+            AND postal_code like #{postalCodeBinded}
+        </if>
+        <if test="phone != null">
+            <bind name="phoneBinded" value="_parameter.getPhone() + '%'"/>
+            AND phone like #{phoneBinded}
+        </if>
+    </select>
+
+    <select id="getCustomerAddressBookById" resultMap="CustomerAddressBook"
+            parameterType="long">
+        SELECT * FROM xms_tbl_customer_address_book
+        WHERE
+        addressid = #{addressId}
+    </select>
+
+    <select id="getCustomerAddressBookByCompanyOrContact" resultMap="CustomerAddressBook"
+            parameterType="CustomerAddressBookFilter">
+        SELECT * FROM xms_tbl_customer_address_book
+        WHERE customer_code =
+        #{customerCode}
+        <if test="companyName!=null">
+            <bind name="companyNameBinded" value="'%' + _parameter.getCompanyName() + '%'"/>
+            AND company_name LIKE #{companyNameBinded}
+        </if>
+        <if test="contactName!=null">
+            <bind name="contactNameBinded" value="'%' + _parameter.getContactName() + '%'"/>
+            AND contact_name LIKE #{contactNameBinded}
+        </if>
+    </select>
+
+    <select id="checkDuplicateCustomerAddress" parameterType="CustomerAddressBookVo" resultType="long">
+        select count(*)
+        from xms_tbl_customer_address_book
+        where 1 = 1
+        <if test="customerCode!=null">
+            and customer_code = #{customerCode}
+        </if>
+        <if test="webshipId!=null">
+            and webshipid = #{webshipId}
+        </if>
+        <if test="contactName!=null">
+            and contact_name like #{contactName}
+        </if>
+        <if test="companyName!=null">
+            and company_name like #{companyName}
+        </if>
+        <if test="address1!=null">
+            and address1 like #{address1}
+        </if>
+        <if test="address2!=null">
+            and address2 like #{address2}
+        </if>
+    </select>
+
+    <insert id="insertCustomerAddressBook" parameterType="CustomerAddressBookVo">
+        INSERT INTO xms_tbl_customer_address_book
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="addressId != null">
+                addressid,
+            </if>
+            <if test="customerCode != null">
+                customer_code,
+            </if>
+            <if test="webshipId != null">
+                webshipid,
+            </if>
+            <if test="contactName != null">
+                contact_name,
+            </if>
+            <if test="companyName != null">
+                company_name,
+            </if>
+            <if test="city != null">
+                city,
+            </if>
+            <if test="state != null">
+                state,
+            </if>
+            <if test="postalCode != null">
+                postal_code,
+            </if>
+            <if test="country != null">
+                country,
+            </if>
+            <if test="phone != null">
+                phone,
+            </if>
+            <if test="email != null">
+                email,
+            </if>
+            <if test="department != null">
+                department,
+            </if>
+            <if test="fax != null">
+                fax,
+            </if>
+            <if test="defaultServiceType != null">
+                default_service_type,
+            </if>
+            <if test="defaultPackageType != null">
+                default_package_type,
+            </if>
+            <if test="defaultBillingType != null">
+                default_billing_type,
+            </if>
+            <if test="accountNumber != null">
+                account_number,
+            </if>
+            <if test="isResidential != null">
+                isresidential,
+            </if>
+            <if test="address1 != null">
+                address1,
+            </if>
+            <if test="address2 != null">
+                address2,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="addressId != null">
+                #{addressId},
+            </if>
+            <if test="customerCode != null">
+                #{customerCode},
+            </if>
+            <if test="webshipId != null">
+                #{webshipId},
+            </if>
+            <if test="contactName != null">
+                #{contactName},
+            </if>
+            <if test="companyName != null">
+                #{companyName},
+            </if>
+            <if test="city != null">
+                #{city},
+            </if>
+            <if test="state != null">
+                #{state},
+            </if>
+            <if test="postalCode != null">
+                #{postalCode},
+            </if>
+            <if test="country != null">
+                #{country},
+            </if>
+            <if test="phone != null">
+                #{phone},
+            </if>
+            <if test="email != null">
+                #{email},
+            </if>
+            <if test="department != null">
+                #{department},
+            </if>
+            <if test="fax != null">
+                #{fax},
+            </if>
+            <if test="defaultServiceType != null">
+                #{defaultServiceType},
+            </if>
+            <if test="defaultPackageType != null">
+                #{defaultPackageType},
+            </if>
+            <if test="defaultBillingType != null">
+                #{defaultBillingType},
+            </if>
+            <if test="accountNumber != null">
+                #{accountNumber},
+            </if>
+            <if test="isResidential != null">
+                #{isResidential},
+            </if>
+            <if test="address1 != null">
+                #{address1},
+            </if>
+            <if test="address2 != null">
+                #{address2},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateCustomerAddressBookById" parameterType="CustomerAddressBookVo">
+        UPDATE
+        xms_tbl_customer_address_book
+        SET
+        contact_name = #{contactName},
+        company_name = #{companyName},
+        address1 = #{address1},
+        address2 =
+        #{address2},
+        city = #{city},
+        state = #{state},
+        postal_code =
+        #{postalCode},
+        country = #{country},
+        phone = #{phone},
+        email = #{email},
+        department = #{department},
+        fax = #{fax},
+        default_service_type =
+        #{defaultServiceType},
+        default_package_type = #{defaultPackageType},
+        default_billing_type = #{defaultBillingType},
+        account_number =
+        #{accountNumber},
+        isresidential = #{isResidential}
+        WHERE addressid =
+        #{addressId}
+    </update>
+
+    <select id="updateCustomerAddressBookById_SelectForLog" parameterType="CustomerAddressBookVo"
+            resultMap="CustomerAddressBook">
+        select
+        * from xms_tbl_customer_address_book
+        WHERE addressid = #{addressId}
+    </select>
+
+    <delete id="deleteCustomerAddressBookById" parameterType="long">
+        DELETE
+        FROM xms_tbl_customer_address_book
+        WHERE addressid = #{addressId}
+    </delete>
+
+    <select id="deleteCustomerAddressBookById_SelectForLog" parameterType="long" resultMap="CustomerAddressBook">
+        select *
+        FROM xms_tbl_customer_address_book
+        WHERE addressid = #{addressId}
+    </select>
+</mapper>

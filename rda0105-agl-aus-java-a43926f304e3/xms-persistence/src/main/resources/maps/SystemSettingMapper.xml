@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="SystemSetting">
+    <resultMap id="SystemSettingResultMap" type="SystemSettingVo">
+        <id column="setting_id" property="settingId"/>
+        <result column="setting_name" property="settingName"/>
+        <result column="user_level" property="userLevel"/>
+        <result column="allow_null" property="allowNull"/>
+        <result column="setting_value" property="settingValue"/>
+        <result column="description" property="description"/>
+        <result column="value_type" property="valueType"/>
+        <result column="input_type" property="inputType"/>
+        <result column="list_value_default" property="listValueDefault"/>
+    </resultMap>
+
+    <select id="getSystemSettingByName" parameterType="String"
+            resultMap="SystemSettingResultMap">
+        SELECT * FROM xms_tbl_system_setting
+        WHERE setting_name = #{name}
+    </select>
+
+    <select id="getSystemSettingById" parameterType="int"
+            resultMap="SystemSettingResultMap">
+        SELECT * FROM xms_tbl_system_setting
+        WHERE setting_id = #{settingId}
+    </select>
+
+    <select id="getAll" resultMap="SystemSettingResultMap">
+        SELECT * FROM xms_tbl_system_setting
+    </select>
+
+    <select id="getAllByFilter" resultMap="SystemSettingResultMap"
+            parameterType="com.gms.xms.filter.admin.AdminSystemSettingFilter">
+        SELECT * FROM xms_tbl_system_setting where user_level != 0
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="getAllCount" resultType="long">
+        SELECT count(*) FROM xms_tbl_system_setting
+    </select>
+
+    <insert id="insert" parameterType="SystemSettingVo" useGeneratedKeys="true" keyProperty="settingId">
+        insert into xms_tbl_system_setting (
+        setting_name,
+        setting_value,
+        description,
+        user_level,
+        allow_null,
+        value_type,
+        list_value_default
+        ) values (
+        #{settingName},
+        #{settingValue},
+        #{description},
+        #{userLevel},
+        #{allowNull},
+        #{valueType},
+        #{listValueDefault}
+        )
+    </insert>
+
+    <update id="update" parameterType="SystemSettingVo">
+        update xms_tbl_system_setting
+        <set>
+            <if test="settingName != null">setting_name = #{settingName},</if>
+            <if test="userLevel != null">user_level = #{userLevel},</if>
+            <if test="allowNull != null">allow_null = #{allowNull},</if>
+            <if test="settingValue != null">setting_value = #{settingValue},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="valueType != null">value_type = #{valueType},</if>
+            <if test="inputType != null">input_type = #{inputType},</if>
+            <if test="listValueDefault != null">list_value_default = #{listValueDefault},</if>
+        </set>
+        WHERE setting_id = #{settingId}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="SystemSettingVo" resultMap="SystemSettingResultMap">
+        select * from xms_tbl_system_setting
+        WHERE setting_id = #{settingId}
+    </select>
+</mapper>

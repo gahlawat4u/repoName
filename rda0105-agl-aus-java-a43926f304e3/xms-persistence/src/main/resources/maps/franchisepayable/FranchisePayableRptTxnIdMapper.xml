@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FranchisePayableRptTxnId">
+
+    <select id="selectCountById" parameterType="FranchisePayableFilter" resultType="int">
+        SELECT COUNT(*) FROM tmp_xms_tbl_fran_pab_rpt_txn_id
+        WHERE rpt_txn_id = #{rptTxnId}
+    </select>
+
+    <insert id="insert" parameterType="FranchisePayableRptTxnIdVo">
+        INSERT INTO tmp_xms_tbl_fran_pab_rpt_txn_id (rpt_txn_id, created_date, description)
+        VALUES (#{rptTxnId}, NOW(), #{description})
+    </insert>
+
+    <delete id="deleteById" parameterType="String">
+        DELETE FROM tmp_xms_tbl_fran_pab_rpt_txn_id
+        WHERE rpt_txn_id = #{rptTxnId}
+    </delete>
+</mapper>

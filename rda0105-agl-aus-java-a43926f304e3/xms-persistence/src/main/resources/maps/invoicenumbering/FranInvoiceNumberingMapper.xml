@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="FranInvoiceNumbering">
+    <resultMap id="FranInvoiceNumberingMap" type="com.gms.xms.dto.FranInvoiceNumberingVo">
+        <result column="month" property="month"/>
+        <result column="year" property="year"/>
+        <result column="franchise_code" property="franchiseCode"/>
+        <result column="start_date" property="startDate"/>
+        <result column="end_date" property="endDate"/>
+        <result column="counter" property="counter"/>
+    </resultMap>
+    <select id="selectByFilter" parameterType="com.gms.xms.dto.FranInvoiceNumberingVo"
+            resultMap="FranInvoiceNumberingMap">
+        select * from xms_tbl_fran_invoice_numbering
+        where `month` = month(#{endDate})
+        and `year` = year(#{endDate})%100
+        and `franchise_code` = #{franchiseCode}
+        and `start_date` = #{startDate}
+        and `end_date` = #{endDate}
+        order by `counter` desc
+        limit 1
+    </select>
+    <select id="getCurrentCounter" parameterType="com.gms.xms.dto.FranInvoiceNumberingVo" resultType="int">
+        select max(counter) from xms_tbl_fran_invoice_numbering
+        where `month` = month(#{endDate})
+        and `year` = year(#{endDate})%100
+    </select>
+    <insert id="insertCounter" parameterType="com.gms.xms.dto.FranInvoiceNumberingVo">
+        insert into xms_tbl_fran_invoice_numbering(year, month, franchise_code, start_date, end_date, counter)
+        values (year(#{endDate})%100, month(#{endDate}), #{franchiseCode}, #{startDate}, #{endDate}, #{counter})
+    </insert>
+</mapper>

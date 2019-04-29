@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="TntTransmission">
+    <resultMap id="TntTransmissionMap" type="com.gms.xms.dto.edigenerate.TntTransmissionVo">
+        <id column="trans_id" property="transId"/>
+        <result column="trans_identifier" property="transIdentifier"/>
+        <result column="manifest_identifier" property="manifestIdentifier"/>
+        <result column="manifest_count" property="manifestCount"/>
+        <result column="upload_file" property="uploadFile"/>
+        <result column="status" property="status"/>
+    </resultMap>
+    <select id="getTntTransmissionByParams" parameterType="com.gms.xms.dto.edigenerate.TntTransmissionParamVo"
+            resultMap="TntTransmissionMap">
+        select
+        if(trans_identifier>=#{transEnd},#{transStart},trans_identifier+1) as trans_identifier,
+        if(manifest_identifier+manifest_count>#{manifestEnd},(manifest_identifier+manifest_count-1-#{manifestEnd}+#{manifestStart}),manifest_identifier+manifest_count)
+        as manifest_identifier,
+        #{manifestCount} as manifest_count,
+        0 as status
+        from
+        (select
+        ifnull(trans_identifier,#{transEnd}) as trans_identifier,
+        ifnull(manifest_identifier,#{manifestEnd}) as manifest_identifier,
+        manifest_count
+        from
+        (select
+        trans_identifier,
+        manifest_identifier,
+        manifest_count
+        from xms_tbl_tnt_transmission
+        order by trans_id desc
+        limit 1
+        ) as maxconn
+        union
+        select #{transEnd}, #{manifestStart}, 0
+        ) as conn
+        limit 1
+    </select>
+    <insert id="insert" parameterType="com.gms.xms.dto.edigenerate.TntTransmissionVo" useGeneratedKeys="true"
+            keyProperty="transId">
+        insert into xms_tbl_tnt_transmission (trans_identifier, manifest_identifier, manifest_count, upload_file,
+        status)
+        values (#{transIdentifier}, #{manifestIdentifier}, #{manifestCount}, #{uploadFile}, #{status})
+    </insert>
+    <update id="updateTntTransmissionUpload" parameterType="com.gms.xms.dto.edigenerate.TntTransmissionVo">
+        update xms_tbl_tnt_transmission
+        set status = 1
+        where upload_file = #{uploadFile}
+    </update>
+    <select id="updateTntTransmissionUpload_SelectForLog" parameterType="com.gms.xms.dto.edigenerate.TntTransmissionVo"
+            resultMap="TntTransmissionMap">
+        select * from xms_tbl_tnt_transmission
+        where upload_file = #{uploadFile}
+    </select>
+</mapper>

@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.gms</groupId>
+    <artifactId>xms</artifactId>
+    <packaging>pom</packaging>
+    <name>xms</name>
+    <version>2.0</version>
+    <description>XMS</description>
+
+    <properties>
+        <jsp-api.version>2.2</jsp-api.version>
+        <servlet-api.version>2.5</servlet-api.version>
+        <junit.version>4.11</junit.version>
+        <mybatis.version>3.2.8</mybatis.version>
+        <mybatis-spring.version>1.2.2</mybatis-spring.version>
+        <mysql-connector.version>5.1.34</mysql-connector.version>
+        <dbcp-commons.version>2.0.1</dbcp-commons.version>
+        <cglib.version>3.1</cglib.version>
+        <spring.version>3.0.5.RELEASE</spring.version>
+        <jdk.version>1.7</jdk.version>
+        <struts2.version>2.3.20</struts2.version>
+        <p6spy.version>2.1.3</p6spy.version>
+        <freemarker.version>2.3.23</freemarker.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <struts2.version>2.3.20</struts2.version>
+        <struts2-json-plugin.version>2.3.20</struts2-json-plugin.version>
+        <sitemesh.version>2.4.2</sitemesh.version>
+
+        <maven.test.skip>true</maven.test.skip>
+    </properties>
+
+    <mailingLists>
+        <mailingList>
+            <name>Maven User List</name>
+            <subscribe>users-subscribe@maven.apache.org</subscribe>
+            <unsubscribe>users-unsubscribe@maven.apache.org</unsubscribe>
+            <post>users@maven.apache.org</post>
+            <archive>http://mail-archives.apache.org/mod_mbox/maven-users</archive>
+            <otherArchives>
+                <otherArchive>http://www.mail-archive.com/users@maven.apache.org/</otherArchive>
+                <otherArchive>http://www.nabble.com/Maven---Users-f178.html</otherArchive>
+            </otherArchives>
+        </mailingList>
+    </mailingLists>
+
+    <licenses>
+        <license>
+            <name>Licensed to GMS-Group</name>
+            <url>http://www.gms-group.com</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>2.7</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                        <nonFilteredFileExtensions>
+                            <nonFilteredFileExtension>xlsx</nonFilteredFileExtension>
+                            <nonFilteredFileExtension>xls</nonFilteredFileExtension>
+                            <nonFilteredFileExtension>ttf</nonFilteredFileExtension>
+                        </nonFilteredFileExtensions>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>2.5</version>
+                    <configuration>
+                        <source>${jdk.version}</source>
+                        <target>${jdk.version}</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>xlsx</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>xls</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>ttf</nonFilteredFileExtension>
+                    </nonFilteredFileExtensions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <source>${jdk.version}</source>
+                    <target>${jdk.version}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <modules>
+        <module>xms-config</module>
+        <module>xms-common</module>
+        <module>xms-dto</module>
+        <module>xms-persistence</module>
+        <module>xms-cache</module>
+        <module>xms-delivery</module>
+        <module>xms-workflow</module>
+        <module>xms-queue</module>
+        <module>xms-weblib</module>
+        <module>xms-admin</module>
+        <module>xms-webship</module>
+        <module>xms-test</module>
+    </modules>
+
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>internal</id>
+            <url>${archiva.internal}</url>
+        </repository>
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <id>snapshots</id>
+            <url>${archiva.snapshots}</url>
+        </repository>
+    </repositories>
+
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <property>
+                    <name>!env</name>
+                </property>
+            </activation>
+            <properties>
+                <archiva.internal>http://52.221.32.36:8080/repository/internal/</archiva.internal>
+                <archiva.snapshots>http://52.221.32.36:8080/repository/snapshots/</archiva.snapshots>
+                <maven.test.skip>true</maven.test.skip>
+                <jdk.version>1.7</jdk.version>
+                <final.jar.name>${project.artifactId}-${project.version}</final.jar.name>
+            </properties>
+            <distributionManagement>
+                <repository>
+                    <id>archiva.internal</id>
+                    <name>Internal Release Repository</name>
+                    <url>${archiva.snapshots}</url>
+                </repository>
+                <snapshotRepository>
+                    <id>archiva.snapshots</id>
+                    <name>Internal Snapshot Repository</name>
+                    <url>${archiva.snapshots}</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+
+        <profile>
+            <id>pro</id>
+            <activation>
+                <property>
+                    <name>env</name>
+                </property>
+            </activation>
+            <properties>
+                <archiva.internal>http://52.221.32.36:8080/repository/internal/</archiva.internal>
+                <archiva.snapshots>http://52.221.32.36:8080/repository/snapshots/</archiva.snapshots>
+                <maven.test.skip>true</maven.test.skip>
+                <jdk.version>1.7</jdk.version>
+                <final.jar.name>${project.artifactId}-${project.version}</final.jar.name>
+            </properties>
+            <distributionManagement>
+                <repository>
+                    <id>archiva.internal</id>
+                    <name>Internal Release Repository</name>
+                    <url>${archiva.internal}</url>
+                </repository>
+                <snapshotRepository>
+                    <id>archiva.snapshots</id>
+                    <name>Internal Snapshot Repository</name>
+                    <url>${archiva.internal}</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+    </profiles>
+</project>
+

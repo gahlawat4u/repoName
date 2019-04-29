@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="TntConnote">
+    <resultMap id="TntConnoteMap" type="TntConnoteVo">
+        <id column="connote_id" property="connoteId"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="conn_number" property="connNumber"/>
+        <result column="trans_id" property="transId"/>
+        <result column="manifest_identifier" property="manifestIdentifier"/>
+        <result column="wmanifest_id" property="wmanifestId"/>
+        <result column="wmanifest_createdate" property="wmanifestCreatedate"/>
+    </resultMap>
+
+    <resultMap id="TntDomConnoteInfoMap" type="TntConnoteShipmentInfoVo">
+        <id column="connote_id" property="connoteId"/>
+        <result column="shipmentid" property="shipmentid"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+    </resultMap>
+
+    <resultMap id="TntDomConnoteShipmentInfo" type="TntDomConnoteShipmentInfoVo">
+        <id column="shipmentid" property="shipmentId"/>
+        <result column="wmanifest_id" property="wmanifestId"/>
+        <result column="manifest_time" property="manifestTime"/>
+        <result column="manifest_date" property="manifestDate"/>
+    </resultMap>
+
+    <select id="selectTntConnoteInDay" parameterType="long" resultMap="TntDomConnoteShipmentInfo">
+        SELECT c.* , DATE_FORMAT( wmanifest_createdate, '%H:%i') manifest_time, DATE_FORMAT( wmanifest_createdate, '%d-%m-%Y') manifest_date
+        FROM xms_tbl_tnt_connote c inner join xms_tbl_shipment as s on c.shipmentid=s.shipmentid where s.status=0
+        <![CDATA[
+        and c.wmanifest_id <> 0
+        ]]>
+        and c.wmanifest_id
+        in (SELECT  wmanifest_id FROM xms_tbl_tnt_connote where shipmentid=#{shipmentid} )
+        and date(s.create_date) in ( select date(create_date) from  xms_tbl_shipment where  shipmentid=#{shipmentid} )
+    </select>
+
+    <select id="selectConnumberByShipmentId" resultType="String"
+            parameterType="com.gms.xms.filter.webship.TntConnoteFilter">
+        select
+        concat(#{connPrefix},lpad(conn_number, length(#{connEnd}), '0'))
+        from xms_tbl_tnt_connote
+        where shipmentid = #{shipmentId};
+    </select>
+
+    <select id="selectTntDomConnoteInfo" resultMap="TntDomConnoteInfoMap"
+            parameterType="long">
+        SELECT sm.shipmentid, a.connote_id, sm.shipment_type_id from xms_tbl_tnt_connote as a
+        left join xms_tbl_schedule_collection as sc on sc.shipmentid=a.shipmentid
+        inner join xms_tbl_shipment as sm on a.shipmentid=sm.shipmentid
+        inner join xms_tbl_shipment_type as st on sm.shipment_type_id=st.shipment_type_id
+		where st.serviceid=3 and a.wmanifest_id =0 and sm.customer_code = #{customerCode}
+		and not sm.shipmentid in ( SELECT shipmentid FROM xms_tbl_batch_processing_detail);
+    </select>
+
+    <select id="countTntDomConnoteInfo" resultType="long"
+            parameterType="long">
+        SELECT count(sm.shipmentid) from xms_tbl_tnt_connote as a
+        left join xms_tbl_schedule_collection as sc on sc.shipmentid=a.shipmentid
+        inner join xms_tbl_shipment as sm on a.shipmentid=sm.shipmentid
+        inner join xms_tbl_shipment_type as st on sm.shipment_type_id=st.shipment_type_id
+        where st.serviceid=3 and a.wmanifest_id =0 and sm.customer_code = #{customerCode}
+        and not sm.shipmentid in ( SELECT shipmentid FROM xms_tbl_batch_processing_detail);
+    </select>
+
+    <insert id="insertTntConnote" parameterType="com.gms.xms.filter.webship.TntConnoteFilter">
+        insert into xms_tbl_tnt_connote (shipmentid,conn_number, trans_id)
+        select
+        #{shipmentId} as shipmentid,
+        if(conn_number>=#{connEnd},#{connStart},conn_number + 1) as conn_number,
+        0 as trans_id
+        from
+        (select max(conn_number) as conn_number
+        from xms_tbl_tnt_connote
+        union
+        select #{connEnd}
+        ) as conn
+        limit 1
+    </insert>
+
+    <delete id="deleteByShipmentId" parameterType="long">
+        delete from xms_tbl_tnt_connote
+        where shipmentid = #{shipmentId}
+    </delete>
+
+    <select id="deleteByShipmentId_SelectForLog" parameterType="long" resultMap="TntConnoteMap">
+        select * from xms_tbl_tnt_connote
+        where shipmentid = #{shipmentId}
+    </select>
+    <update id="updateTntTransmissionConnote" parameterType="TntConnoteVo">
+        update xms_tbl_tnt_connote
+        set trans_id = #{transId},
+        manifest_identifier = #{manifestIdentifier}
+        where shipmentid = #{shipmentId}
+    </update>
+
+    <update id="updateTntWManifestInfoConnote" parameterType="com.gms.xms.filter.webship.TntConnoteShipmentInfoFilter">
+        update  xms_tbl_tnt_connote set wmanifest_id = #{connoteId} , wmanifest_createdate= NOW()  where shipmentid in
+        (SELECT shipmentid FROM xms_tbl_shipment s where 1=1 and s.shipment_type_id=#{shipmentTypeId}
+        and s.shipmentid in (${shipmentIds}))
+    </update>
+
+    <select id="updateTntTransmissionConnote_SelectForLog" parameterType="TntConnoteVo" resultMap="TntConnoteMap">
+        select * from xms_tbl_tnt_connote
+        where shipmentid = #{shipmentId}
+    </select>
+</mapper>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="FranchiseServiceMarkup">
+    <resultMap id="FranchiseServiceMarkupMap" type="FranchiseServiceMarkupVo">
+        <result column="markup_id" property="markupId"/>
+        <result column="franchise_code" property="franchiseCode"/>
+        <result column="service_id" property="serviceId"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="markup_rate" property="markupRate"/>
+    </resultMap>
+    <select id="selectServiceMarkupByFranchiseCode" parameterType="long" resultMap="FranchiseServiceMarkupMap">
+        SELECT
+        *
+        FROM
+        xms_tbl_franchise_service_markup
+        WHERE
+        franchise_code = #{franchiseCode}
+    </select>
+    <select id="selectServiceMarkupByVo" parameterType="FranchiseServiceMarkupVo" resultMap="FranchiseServiceMarkupMap">
+        SELECT
+        *
+        FROM
+        xms_tbl_franchise_service_markup
+        WHERE
+        franchise_code = #{franchiseCode}
+        AND service_id = #{serviceId}
+        AND shipment_type_id = #{shipmentTypeId}
+        limit 1
+    </select>
+    <insert id="insertServiceMarkup" parameterType="FranchiseServiceMarkupVo">
+        INSERT INTO `xms_tbl_franchise_service_markup`
+        (`franchise_code`,
+        `service_id`,
+        `shipment_type_id`,
+        `markup_rate`)
+        VALUES
+        (#{franchiseCode},
+        #{serviceId},
+        #{shipmentTypeId},
+        #{markupRate});
+    </insert>
+    <update id="updateServiceMarkup" parameterType="FranchiseServiceMarkupVo">
+        UPDATE `xms_tbl_franchise_service_markup`
+        SET
+        `markup_rate` = #{markupRate}
+        WHERE `franchise_code` = #{franchiseCode}
+        AND `service_id` = #{serviceId}
+        AND `shipment_type_id` = #{shipmentTypeId}
+    </update>
+    <select id="updateServiceMarkup_SelectForLog" parameterType="FranchiseServiceMarkupVo"
+            resultMap="FranchiseServiceMarkupMap">
+        select * from `xms_tbl_franchise_service_markup`
+        WHERE `franchise_code` = #{franchiseCode}
+        AND `service_id` = #{serviceId}
+        AND `shipment_type_id` = #{shipmentTypeId}
+    </select>
+</mapper>

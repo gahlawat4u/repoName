@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerCollection">
+    <resultMap id="CustomerCollectionMap" type="CustomerCollectionVo">
+        <id column="userid" property="userId"/>
+        <result column="usertype" property="userType"/>
+        <result column="freight_credit_limit" property="freightCreditLimit"/>
+        <result column="reminder" property="reminder"/>
+        <result column="reminder_email" property="reminderEmail"/>
+        <result column="reminder_print" property="reminderPrint"/>
+        <result column="reminder_use_email_invoice" property="reminderUseEmailInvoice"/>
+        <result column="reminder_email_address" property="reminderEmailAddress"/>
+        <result column="cim_customer_profileid" property="cimCustomerProfileId"/>
+        <result column="cim_customer_payment_profileid" property="cimCustomerPaymentProfileId"/>
+        <result column="cim_customer_shippingaddressid" property="cimCustomerShippingAddressId"/>
+    </resultMap>
+
+    <select id="selectByCustCode" parameterType="String" resultMap="CustomerCollectionMap">
+        select cc.* from xms_tbl_customer_collection as cc
+        inner join xms_tbl_customer as c on c.id = cc.userid
+        where c.customer_code = #{customerCode} and cc.usertype = 1
+        limit 1
+    </select>
+
+    <select id="selectByFranCode" parameterType="String" resultMap="CustomerCollectionMap">
+        select cc.* from xms_tbl_customer_collection as cc
+        inner join xms_tbl_franchise as f on f.id = cc.userid
+        where f.franchise_code = #{franchiseCode} and cc.usertype = 2
+        limit 1
+    </select>
+
+    <select id="selectByProfileId" parameterType="String" resultMap="CustomerCollectionMap">
+        select cc.* from xms_tbl_customer_collection as cc
+        inner join xms_tbl_customer_profile as cp on cp.profileid = cc.userid
+        where cp.profileid = #{profileId} and cc.usertype = 3
+        limit 1
+    </select>
+
+    <insert id="insert" parameterType="CustomerCollectionVo">
+        insert into xms_tbl_customer_collection (
+        userid,
+        usertype,
+        freight_credit_limit,
+        reminder,
+        reminder_email,
+        reminder_print,
+        reminder_use_email_invoice,
+        reminder_email_address,
+        cim_customer_profileid,
+        cim_customer_payment_profileid ,
+        cim_customer_shippingaddressid
+        ) values (
+        #{userId},
+        #{userType},
+        #{freightCreditLimit},
+        #{reminder},
+        #{reminderEmail},
+        #{reminderPrint},
+        #{reminderUseEmailInvoice},
+        #{reminderEmailAddress},
+        #{cimCustomerProfileId},
+        #{cimCustomerPaymentProfileId},
+        #{cimCustomerShippingAddressId}
+        )
+    </insert>
+
+    <update id="update" parameterType="CustomerCollectionVo">
+        update xms_tbl_customer_collection
+        <set>
+            <if test="userType!=null">
+                usertype = #{userType},
+            </if>
+            <if test="freightCreditLimit!=null">
+                freight_credit_limit = #{freightCreditLimit},
+            </if>
+            <if test="reminder!=null">
+                reminder = #{reminder},
+            </if>
+            <if test="reminderEmail!=null">
+                reminder_email = #{reminderEmail},
+            </if>
+            <if test="reminderPrint!=null">
+                reminder_print = #{reminderPrint},
+            </if>
+            <if test="reminderUseEmailInvoice!=null">
+                reminder_use_email_invoice = #{reminderUseEmailInvoice},
+            </if>
+            <if test="reminderEmailAddress!=null">
+                reminder_email_address = #{reminderEmailAddress},
+            </if>
+            <if test="cimCustomerProfileId!=null">
+                cim_customer_profileid = #{cimCustomerProfileId},
+            </if>
+            <if test="cimCustomerPaymentProfileId!=null">
+                cim_customer_payment_profileid = #{cimCustomerPaymentProfileId},
+            </if>
+            <if test="cimCustomerShippingAddressId!=null">
+                cim_customer_shippingaddressid = #{cimCustomerShippingAddressId},
+            </if>
+        </set>
+        where userid = #{userId}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="CustomerCollectionVo" resultMap="CustomerCollectionMap">
+        select * from xms_tbl_customer_collection
+        where userid = #{userId}
+    </select>
+
+    <select id="selectCollectionByUser" parameterType="CustomerCollectionVo" resultMap="CustomerCollectionMap">
+        SELECT * FROM xms_tbl_customer_collection WHERE userid=#{userId} limit 1;
+    </select>
+</mapper>

@@ -1,0 +1,10 @@
+INSERT INTO `xms_tbl_shipment_type_package` (`shipment_type_id`, `packageid`, `default_content_type`, `allow_dox_addpiece`, `allow_wpx_addpiece`, `allow_dox`, `allow_wpx`, `allow_custom_value`) VALUES ('0', '3', 'WPX', '0', '1', '0', '1', '1');
+
+-- ========== V2 startrack packages - 30/06/2016 =================
+INSERT INTO `xms_tbl_shipment_type_package` (`shipment_type_id`, `packageid`, `default_content_type`, `allow_dox_addpiece`, `allow_wpx_addpiece`, `allow_dox`, `allow_wpx`, `allow_custom_value`) VALUES ('228', '3', 'WPX', '0', '1', '0', '1', '1');
+INSERT INTO `xms_tbl_shipment_type_package` (`shipment_type_id`, `packageid`, `default_content_type`, `allow_dox_addpiece`, `allow_wpx_addpiece`, `allow_dox`, `allow_wpx`, `allow_custom_value`) VALUES ('229', '3', 'WPX', '0', '1', '0', '1', '1');
+INSERT INTO `xms_tbl_shipment_type_package` (`shipment_type_id`, `packageid`, `default_content_type`, `allow_dox_addpiece`, `allow_wpx_addpiece`, `allow_dox`, `allow_wpx`, `allow_custom_value`) VALUES ('230', '3', 'WPX', '0', '1', '0', '1', '1');
+INSERT INTO `xms_tbl_shipment_type_package` (`shipment_type_id`, `packageid`, `default_content_type`, `allow_dox_addpiece`, `allow_wpx_addpiece`, `allow_dox`, `allow_wpx`, `allow_custom_value`) VALUES ('231', '3', 'WPX', '0', '1', '0', '1', '1');
+INSERT INTO `xms_tbl_shipment_type_package` (`shipment_type_id`, `packageid`, `default_content_type`, `allow_dox_addpiece`, `allow_wpx_addpiece`, `allow_dox`, `allow_wpx`, `allow_custom_value`) VALUES ('232', '3', 'WPX', '0', '1', '0', '1', '1');
+INSERT INTO `xms_tbl_shipment_type_package` (`shipment_type_id`, `packageid`, `default_content_type`, `allow_dox_addpiece`, `allow_wpx_addpiece`, `allow_dox`, `allow_wpx`, `allow_custom_value`) VALUES ('234', '3', 'WPX', '0', '1', '0', '1', '1');
+INSERT INTO `xms_tbl_shipment_type_package` (`shipment_type_id`, `packageid`, `default_content_type`, `allow_dox_addpiece`, `allow_wpx_addpiece`, `allow_dox`, `allow_wpx`, `allow_custom_value`) VALUES ('235', '3', 'WPX', '0', '1', '0', '1', '1');

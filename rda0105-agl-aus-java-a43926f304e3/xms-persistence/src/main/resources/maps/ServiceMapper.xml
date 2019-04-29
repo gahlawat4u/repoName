@@ -1,0 +1,600 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Service">
+    <resultMap id="ServiceMap" type="ServiceVo">
+        <id column="service_id" property="serviceId"/>
+        <result column="service_name" property="serviceName"/>
+        <result column="ftp_server" property="ftpServer"/>
+        <result column="ftp_user_name" property="ftpUserName"/>
+        <result column="ftp_user_password" property="ftpUserPassword"/>
+        <result column="server_folder" property="serverFolder"/>
+        <result column="file_name_prefix" property="fileNamePrefix"/>
+        <result column="file_country_code" property="fileCountryCode"/>
+        <result column="inactive" property="inactive"/>
+        <result column="allow_change_name" property="allowChangeName"/>
+        <result column="carrier_type" property="carrierType"/>
+        <result column="integrated" property="integrated"/>
+        <result column="non_centralized" property="nonCentralized"/>
+        <result column="show_order" property="showorder"/>
+    </resultMap>
+
+    <resultMap id="ServiceWithShipmentTypeMap" type="ServiceVo" extends="ServiceMap">
+        <collection column="shipment_type_id" property="shipmentTypes" ofType="ShipmentTypeVo" javaType="ArrayList">
+            <id column="shipment_type_id" property="shipmentTypeId"/>
+            <result column="shipment_type_name" property="shipmentTypeName"/>
+            <result column="smt_service_id" property="serviceId"/>
+            <collection property="accountServices" ofType="AccountServiceVo" javaType="ArrayList">
+                <result column="customer_code" property="customerCode"/>
+                <result column="usertype" property="userType"/>
+                <result column="ac_service_id" property="serviceId"/>
+                <result column="ac_smt_id" property="shipmentTypeId"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <resultMap id="ServiceWithBaseRatesMap" type="ServiceVo">
+        <id column="service_id" property="serviceId"/>
+        <result column="service_name" property="serviceName"/>
+        <collection property="shipmentTypes" ofType="ShipmentTypeVo" javaType="ArrayList">
+            <id column="shipment_type_id" property="shipmentTypeId"/>
+            <result column="shipment_type_name" property="shipmentTypeName"/>
+            <result column="allow_carrier" property="allowCarrier"/>
+            <result column="allow_non_carrier" property="allowNonCarrier"/>
+            <result column="carrier_document_rate" property="carrierDocumentRate"/>
+            <result column="non_carrier_document_rate" property="nonCarrierDocumentRate"/>
+            <result column="carrier_document_inbound_rate" property="carrierDocumentInboundRate"/>
+            <result column="non_carrier_document_inbound_rate" property="nonCarrierDocumentInboundRate"/>
+            <result column="carrier_package_rate" property="carrierPackageRate"/>
+            <result column="non_carrier_package_rate" property="nonCarrierPackageRate"/>
+            <result column="carrier_package_perweight_rate" property="carrierPackagePerWeightRate"/>
+            <result column="non_carrier_package_perweight_rate" property="nonCarrierPackagePerWeightRate"/>
+            <result column="carrier_package_inbound_rate" property="carrierPackageInboundRate"/>
+            <result column="non_carrier_package_inbound_rate" property="nonCarrierPackageInboundRate"/>
+            <result column="carrier_package_inbound_perweight_rate" property="carrierPackageInboundPerWeightRate"/>
+            <result column="non_carrier_package_inbound_perweight_rate"
+                    property="nonCarrierPackageInboundPerWeightRate"/>
+            <result column="carrier_pak_rate" property="carrierPakRate"/>
+            <result column="non_carrier_pak_rate" property="nonCarrierPakRate"/>
+            <result column="carrier_pak_inbound_rate" property="carrierPakInboundRate"/>
+            <result column="non_carrier_pak_inbound_rate" property="nonCarrierPakInboundRate"/>
+            <result column="carrier_pak_perweight_rate" property="carrierPakPerWeightRate"/>
+            <result column="non_carrier_pak_perweight_rate" property="nonCarrierPakPerWeightRate"/>
+            <result column="carrier_pak_inbound_perweight_rate" property="carrierPakInboundPerWeightRate"/>
+            <result column="non_carrier_pak_inbound_perweight_rate" property="nonCarrierPakInboundPerWeightRate"/>
+            <collection property="packageTypes" ofType="PackageTypeVo" javaType="ArrayList">
+                <id column="package_type" property="packageType"/>
+                <result column="package_type_name" property="packageTypeName"/>
+                <result column="content" property="content"/>
+                <result column="bound" property="bound"/>
+                <collection property="baseRates" ofType="CustomerBaseRateVo" javaType="ArrayList">
+                    <id column="customer_base_rate_id" property="customerBaseRateId"/>
+                    <result column="customer_code" property="customerCode"/>
+                    <result column="rate_type" property="rateType"/>
+                    <result column="weight" property="weight"/>
+                    <result column="rate" property="rate"/>
+                    <result column="zone_check" property="zoneCheck"/>
+                    <collection property="customerBaseRateDetails" ofType="CustomerBaseRateDetailVo"
+                                javaType="ArrayList">
+                        <result column="zone" property="zone"/>
+                        <result column="zone_rate" property="rate"/>
+                    </collection>
+                </collection>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <resultMap id="ServiceWithShipmentTypesMap" type="ServiceVo">
+        <id column="service_id" property="serviceId"/>
+        <result column="service_name" property="serviceName"/>
+        <collection property="shipmentTypes" ofType="ShipmentTypeVo" javaType="ArrayList">
+            <id column="shipment_type_id" property="shipmentTypeId"/>
+            <result column="shipment_type_name" property="shipmentTypeName"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectAllServiceOther" resultMap="ServiceMap" parameterType="ServiceFilter">
+        SELECT * from xms_tbl_service where 1=1
+        <if test="listServices != null">
+            and service_id not in (${listServices})
+        </if>
+        and inactive = 0;
+    </select>
+
+    <select id="selectAllByShipmentId" resultMap="ServiceMap" parameterType="long">
+        SELECT sv.* from xms_tbl_shipment as sm
+        INNER JOIN xms_tbl_shipment_type as sm_t ON sm.shipment_type_id = sm_t.shipment_type_id
+        INNER JOIN xms_tbl_service AS sv ON sv.service_id=sm_t.serviceid
+        where sm.shipmentid=#{shipmentId}
+    </select>
+
+    <select id="selectAllService" resultMap="ServiceMap" parameterType="ServiceFilter">
+        select * from xms_tbl_service
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectAllServiceCount" resultType="int">
+        select count(*) from xms_tbl_service
+        order by service_name
+    </select>
+
+    <select id="selectAll" resultMap="ServiceMap">
+        select * from xms_tbl_service
+        where inactive = 0
+        order by service_id
+    </select>
+
+    <select id="selectBySupply" resultMap="ServiceMap">
+        select distinct sv.* from xms_tbl_supply as sp
+        inner join xms_tbl_service as sv on sp.carrierid = sv.service_id
+    </select>
+
+    <select id="getServiceListByWebshipId" resultMap="ServiceMap" parameterType="hashmap">
+        SELECT s.* FROM xms_tbl_service AS s
+        INNER JOIN xms_tbl_webship_service AS ws ON ws.serviceid = s.service_id
+        INNER JOIN xms_tbl_webship AS w ON w.webshipid = ws.webshipid
+        WHERE w.webshipid = #{webshipId}
+        <if test="carrierType==0 or carrierType==1">
+            and s.carrier_type = #{carrierType}
+        </if>
+        ORDER BY s.service_id
+    </select>
+
+    <select id="getServiceListByFilter" resultMap="ServiceMap" parameterType="ServiceFilter">
+        SELECT * FROM xms_tbl_service
+        WHERE service_id IN
+        (SELECT serviceid FROM xms_tbl_account_service
+        WHERE customer_code = #{customerCode})
+        <if test="carrierType==0 or carrierType==1">
+            AND carrier_type = #{carrierType}
+        </if>
+       ORDER BY show_order ASC
+    </select>
+
+    <select id="selectById" resultMap="ServiceMap" parameterType="int">
+        select * from xms_tbl_service
+        where service_id = #{serviceId}
+    </select>
+
+    <select id="selectByName" resultMap="ServiceMap" parameterType="string">
+        select * from xms_tbl_service
+        where service_name = #{serviceName}
+    </select>
+
+    <select id="getActiveServices" resultMap="ServiceMap" parameterType="string">
+        select * from xms_tbl_service
+        where service_id in (${activeCarrierList}) and inactive = 0
+        order by service_name
+    </select>
+
+    <select id="getActiveServicesRe" resultMap="ServiceMap"
+            parameterType="com.gms.xms.filter.admin.customerprofile.CustomerProfileFilter">
+        select * from xms_tbl_service
+        where service_id in (${listServices}) and inactive = 0
+        order by service_name
+    </select>
+
+    <select id="getNonCentralizedServices" resultMap="ServiceMap" parameterType="string">
+        select * from xms_tbl_service
+        where service_id not in (${activeCarrierList}) and inactive = 0
+        order by service_name
+    </select>
+
+    <select id="getWebshipActiveServicesByCustCode" parameterType="String" resultMap="ServiceWithShipmentTypeMap">
+        select
+        sv.service_id,
+        sv.service_name,
+        st.shipment_type_id,
+        st.shipment_type_name,
+        st.serviceid as smt_service_id,
+        ac.customer_code,
+        ac.usertype,
+        ac.serviceid as ac_service_id,
+        ac.shipment_type_id as ac_smt_id
+        from xms_tbl_service as sv
+        left join xms_tbl_shipment_type as st on st.serviceid = sv.service_id and st.show_status=1
+        left join xms_tbl_account_service as ac on ac.serviceid = st.serviceid and ac.shipment_type_id =
+        st.shipment_type_id and ac.customer_code = #{customerCode}
+        where sv.inactive = 0
+        and sv.service_id in
+        (select distinct serviceid from xms_tbl_shipment_type
+        where show_status = 1)
+        order by sv.service_id, st.service_priority
+    </select>
+
+    <select id="getActiveServicesWithBaseRates"
+            parameterType="com.gms.xms.filter.account.customers.manage.ServiceBaseRateFilter"
+            resultMap="ServiceWithBaseRatesMap">
+        select
+        pack.service_id,
+        pack.service_name,
+        pack.shipment_type_id,
+        pack.shipment_type_name,
+        pack.allow_carrier,
+        pack.allow_non_carrier,
+        pack.carrier_document_rate,
+        pack.non_carrier_document_rate,
+        pack.carrier_document_inbound_rate,
+        pack.non_carrier_document_inbound_rate,
+        pack.carrier_package_rate,
+        pack.non_carrier_package_rate,
+        pack.carrier_package_inbound_rate,
+        pack.non_carrier_package_inbound_rate,
+        pack.carrier_package_perweight_rate,
+        pack.non_carrier_package_perweight_rate,
+        pack.carrier_package_inbound_perweight_rate,
+        pack.non_carrier_package_inbound_perweight_rate,
+        pack.carrier_pak_rate,
+        pack.non_carrier_pak_rate,
+        pack.carrier_pak_inbound_rate,
+        pack.non_carrier_pak_inbound_rate,
+        pack.carrier_pak_perweight_rate,
+        pack.non_carrier_pak_perweight_rate,
+        pack.carrier_pak_inbound_perweight_rate,
+        pack.non_carrier_pak_inbound_perweight_rate,
+        pack.package_type,
+        pack.package_type_name,
+        pack.content as package_content,
+        pack.bound as package_bound,
+        ifnull(cbr.customer_code,#{customerCode}) as customer_code,
+        ifnull(cbr.rate_type,1) as rate_type,
+        ifnull(cbr.weight,0.00) as weight,
+        ifnull(cbr.rate,0.00) as rate,
+        ifnull(cbr.zone_check,0) as zone_check,
+        cbd.zone,
+        cbd.rate as zone_rate
+        from
+        (select
+        sv.service_id as service_id,
+        sv.service_name,
+        st.shipment_type_id,
+        st.shipment_type_name,
+        st.allow_carrier,
+        st.allow_non_carrier,
+        st.carrier_document_rate,
+        st.non_carrier_document_rate,
+        st.carrier_document_inbound_rate,
+        st.non_carrier_document_inbound_rate,
+        st.carrier_package_rate,
+        st.non_carrier_package_rate,
+        st.carrier_package_inbound_rate,
+        st.non_carrier_package_inbound_rate,
+        st.carrier_package_perweight_rate,
+        st.non_carrier_package_perweight_rate,
+        st.carrier_package_inbound_perweight_rate,
+        st.non_carrier_package_inbound_perweight_rate,
+        st.carrier_pak_rate,
+        st.non_carrier_pak_rate,
+        st.carrier_pak_inbound_rate,
+        st.non_carrier_pak_inbound_rate,
+        st.carrier_pak_perweight_rate,
+        st.non_carrier_pak_perweight_rate,
+        st.carrier_pak_inbound_perweight_rate,
+        st.non_carrier_pak_inbound_perweight_rate,
+        ifnull(pac.package_type,0) as package_type,
+        ifnull(pac.package_type_name,st.shipment_type_name) as package_type_name,
+        ifnull(pac.content,0) as content,
+        ifnull(pac.bound,0) as bound
+        from xms_tbl_service as sv
+        inner join xms_tbl_shipment_type as st on st.serviceid = sv.service_id
+        and sv.service_id in (${activeCarrierList})
+        and st.show_status = 1
+        and sv.inactive = 0
+        left join
+        (select 1 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Document' AS package_type_name,
+        1 AS package_type, 0 AS content, 0 AS bound
+        union
+        select 0 AS doc, 1 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Document (Inbound)' AS
+        package_type_name, 2 AS package_type, 0 AS content, 1 AS bound
+        union
+        select 0 AS doc, 0 AS doc_in, 1 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Package' AS package_type_name, 3
+        AS package_type, 1 AS content, 0 AS bound
+        union
+        select 0 AS doc, 0 AS doc_in, 0 AS pack, 1 AS pack_in, 0 AS pak, 0 AS pak_in, 'Package (Inbound)' AS
+        package_type_name, 4 AS package_type, 1 AS content, 1 AS bound
+        union
+        select 0 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 1 AS pak, 0 AS pak_in, 'Pak' AS package_type_name, 5 AS
+        package_type, 2 AS content, 0 AS bound
+        union
+        select 0 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 1 AS pak_in, 'Pak (Inbound)' AS
+        package_type_name, 6 AS package_type, 2 AS content, 1 AS bound
+        ) as pac on (pac.doc = st.document and st.document = 1)
+        or (pac.doc_in = st.document_inbound and st.document_inbound = 1)
+        or (pac.pack = st.package and st.package = 1)
+        or (pac.pack_in = st.package_inbound and st.package_inbound = 1)
+        or (pac.pak = st.pak and st.pak = 1)
+        or (pac.pak_in = st.pak_inbound and st.pak_inbound = 1)
+        order by sv.service_id, st.shipment_type_id, package_type) as pack
+        left join xms_tbl_customer_base_rate as cbr on pack.shipment_type_id = cbr.shipment_type_id
+        and pack.content = cbr.content
+        and pack.bound = cbr.bound
+        and cbr.customer_code = #{customerCode}
+        left join xms_tbl_customer_base_rate_detail as cbd on cbd.customer_base_rate_id = cbr.customer_base_rate_id
+        and cbr.zone_check = 1
+        order by pack.service_name, pack.package_type
+    </select>
+
+    <select id="getNonActiveServicesWithBaseRates"
+            parameterType="com.gms.xms.filter.account.customers.manage.ServiceBaseRateFilter"
+            resultMap="ServiceWithBaseRatesMap">
+        select
+        pack.service_id,
+        pack.service_name,
+        pack.shipment_type_id,
+        pack.shipment_type_name,
+        pack.allow_carrier,
+        pack.allow_non_carrier,
+        pack.carrier_document_rate,
+        pack.non_carrier_document_rate,
+        pack.carrier_document_inbound_rate,
+        pack.non_carrier_document_inbound_rate,
+        pack.carrier_package_rate,
+        pack.non_carrier_package_rate,
+        pack.carrier_package_inbound_rate,
+        pack.non_carrier_package_inbound_rate,
+        pack.carrier_package_perweight_rate,
+        pack.non_carrier_package_perweight_rate,
+        pack.carrier_package_inbound_perweight_rate,
+        pack.non_carrier_package_inbound_perweight_rate,
+        pack.carrier_pak_rate,
+        pack.non_carrier_pak_rate,
+        pack.carrier_pak_inbound_rate,
+        pack.non_carrier_pak_inbound_rate,
+        pack.carrier_pak_perweight_rate,
+        pack.non_carrier_pak_perweight_rate,
+        pack.carrier_pak_inbound_perweight_rate,
+        pack.non_carrier_pak_inbound_perweight_rate,
+        pack.package_type,
+        pack.package_type_name,
+        pack.content as package_content,
+        pack.bound as package_bound,
+        cbr.customer_base_rate_id,
+        cbr.customer_code,
+        cbr.rate_type,
+        cbr.weight,
+        cbr.rate,
+        cbr.zone_check,
+        cbd.zone,
+        cbd.rate as zone_rate
+        from
+        (select
+        sv.service_id as service_id,
+        sv.service_name,
+        st.shipment_type_id,
+        st.shipment_type_name,
+        st.allow_carrier,
+        st.allow_non_carrier,
+        st.carrier_document_rate,
+        st.non_carrier_document_rate,
+        st.carrier_document_inbound_rate,
+        st.non_carrier_document_inbound_rate,
+        st.carrier_package_rate,
+        st.non_carrier_package_rate,
+        st.carrier_package_inbound_rate,
+        st.non_carrier_package_inbound_rate,
+        st.carrier_package_perweight_rate,
+        st.non_carrier_package_perweight_rate,
+        st.carrier_package_inbound_perweight_rate,
+        st.non_carrier_package_inbound_perweight_rate,
+        st.carrier_pak_rate,
+        st.non_carrier_pak_rate,
+        st.carrier_pak_inbound_rate,
+        st.non_carrier_pak_inbound_rate,
+        st.carrier_pak_perweight_rate,
+        st.non_carrier_pak_perweight_rate,
+        st.carrier_pak_inbound_perweight_rate,
+        st.non_carrier_pak_inbound_perweight_rate,
+        ifnull(pac.package_type,0) as package_type,
+        ifnull(pac.package_type_name,st.shipment_type_name) as package_type_name,
+        ifnull(pac.content,0) as content,
+        ifnull(pac.bound,0) as bound
+        from xms_tbl_service as sv
+        inner join xms_tbl_shipment_type as st on st.serviceid = sv.service_id
+        and sv.service_id not in (${activeCarrierList})
+        and st.show_status = 1
+        and sv.inactive = 0
+        left join
+        (select 1 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Document' AS package_type_name,
+        1 AS package_type, 0 AS content, 0 AS bound
+        union
+        select 0 AS doc, 1 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Document (Inbound)' AS
+        package_type_name, 2 AS package_type, 0 AS content, 1 AS bound
+        union
+        select 0 AS doc, 0 AS doc_in, 1 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Package' AS package_type_name, 3
+        AS package_type, 1 AS content, 0 AS bound
+        union
+        select 0 AS doc, 0 AS doc_in, 0 AS pack, 1 AS pack_in, 0 AS pak, 0 AS pak_in, 'Package (Inbound)' AS
+        package_type_name, 4 AS package_type, 1 AS content, 1 AS bound
+        union
+        select 0 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 1 AS pak, 0 AS pak_in, 'Pak' AS package_type_name, 5 AS
+        package_type, 2 AS content, 0 AS bound
+        union
+        select 0 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 1 AS pak_in, 'Pak (Inbound)' AS
+        package_type_name, 6 AS package_type, 2 AS content, 1 AS bound
+        ) as pac on (pac.doc = st.document and st.document = 1)
+        or (pac.doc_in = st.document_inbound and st.document_inbound = 1)
+        or (pac.pack = st.package and st.package = 1)
+        or (pac.pack_in = st.package_inbound and st.package_inbound = 1)
+        or (pac.pak = st.pak and st.pak = 1)
+        or (pac.pak_in = st.pak_inbound and st.pak_inbound = 1)
+        order by sv.service_id, st.shipment_type_id, package_type) as pack
+        left join xms_tbl_customer_base_rate as cbr on pack.shipment_type_id = cbr.shipment_type_id
+        and pack.content = cbr.content
+        and pack.bound = cbr.bound
+        and cbr.customer_code = #{customerCode}
+        left join xms_tbl_customer_base_rate_detail as cbd on cbd.customer_base_rate_id = cbr.customer_base_rate_id
+        and cbr.zone_check = 1
+        order by pack.service_name, pack.package_type
+    </select>
+
+    <select id="getIntegratedServices" resultMap="ServiceMap">
+        select * from xms_tbl_service
+        where inactive=0
+    </select>
+
+    <select id="getIntegratedServiceWithShipmentTypes" resultMap="ServiceWithShipmentTypesMap">
+        select
+        sv.*,
+        st.shipment_type_id,
+        st.shipment_type_name
+        from
+        (select service_id, service_name from xms_tbl_service
+        where inactive = 0
+        ) as sv
+        left join
+        (select serviceid, service_priority, shipment_type_id, shipment_type_name from xms_tbl_shipment_type
+        where show_status = 1
+        ) as st on st.serviceid = sv.service_id
+        order by sv.service_id, st.service_priority
+    </select>
+
+    <insert id="insertService" parameterType="ServiceVo">
+        INSERT INTO xms_tbl_service
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="serviceId != null">
+                service_id,
+            </if>
+            <if test="serviceName != null">
+                service_name,
+            </if>
+            <if test="ftpServer != null">
+                ftp_server,
+            </if>
+            <if test="ftpUserName != null">
+                ftp_user_name,
+            </if>
+            <if test="ftpUserPassword != null">
+                ftp_user_password,
+            </if>
+            <if test="fileCountryCode != null">
+                file_country_code,
+            </if>
+            <if test="inactive != null">
+                inactive,
+            </if>
+            <if test="allowChangeName != null">
+                allow_change_name,
+            </if>
+            <if test="carrierType != null">
+                carrier_type,
+            </if>
+            <if test="integrated != null">
+                integrated,
+            </if>
+            <if test="nonCentralized != null">
+                non_centralized,
+            </if>
+            <if test="serverFolder != null">
+                server_folder,
+            </if>
+            <if test="fileNamePrefix != null">
+                file_name_prefix,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="serviceId != null">
+                #{serviceId},
+            </if>
+            <if test="serviceName != null">
+                #{serviceName},
+            </if>
+            <if test="ftpServer != null">
+                #{ftpServer},
+            </if>
+            <if test="ftpUserName != null">
+                #{ftpUserName},
+            </if>
+            <if test="ftpUserPassword != null">
+                #{ftpUserPassword},
+            </if>
+            <if test="fileCountryCode != null">
+                #{fileCountryCode},
+            </if>
+            <if test="inactive != null">
+                #{inactive},
+            </if>
+            <if test="allowChangeName != null">
+                #{allowChangeName},
+            </if>
+            <if test="carrierType != null">
+                #{carrierType},
+            </if>
+            <if test="integrated != null">
+                #{integrated},
+            </if>
+            <if test="nonCentralized != null">
+                #{nonCentralized},
+            </if>
+            <if test="serverFolder != null">
+                #{serverFolder},
+            </if>
+            <if test="fileNamePrefix != null">
+                #{fileNamePrefix},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateService" parameterType="ServiceVo">
+        update xms_tbl_service
+        <set>
+            <if test="serviceId != null">
+                service_id = #{serviceId},
+            </if>
+            <if test="serviceName != null">
+                service_name = #{serviceName},
+            </if>
+            <if test="ftpServer != null">
+                ftp_server = #{ftpServer},
+            </if>
+            <if test="ftpUserName != null">
+                ftp_user_name = #{ftpUserName},
+            </if>
+            <if test="ftpUserPassword != null">
+                ftp_user_password = #{ftpUserPassword},
+            </if>
+            <if test="fileCountryCode != null">
+                file_country_code = #{fileCountryCode},
+            </if>
+            <if test="inactive != null">
+                inactive = #{inactive},
+            </if>
+            <if test="allowChangeName != null">
+                allow_change_name = #{allowChangeName},
+            </if>
+            <if test="carrierType != null">
+                carrier_type = #{carrierType},
+            </if>
+            <if test="integrated != null">
+                integrated = #{integrated},
+            </if>
+            <if test="nonCentralized != null">
+                non_centralized = #{nonCentralized},
+            </if>
+            <if test="serverFolder != null">
+                server_folder = #{serverFolder},
+            </if>
+            <if test="fileNamePrefix != null">
+                file_name_prefix = #{fileNamePrefix},
+            </if>
+        </set>
+        where service_id = #{serviceId}
+    </update>
+
+    <select id="updateService_SelectForLog" parameterType="ServiceVo" resultMap="ServiceMap">
+        select * from xms_tbl_service
+        where service_id = #{serviceId}
+    </select>
+
+    <delete id="deleteService" parameterType="int">
+        DELETE FROM `xms_tbl_service`
+        WHERE `service_id` = #{serviceId}
+    </delete>
+
+    <select id="deleteService_SelectForLog" parameterType="int" resultMap="ServiceMap">
+        SELECT * FROM `xms_tbl_service`
+        WHERE `service_id` = #{serviceId}
+    </select>
+</mapper>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="AdjustmentHistory">
+    <resultMap id="BaseResultMap" type="com.gms.xms.txndb.vo.adjustment.AdjustmentHistoryVo">
+        <result column="adjustmentid" property="adjustmentId"/>
+        <result column="userid" property="userId"/>
+        <result column="actiondate" property="actionDate"/>
+        <result column="status" property="status"/>
+    </resultMap>
+    <insert id="insert" parameterType="AdjustmentHistoryVo">
+        insert into xms_tbl_adjustment_history
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="adjustmentId != null">
+                adjustmentId,
+            </if>
+            <if test="userId != null">
+                userId,
+            </if>
+            <if test="actionDate != null">
+                actionDate,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="adjustmentId != null">
+                #{adjustmentId},
+            </if>
+            <if test="userId != null">
+                #{userId},
+            </if>
+            <if test="actionDate != null">
+                #{actionDate},
+            </if>
+            <if test="status != null">
+                #{status},
+            </if>
+        </trim>
+    </insert>
+</mapper>

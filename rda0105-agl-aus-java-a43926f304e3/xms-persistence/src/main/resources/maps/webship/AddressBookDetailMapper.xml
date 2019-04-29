@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AddressBookDetail">
+    <resultMap id="AddressBookDetailMap" type="AddressBookDetailVo">
+        <result column="addressid" property="addressId"/>
+        <result column="company_name" property="companyName"/>
+        <result column="phone" property="phone"/>
+        <result column="contact_name" property="contactName"/>
+        <result column="email" property="email"/>
+        <result column="country" property="country"/>
+        <result column="address1" property="address1"/>
+        <result column="address2" property="address2"/>
+        <result column="city" property="city"/>
+        <result column="postal_code" property="postalCode"/>
+        <result column="state" property="state"/>
+        <result column="isresidential" property="isResidential"/>
+        <result column="country_name" property="countryName"/>
+    </resultMap>
+
+    <select id="selectByFilter" parameterType="AddressBookDetailFilter" resultMap="AddressBookDetailMap">
+        select
+        addressid,
+        company_name,
+        phone,
+        contact_name,
+        email,
+        country,
+        address1,
+        address2,
+        city,
+        postal_code,
+        state,
+        isresidential,
+        countryname
+        from xms_tbl_customer_address_book as cab
+        left join xms_tbl_country as c on cab.country = c.countryid
+        where customer_code = #{customerCode} and webshipid = #{webshipId}
+        <if test="companyName!=null and companyName!=''">
+            and company_name like concat('%',#{companyName},'%')
+        </if>
+        <if test="contactName!=null and contactName!=''">
+            and contact_name like concat('%',#{contactName},'%')
+        </if>
+    </select>
+
+    <select id="selectById" parameterType="long" resultMap="AddressBookDetailMap">
+        select
+        addressid,
+        company_name,
+        phone,
+        contact_name,
+        email,
+        country,
+        address1,
+        address2,
+        city,
+        postal_code,
+        state,
+        isresidential,
+        countryname
+        from xms_tbl_customer_address_book as cab
+        left join xms_tbl_country as c on cab.country = c.countryid
+        where addressId = #{addressId}
+    </select>
+</mapper>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerProfileBaseRateExt">
+    <resultMap id="CustomerProfileBaseRateExtMap" type="CustomerProfileBaseRateExtVo">
+        <result column="customer_profile_base_rate_id" property="customerProfileBaseRateId"/>
+        <result column="customer_base_rate_id" property="customerBaseRateId"/>
+        <result column="zone" property="zone"/>
+        <result column="rate" property="rate"/>
+        <result column="rate" property="rateP"/>
+        <result column="profileid" property="profileId"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="rate_type" property="rateType"/>
+        <result column="weight" property="weight"/>
+        <result column="zone_check" property="zoneCheck"/>
+        <result column="content" property="content"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="bound" property="bound"/>
+        <result column="baserate_description" property="baseRateDescription"/>
+        <result column="carrierid" property="carrierId"/>
+    </resultMap>
+
+    <select id="selectBaseRateByShipment" resultType="CustomerProfileBaseRateExtVo"
+            parameterType="com.gms.xms.filter.admin.customerprofile.CustomerProfileFilter">
+        SELECT
+        brd.zone as zone,
+        IF(brd.rate = 0,br.rate, brd.rate) AS rate,
+        <if test="profileId != null and profileId != ''">
+            br.profileid as profileId,
+            brd.customer_profile_base_rate_id as customerProfileBaseRateId,
+        </if>
+
+        <if test="customerCode != null and customerCode != ''">
+            br.customer_code as customerCode,
+            brd.customer_base_rate_id as customerBaseRateId,
+        </if>
+        br.shipment_type_id as shipmentTypeId,
+        br.rate_type as rateType,
+        br.weight as weight,
+        br.zone_check as zoneCheck,
+        br.content as content,
+        br.bound as bound,
+        br.baserate_description as baseRateDescription,
+        br.carrierid as carrierId,
+        br.rate as rateP
+        <if test="profileId != null and profileId != ''">
+            FROM xms_tbl_customer_profile_base_rate as br
+            LEFT JOIN xms_tbl_customer_profile_base_rate_detail as brd on br.customer_profile_base_rate_id =
+            brd.customer_profile_base_rate_id
+            WHERE br.content = #{content} and br.bound = #{bound} and br.shipment_type_id = #{shipmentTypeId} and
+            br.profileid = #{profileId}
+            GROUP BY br.customer_base_rate_id
+        </if>
+
+        <if test="customerCode != null and customerCode != ''">
+            FROM xms_tbl_customer_base_rate as br
+            LEFT JOIN xms_tbl_customer_base_rate_detail as brd on br.customer_base_rate_id = brd.customer_base_rate_id
+            WHERE br.content = #{content} and br.bound = #{bound} and br.shipment_type_id = #{shipmentTypeId} and
+            br.customer_code = #{customerCode}
+            GROUP BY br.customer_base_rate_id
+        </if>
+
+
+    </select>
+</mapper>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="FranchiseSetting">
+    <resultMap id="FranchiseSettingMap" type="FranchiseSettingVo">
+        <id column="franchise_setting_id" property="franchiseSettingId"/>
+        <result column="franchise_code" property="franchiseCode"/>
+        <result column="franchise_setting_name" property="franchiseSettingName"/>
+        <result column="franchise_setting_value" property="franchiseSettingValue"/>
+        <result column="user_level" property="userLevel"/>
+    </resultMap>
+</mapper>

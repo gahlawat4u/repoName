@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ShipmentBilling">
+    <resultMap id="ShipmentBillingMap" type="ShipmentBillingVo">
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="paid" property="paid"/>
+        <result column="payment_date" property="paymentDate"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="description" property="description"/>
+        <result column="display_description" property="displayDescription"/>
+        <result column="package_flag" property="packageFlag"/>
+        <result column="pal" property="pal"/>
+        <result column="calculated_carrier_cost" property="calculatedCarrierCost"/>
+        <result column="calculated_franchise_cost" property="calculatedFranchiseCost"/>
+        <result column="carrier_cost" property="carrierCost"/>
+        <result column="customer_cost" property="customerCost"/>
+        <result column="weight" property="weight"/>
+        <result column="insurance_amount" property="insuranceAmount"/>
+        <result column="gross_discount_amount" property="grossDiscountAmount"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="customer_tax_amount" property="customerTaxAmount"/>
+        <result column="gst_percent" property="gstPercent"/>
+        <result column="carrier_tax_percent" property="carrierTaxPercent"/>
+        <result column="customer_tax_percent" property="customerTaxPercent"/>
+        <result column="tax_code" property="taxCode"/>
+        <result column="insurance_discount_amount" property="insuranceDiscountAmount"/>
+        <result column="insurance_tax_amount" property="insuranceTaxAmount"/>
+        <result column="franchise_cost" property="franchiseCost"/>
+        <result column="franchise_tax_amount" property="franchiseTaxAmount"/>
+        <result column="weight_unit" property="weightUnit"/>
+        <result column="shipper_reference" property="shipperReference"/>
+        <result column="carrier" property="carrier"/>
+        <result column="import_date" property="importDate"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="origin_countryid" property="originCountryId"/>
+        <result column="destination_countryid" property="destinationCountryId"/>
+        <result column="old_carrier_cost" property="oldCarrierCost"/>
+        <result column="old_tax_amount" property="oldTaxAmount"/>
+        <result column="ship_date" property="shipDate"/>
+        <result column="senderaddressid" property="senderAddressId"/>
+        <result column="receiveraddressid" property="receiverAddressId"/>
+        <result column="billing_type" property="billingType"/>
+        <result column="billing_account" property="billingAccount"/>
+        <result column="billto_account" property="billToAccount"/>
+        <result column="service_area_code_destination" property="serviceAreaCodeDestination"/>
+        <result column="service_area_code_origin" property="serviceAreaCodeOrigin"/>
+        <result column="download_file_id" property="downloadFileId"/>
+        <result column="is_base_charge" property="isBaseCharge"/>
+        <result column="accessorial_count" property="accessorialCount"/>
+        <result column="old_total_accessorial_count" property="oldTotalAccessorialCount"/>
+        <result column="require_calculate" property="requireCalculate"/>
+        <result column="zone" property="zone"/>
+        <result column="bill_actual_dimension" property="billActualDimension"/>
+        <result column="billing_bound" property="billingBound"/>
+        <result column="billing_shipment_type_id" property="billingShipmentTypeId"/>
+        <result column="billing_contents" property="billingContents"/>
+        <result column="billing_reweight_weight" property="billingReweightWeight"/>
+        <result column="billing_reference2" property="billingReference2"/>
+        <result column="billing_reference3" property="billingReference3"/>
+        <result column="billing_received_by" property="billingReceivedBy"/>
+        <result column="billing_received_date" property="billingReceivedDate"/>
+        <result column="billing_freight_class" property="billingFreightClass"/>
+    </resultMap>
+
+    <resultMap id="ShipmentBillingInfoMap" type="com.gms.xms.txndb.vo.airbill.ShipmentBillingInfoVo">
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="content" property="content"/>
+        <result column="bound" property="bound"/>
+        <result column="service_id" property="serviceId"/>
+    </resultMap>
+
+    <select id="selectByFilter" resultMap="ShipmentBillingMap" parameterType="ShipmentBillingFilter">
+        SELECT * FROM xms_tbl_shipment_billing
+        WHERE shipmentid= #{shipmentId} AND
+        airbill_number= #{airbillNumber} ORDER BY accessorial_count;
+    </select>
+
+    <select id="selectSurchargesByFilter" resultMap="ShipmentBillingMap" parameterType="ShipmentBillingFilter">
+        SELECT * FROM xms_tbl_shipment_billing
+        WHERE shipmentid= #{shipmentId} AND
+        airbill_number= #{airbillNumber} AND is_base_charge != 1
+        ORDER BY accessorial_count;
+    </select>
+
+    <select id="selectByAirbillNumber" resultMap="ShipmentBillingMap" parameterType="ShipmentBillingFilter">
+        SELECT * FROM xms_tbl_shipment_billing
+        WHERE airbill_number = #{airbillNumber}
+        <if test="shipmentId!=null">
+            and shipmentid = #{shipmentId}
+        </if>
+        <if test="carrier!=null">
+            and carrier = #{carrier}
+        </if>
+    </select>
+
+    <select id="selectImportDateForSearchAirbill" resultMap="ShipmentBillingMap">
+        SELECT
+        DISTINCT
+        DATE_FORMAT(sb.import_date,'%Y-%m-%d') as import_date
+        FROM
+        xms_tbl_shipment_billing as sb
+        ORDER BY import_date DESC
+        LIMIT 10
+
+    </select>
+
+    <select id="selectMaxAccessorialCount" parameterType="ShipmentBillingFilter" resultType="int">
+        select max(accessorial_count) from xms_tbl_shipment_billing
+        where shipmentid= #{shipmentId} and airbill_number = #{airbillNumber}
+    </select>
+
+    <select id="selectIsBaseChargeByFilter" resultMap="ShipmentBillingMap" parameterType="ShipmentBillingFilter">
+        SELECT * FROM xms_tbl_shipment_billing
+        WHERE shipmentid= #{shipmentId} AND
+        airbill_number= #{airbillNumber} AND is_base_charge = 1;
+    </select>
+
+    <select id="isAglWarrantyAirbill" parameterType="ShipmentBillingVo" resultType="int">
+        select count(*) from xms_tbl_shipment_billing
+        where shipmentid = #{shipmentId} and airbill_number = #{airbillNumber} and description like 'Agl Warranty%'
+    </select>
+
+    <select id="getAglWarrantyAmount" parameterType="ShipmentBillingVo" resultType="double">
+        select sum(customer_cost+customer_tax_amount) from xms_tbl_shipment_billing
+        where shipmentid = #{shipmentId} and airbill_number = #{airbillNumber} and description like 'Agl Warranty%'
+    </select>
+
+    <select id="getShipmentBillingInfoByCode" parameterType="com.gms.xms.txndb.vo.ShipmentBillingVo"
+            resultMap="ShipmentBillingInfoMap">
+        select
+        sb.shipmentid,
+        sb.airbill_number,
+        sm.customer_code,
+        st.shipment_type_id,
+        if(sb.display_description like '%Doc%',0,1) as content,
+        if(sb.display_description like '%(Inbound)',1,0) as bound,
+        sb.carrier as service_id
+        from xms_tbl_shipment_billing as sb
+        inner join xms_tbl_shipment as sm on sm.shipmentid = sb.shipmentid and sm.airbill_number = sb.airbill_number
+        left join xms_tbl_shipment_type as st on (st.shipment_type_name = sb.description or st.edi_description =
+        sb.description) and sb.carrier = st.serviceid
+        where sb.accessorial_count=0
+        and sb.shipmentid = #{shipmentId}
+        and sb.airbill_number = #{airbillNumber}
+    </select>
+
+    <select id="checkShipmentBilling" parameterType="CheckShipmentBillingVo" resultType="string">
+        select
+        airbill_number
+        from
+        xms_tbl_shipment_billing
+        where
+        carrier = #{carrier}
+        and airbill_number = #{airbillNumber}
+        <if test="!'C'.equals(lastChar)">and substring(airbill_number ,9) not like '%C%'</if>
+        order by airbill_number desc
+        limit 1
+    </select>
+
+    <select id="checkShipmentBillingDHL" parameterType="CheckShipmentBillingVo" resultType="string">
+        <bind name="airbillNumber" value="_parameter.getAirbillNumber() + '%'"/>
+        select
+        airbill_number
+        from
+        xms_tbl_shipment_billing
+        where
+        carrier = #{carrier}
+        and airbill_number like #{airbillNumber}
+        <if test="!'C'.equals(lastChar)">and substring(airbill_number ,9) not like '%C%'</if>
+        order by airbill_number desc
+        limit 1
+    </select>
+
+    <select id="checkDuplicateShipmentBilling" parameterType="ShipmentBillingVo" resultMap="ShipmentBillingMap">
+        select
+        *
+        from
+        xms_tbl_shipment_billing
+        where
+        carrier = #{carrier}
+        and airbill_number = #{airbillNumber}
+        order by airbill_number desc
+        limit 1
+    </select>
+
+    <select id="getErrorShipmentBillingByAWB" parameterType="string" resultMap="ShipmentBillingMap">
+        select * from xms_tbl_shipment_billing
+        where shipmentid = 0
+        and airbill_number = #{airbillNumber}
+        and is_base_charge=1
+    </select>
+
+    <select id="getErrorShipmentBillingByAWBList" parameterType="string" resultMap="ShipmentBillingMap">
+        select * from xms_tbl_shipment_billing
+        where shipmentid = 0
+        and airbill_number in (${_parameter})
+        and is_base_charge=1
+    </select>
+
+    <select id="getErrorShipmentBillingChargesByAWB" parameterType="string" resultMap="ShipmentBillingMap">
+        select * from xms_tbl_shipment_billing
+        where shipmentid = 0
+        and airbill_number = #{airbillNumber}
+        and is_base_charge=0
+    </select>
+
+    <select id="getShipmentBillingSurcharges" parameterType="ShipmentBillingVo" resultMap="ShipmentBillingMap">
+        select * from xms_tbl_shipment_billing
+        where shipmentid = #{shipmentId}
+        and airbill_number = #{airbillNumber}
+        and is_base_charge=0
+    </select>
+
+    <select id="checkForDeleteBilling" parameterType="CheckDuplicateAirbillFilter" resultMap="ShipmentBillingMap">
+        select * from xms_tbl_shipment_billing
+        where shipmentid = #{shipmentId}
+        and airbill_number = #{airbillNumber}
+        and carrier = #{carrier}
+        <if test="cri!=null">
+            #{cri}
+        </if>
+    </select>
+
+    <update id="updateShipmentBillingForViewEdit" parameterType="ShipmentBillingVo">
+        UPDATE xms_tbl_shipment_billing
+        <set>
+            <if test="shipmentId!= null">shipmentid=#{shipmentId},</if>
+            <if test="paid!= null">paid=#{paid},</if>
+            <if test="paymentDate!= null">payment_date=#{paymentDate},</if>
+            <if test="airbillNumber!= null">airbill_number=#{airbillNumber},</if>
+            <if test="description!= null">description=#{description},</if>
+            <if test="displayDescription!= null">display_description=#{displayDescription},</if>
+            <if test="packageFlag!= null">package_flag=#{packageFlag},</if>
+            <if test="pal!= null">pal=#{pal},</if>
+            <if test="calculatedCarrierCost!= null">calculated_carrier_cost=#{calculatedCarrierCost},</if>
+            <if test="calculatedFranchiseCost!= null">calculated_franchise_cost=#{calculatedFranchiseCost},</if>
+            <if test="carrierCost!= null">carrier_cost=#{carrierCost},</if>
+            <if test="customerCost!= null">customer_cost=#{customerCost},</if>
+            <if test="weight!= null">weight=#{weight},</if>
+            <if test="insuranceAmount!= null">insurance_amount=#{insuranceAmount},</if>
+            <if test="grossDiscountAmount!= null">gross_discount_amount=#{grossDiscountAmount},</if>
+            <if test="taxAmount!= null">tax_amount=#{taxAmount},</if>
+            <if test="customerTaxAmount!= null">customer_tax_amount=#{customerTaxAmount},</if>
+            <if test="gstPercent!= null">gst_percent=#{gstPercent},</if>
+            <if test="carrierTaxPercent!= null">carrier_tax_percent=#{carrierTaxPercent},</if>
+            <if test="customerTaxPercent!= null">customer_tax_percent=#{customerTaxPercent},</if>
+            <if test="taxCode!= null">tax_code=#{taxCode},</if>
+            <if test="insuranceDiscountAmount!= null">insurance_discount_amount=#{insuranceDiscountAmount},</if>
+            <if test="insuranceTaxAmount!= null">insurance_tax_amount=#{insuranceTaxAmount},</if>
+            <if test="franchiseCost!= null">franchise_cost=#{franchiseCost},</if>
+            <if test="franchiseTaxAmount!= null">franchise_tax_amount=#{franchiseTaxAmount},</if>
+            <if test="weightUnit!= null">weight_unit=#{weightUnit},</if>
+            <if test="shipperReference!= null">shipper_reference=#{shipperReference},</if>
+            <if test="carrier!= null">carrier=#{carrier},</if>
+            <if test="importDate!= null">import_date=#{importDate},</if>
+            <if test="invoiceDate!= null">invoice_date=#{invoiceDate},</if>
+            <if test="originCountryId!= null">origin_countryid=#{originCountryId},</if>
+            <if test="destinationCountryId!= null">destination_countryid=#{destinationCountryId},</if>
+            <if test="oldCarrierCost!= null">old_carrier_cost=#{oldCarrierCost},</if>
+            <if test="oldTaxAmount!= null">old_tax_amount=#{oldTaxAmount},</if>
+            <if test="shipDate!= null">ship_date=#{shipDate},</if>
+            <if test="senderAddressId!= null">senderaddressid=#{senderAddressId},</if>
+            <if test="receiverAddressId!= null">receiveraddressid=#{receiverAddressId},</if>
+            <if test="billingType!= null">billing_type=#{billingType},</if>
+            <if test="billingAccount!= null">billing_account=#{billingAccount},</if>
+            <if test="billToAccount!= null">billto_account=#{billToAccount},</if>
+            <if test="serviceAreaCodeDestination!= null">service_area_code_destination=#{serviceAreaCodeDestination},
+            </if>
+            <if test="serviceAreaCodeOrigin	!= null">service_area_code_origin=#{serviceAreaCodeOrigin},</if>
+            <if test="downloadFileId!= null">download_file_id=#{downloadFileId},</if>
+            <if test="isBaseCharge!= null">is_base_charge=#{isBaseCharge},</if>
+            <if test="accessorialCount!= null">accessorial_count=#{accessorialCount},</if>
+            <if test="oldTotalAccessorialCount!= null">old_total_accessorial_count=#{oldTotalAccessorialCount},</if>
+            <if test="requireCalculate!= null">require_calculate=#{requireCalculate},</if>
+            <if test="zone!= null">zone=#{zone},</if>
+            <if test="billActualDimension!= null">bill_actual_dimension=#{billActualDimension},</if>
+            <if test="billingBound!= null">billing_bound=#{billingBound},</if>
+            <if test="billingShipmentTypeId!= null">billing_shipment_type_id=#{billingShipmentTypeId},</if>
+            <if test="billingContents!= null">billing_contents=#{billingContents},</if>
+            <if test="billingReweightWeight	!= null">billing_reweight_weight=#{billingReweightWeight},</if>
+            <if test="billingReference2	!= null">billing_reference2=#{billingReference2},</if>
+            <if test="billingReference3!= null">billing_reference3=#{billingReference3},</if>
+            <if test="billingReceivedBy	!= null">billing_received_by=#{billingReceivedBy},</if>
+            <if test="billingReceivedDate!= null">billing_received_date=#{billingReceivedDate},</if>
+            <if test="billingFreightClass!= null">billing_freight_class=#{billingFreightClass},</if>
+        </set>
+        WHERE shipmentid = #{shipmentId} AND airbill_number = #{airbillNumber} AND is_base_charge = 1
+    </update>
+
+    <select id="updateShipmentBillingForViewEdit_SelectForLog" parameterType="ShipmentBillingVo"
+            resultMap="ShipmentBillingMap">
+        select * from xms_tbl_shipment_billing
+        WHERE shipmentid = #{shipmentId} AND airbill_number = #{airbillNumber} AND is_base_charge = 1
+    </select>
+
+    <update id="updateShipmentBilling" parameterType="ShipmentBillingVo">
+        UPDATE xms_tbl_shipment_billing
+        <set>
+            <if test="shipmentId!= null">shipmentid=#{shipmentId},</if>
+            <if test="paid!= null">paid=#{paid},</if>
+            <if test="paymentDate!= null">payment_date=#{paymentDate},</if>
+            <if test="airbillNumber!= null">airbill_number=#{airbillNumber},</if>
+            <if test="description!= null">description=#{description},</if>
+            <if test="displayDescription!= null">display_description=#{displayDescription},</if>
+            <if test="packageFlag!= null">package_flag=#{packageFlag},</if>
+            <if test="pal!= null">pal=#{pal},</if>
+            <if test="calculatedCarrierCost!= null">calculated_carrier_cost=#{calculatedCarrierCost},</if>
+            <if test="calculatedFranchiseCost!= null">calculated_franchise_cost=#{calculatedFranchiseCost},</if>
+            <if test="carrierCost!= null">carrier_cost=#{carrierCost},</if>
+            <if test="customerCost!= null">customer_cost=#{customerCost},</if>
+            <if test="weight!= null">weight=#{weight},</if>
+            <if test="insuranceAmount!= null">insurance_amount=#{insuranceAmount},</if>
+            <if test="grossDiscountAmount!= null">gross_discount_amount=#{grossDiscountAmount},</if>
+            <if test="taxAmount!= null">tax_amount=#{taxAmount},</if>
+            <if test="customerTaxAmount!= null">customer_tax_amount=#{customerTaxAmount},</if>
+            <if test="gstPercent!= null">gst_percent=#{gstPercent},</if>
+            <if test="carrierTaxPercent!= null">carrier_tax_percent=#{carrierTaxPercent},</if>
+            <if test="customerTaxPercent!= null">customer_tax_percent=#{customerTaxPercent},</if>
+            <if test="taxCode!= null">tax_code=#{taxCode},</if>
+            <if test="insuranceDiscountAmount!= null">insurance_discount_amount=#{insuranceDiscountAmount},</if>
+            <if test="insuranceTaxAmount!= null">insurance_tax_amount=#{insuranceTaxAmount},</if>
+            <if test="franchiseCost!= null">franchise_cost=#{franchiseCost},</if>
+            <if test="franchiseTaxAmount!= null">franchise_tax_amount=#{franchiseTaxAmount},</if>
+            <if test="weightUnit!= null">weight_unit=#{weightUnit},</if>
+            <if test="shipperReference!= null">shipper_reference=#{shipperReference},</if>
+            <if test="carrier!= null">carrier=#{carrier},</if>
+            <if test="importDate!= null">import_date=#{importDate},</if>
+            <if test="invoiceDate!= null">invoice_date=#{invoiceDate},</if>
+            <if test="originCountryId!= null">origin_countryid=#{originCountryId},</if>
+            <if test="destinationCountryId!= null">destination_countryid=#{destinationCountryId},</if>
+            <if test="oldCarrierCost!= null">old_carrier_cost=#{oldCarrierCost},</if>
+            <if test="oldTaxAmount!= null">old_tax_amount=#{oldTaxAmount},</if>
+            <if test="shipDate!= null">ship_date=#{shipDate},</if>
+            <if test="senderAddressId!= null">senderaddressid=#{senderAddressId},</if>
+            <if test="receiverAddressId!= null">receiveraddressid=#{receiverAddressId},</if>
+            <if test="billingType!= null">billing_type=#{billingType},</if>
+            <if test="billingAccount!= null">billing_account=#{billingAccount},</if>
+            <if test="billToAccount!= null">billto_account=#{billToAccount},</if>
+            <if test="serviceAreaCodeDestination!= null">service_area_code_destination=#{serviceAreaCodeDestination},
+            </if>
+            <if test="serviceAreaCodeOrigin	!= null">service_area_code_origin=#{serviceAreaCodeOrigin},</if>
+            <if test="downloadFileId!= null">download_file_id=#{downloadFileId},</if>
+            <if test="isBaseCharge!= null">is_base_charge=#{isBaseCharge},</if>
+            <if test="accessorialCount!= null">accessorial_count=#{accessorialCount},</if>
+            <if test="oldTotalAccessorialCount!= null">old_total_accessorial_count=#{oldTotalAccessorialCount},</if>
+            <if test="requireCalculate!= null">require_calculate=#{requireCalculate},</if>
+            <if test="zone!= null">zone=#{zone},</if>
+            <if test="billActualDimension!= null">bill_actual_dimension=#{billActualDimension},</if>
+            <if test="billingBound!= null">billing_bound=#{billingBound},</if>
+            <if test="billingShipmentTypeId!= null">billing_shipment_type_id=#{billingShipmentTypeId},</if>
+            <if test="billingContents!= null">billing_contents=#{billingContents},</if>
+            <if test="billingReweightWeight	!= null">billing_reweight_weight=#{billingReweightWeight},</if>
+            <if test="billingReference2	!= null">billing_reference2=#{billingReference2},</if>
+            <if test="billingReference3!= null">billing_reference3=#{billingReference3},</if>
+            <if test="billingReceivedBy	!= null">billing_received_by=#{billingReceivedBy},</if>
+            <if test="billingReceivedDate!= null">billing_received_date=#{billingReceivedDate},</if>
+            <if test="billingFreightClass!= null">billing_freight_class=#{billingFreightClass},</if>
+        </set>
+        where shipmentid = #{shipmentId}
+        and airbill_number = #{airbillNumber}
+        <if test="accessorialCount!= null">and accessorial_count=#{accessorialCount}</if>
+        <if test="description!= null">and description=#{description}</if>
+    </update>
+
+    <select id="updateShipmentBilling_SelectForLog" parameterType="ShipmentBillingVo" resultMap="ShipmentBillingMap">
+        SELECT * FROM xms_tbl_shipment_billing
+        where shipmentid = #{shipmentId}
+        and airbill_number = #{airbillNumber}
+        <if test="accessorialCount!= null">and accessorial_count=#{accessorialCount}</if>
+        <if test="description!= null">and description=#{description}</if>
+    </select>
+
+    <insert id="insertShipmentBillingSurcharge" parameterType="ShipmentBillingVo">
+        INSERT INTO xms_tbl_shipment_billing
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            payment_date,
+            billing_received_date,
+            <if test="shipmentId!= null">shipmentid,</if>
+            <if test="paid!= null">paid,</if>
+            <if test="airbillNumber!= null">airbill_number,</if>
+            <if test="description!= null">description,</if>
+            <if test="displayDescription!= null">display_description,</if>
+            <if test="packageFlag!= null">package_flag,</if>
+            <if test="pal!= null">pal,</if>
+            calculated_carrier_cost,
+            calculated_franchise_cost,
+            <if test="carrierCost!= null">carrier_cost,</if>
+            <if test="customerCost!= null">customer_cost,</if>
+            <if test="weight!= null">weight,</if>
+            <if test="insuranceAmount!= null">insurance_amount,</if>
+            <if test="grossDiscountAmount!= null">gross_discount_amount,</if>
+            <if test="taxAmount!= null">tax_amount,</if>
+            <if test="customerTaxAmount!= null">customer_tax_amount,</if>
+            <if test="gstPercent!= null">gst_percent,</if>
+            <if test="carrierTaxPercent!= null">carrier_tax_percent,</if>
+            <if test="customerTaxPercent!= null">customer_tax_percent,</if>
+            <if test="taxCode!= null">tax_code,</if>
+            <if test="insuranceDiscountAmount!= null">insurance_discount_amount,</if>
+            <if test="insuranceTaxAmount!= null">insurance_tax_amount,</if>
+            <if test="franchiseCost!= null">franchise_cost,</if>
+            <if test="franchiseTaxAmount!= null">franchise_tax_amount,</if>
+            <if test="weightUnit!= null">weight_unit,</if>
+            <if test="shipperReference!= null">shipper_reference,</if>
+            <if test="carrier!= null">carrier,</if>
+            <if test="importDate!= null">import_date,</if>
+            <if test="invoiceDate!= null">invoice_date,</if>
+            <if test="originCountryId!= null">origin_countryid,</if>
+            <if test="destinationCountryId!= null">destination_countryid,</if>
+            <if test="oldCarrierCost!= null">old_carrier_cost,</if>
+            <if test="oldTaxAmount!= null">old_tax_amount,</if>
+            <if test="shipDate!= null">ship_date,</if>
+            <if test="senderAddressId!= null">senderaddressid,</if>
+            <if test="receiverAddressId!= null">receiveraddressid,</if>
+            <if test="billingType!= null">billing_type,</if>
+            <if test="billingAccount!= null">billing_account,</if>
+            <if test="billToAccount!= null">billto_account,</if>
+            <if test="serviceAreaCodeDestination!= null">service_area_code_destination,</if>
+            <if test="serviceAreaCodeOrigin	!= null">service_area_code_origin,</if>
+            <if test="downloadFileId!= null">download_file_id,</if>
+            <if test="isBaseCharge!= null">is_base_charge,</if>
+            <if test="accessorialCount!= null">accessorial_count,</if>
+            <if test="oldTotalAccessorialCount!= null">old_total_accessorial_count,</if>
+            <if test="requireCalculate!= null">require_calculate,</if>
+            <if test="zone!= null">zone,</if>
+            <if test="billActualDimension!= null">bill_actual_dimension,</if>
+            <if test="billingBound!= null">billing_bound,</if>
+            <if test="billingShipmentTypeId!= null">billing_shipment_type_id,</if>
+            <if test="billingContents!= null">billing_contents,</if>
+            <if test="billingReweightWeight	!= null">billing_reweight_weight,</if>
+            <if test="billingReference2	!= null">billing_reference2,</if>
+            <if test="billingReference3!= null">billing_reference3,</if>
+            <if test="billingReceivedBy	!= null">billing_received_by,</if>
+            <if test="billingFreightClass!= null">billing_freight_class,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="paymentDate!= null">#{paymentDate},</if>
+            <if test="paymentDate== null">'0000-00-00',</if>
+            <if test="billingReceivedDate!= null">#{billingReceivedDate},</if>
+            <if test="billingReceivedDate== null">'0000-00-00 00:00:00',</if>
+            <if test="shipmentId!= null">#{shipmentId},</if>
+            <if test="paid!= null">#{paid},</if>
+            <if test="airbillNumber!= null">#{airbillNumber},</if>
+            <if test="description!= null">#{description},</if>
+            <if test="displayDescription!= null">#{displayDescription},</if>
+            <if test="packageFlag!= null">#{packageFlag},</if>
+            <if test="pal!= null">#{pal},</if>
+            <if test="calculatedCarrierCost!= null">#{calculatedCarrierCost},</if>
+            <if test="calculatedCarrierCost== null">'0.00',</if>
+            <if test="calculatedFranchiseCost!= null">#{calculatedFranchiseCost},</if>
+            <if test="calculatedFranchiseCost== null">'0.00',</if>
+            <if test="carrierCost!= null">#{carrierCost},</if>
+            <if test="customerCost!= null">#{customerCost},</if>
+            <if test="weight!= null">#{weight},</if>
+            <if test="insuranceAmount!= null">#{insuranceAmount},</if>
+            <if test="grossDiscountAmount!= null">#{grossDiscountAmount},</if>
+            <if test="taxAmount!= null">#{taxAmount},</if>
+            <if test="customerTaxAmount!= null">#{customerTaxAmount},</if>
+            <if test="gstPercent!= null">#{gstPercent},</if>
+            <if test="carrierTaxPercent!= null">#{carrierTaxPercent},</if>
+            <if test="customerTaxPercent!= null">#{customerTaxPercent},</if>
+            <if test="taxCode!= null">#{taxCode},</if>
+            <if test="insuranceDiscountAmount!= null">#{insuranceDiscountAmount},</if>
+            <if test="insuranceTaxAmount!= null">#{insuranceTaxAmount},</if>
+            <if test="franchiseCost!= null">#{franchiseCost},</if>
+            <if test="franchiseTaxAmount!= null">#{franchiseTaxAmount},</if>
+            <if test="weightUnit!= null">#{weightUnit},</if>
+            <if test="shipperReference!= null">#{shipperReference},</if>
+            <if test="carrier!= null">#{carrier},</if>
+            <if test="importDate!= null">#{importDate},</if>
+            <if test="invoiceDate!= null">#{invoiceDate},</if>
+            <if test="originCountryId!= null">#{originCountryId},</if>
+            <if test="destinationCountryId!= null">#{destinationCountryId},</if>
+            <if test="oldCarrierCost!= null">#{oldCarrierCost},</if>
+            <if test="oldTaxAmount!= null">#{oldTaxAmount},</if>
+            <if test="shipDate!= null">#{shipDate},</if>
+            <if test="senderAddressId!= null">#{senderAddressId},</if>
+            <if test="receiverAddressId!= null">#{receiverAddressId},</if>
+            <if test="billingType!= null">#{billingType},</if>
+            <if test="billingAccount!= null">#{billingAccount},</if>
+            <if test="billToAccount!= null">#{billToAccount},</if>
+            <if test="serviceAreaCodeDestination!= null">#{serviceAreaCodeDestination},</if>
+            <if test="serviceAreaCodeOrigin	!= null">#{serviceAreaCodeOrigin},</if>
+            <if test="downloadFileId!= null">#{downloadFileId},</if>
+            <if test="isBaseCharge!= null">#{isBaseCharge},</if>
+            <if test="accessorialCount!= null">#{accessorialCount},</if>
+            <if test="oldTotalAccessorialCount!= null">#{oldTotalAccessorialCount},</if>
+            <if test="requireCalculate!= null">#{requireCalculate},</if>
+            <if test="zone!= null">#{zone},</if>
+            <if test="billActualDimension!= null">#{billActualDimension},</if>
+            <if test="billingBound!= null">#{billingBound},</if>
+            <if test="billingShipmentTypeId!= null">#{billingShipmentTypeId},</if>
+            <if test="billingContents!= null">#{billingContents},</if>
+            <if test="billingReweightWeight	!= null">#{billingReweightWeight},</if>
+            <if test="billingReference2	!= null">#{billingReference2},</if>
+            <if test="billingReference3!= null">#{billingReference3},</if>
+            <if test="billingReceivedBy	!= null">#{billingReceivedBy},</if>
+            <if test="billingFreightClass!= null">#{billingFreightClass},</if>
+        </trim>
+    </insert>
+
+    <delete id="deleteShipmentBillingSurcharge" parameterType="ShipmentBillingVo">
+        DELETE FROM xms_tbl_shipment_billing WHERE shipmentid = #{shipmentId} AND airbill_number = #{airbillNumber} AND
+        is_base_charge = 0
+    </delete>
+
+    <select id="deleteShipmentBillingSurcharge_SelectForLog" parameterType="ShipmentBillingVo"
+            resultMap="ShipmentBillingMap">
+        SELECT * FROM xms_tbl_shipment_billing WHERE shipmentid = #{shipmentId} AND airbill_number = #{airbillNumber}
+        AND is_base_charge = 0
+    </select>
+
+    <update id="updateIdAndDescriptionForErrorAirbill" parameterType="ShipmentBillingVo">
+        update xms_tbl_shipment_billing
+        set shipmentid = #{shipmentId}
+        where shipmentid = 0
+        and airbill_number = #{airbillNumber}
+    </update>
+
+    <select id="updateIdAndDescriptionForErrorAirbill_SelectForLog" parameterType="ShipmentBillingVo"
+            resultMap="ShipmentBillingMap">
+        select * from xms_tbl_shipment_billing
+        where shipmentid = 0
+        and airbill_number = #{airbillNumber}
+    </select>
+
+    <update id="updateCharges" parameterType="ShipmentBillingVo">
+        update xms_tbl_shipment_billing
+        set carrier_cost = #{carrierCost},
+        franchise_cost = #{franchiseCost},
+        customer_cost = #{customerCost},
+        customer_tax_percent = #{customerTaxPercent},
+        customer_tax_amount = #{customerTaxAmount}
+        where shipmentid = #{shipmentId}
+        and airbill_number = #{airbillNumber} and accessorial_count = #{accessorialCount}
+    </update>
+
+    <select id="updateCharges_SelectForLog" parameterType="ShipmentBillingVo" resultMap="ShipmentBillingMap">
+        select * from xms_tbl_shipment_billing
+        where shipmentid = #{shipmentId}
+        and airbill_number = #{airbillNumber} and accessorial_count = #{accessorialCount}
+    </select>
+
+    <update id="updateForAcceptSubmit" parameterType="ShipmentBillingVo">
+        update xms_tbl_shipment_billing
+        <set>
+            <if test="oldCarrierCost != null">old_carrier_cost = #{oldCarrierCost},</if>
+            <if test="oldTaxAmount != null">
+                old_tax_amount = #{oldTaxAmount},
+            </if>
+            <if test="carrierCost != null">
+                carrier_cost = #{carrierCost},
+            </if>
+            <if test="taxAmount != null">
+                tax_amount = #{taxAmount}
+            </if>
+        </set>
+        where
+        <if test="shipmentId != null">
+            shipmentid = #{shipmentId}
+        </if>
+        <if test="airbillNumber != null">
+            and airbill_number = #{airbillNumber}
+        </if>
+        <if test="carrier != null">
+            and carrier = #{carrier}
+        </if>
+        <if test="description != null">
+            and description = #{description}
+        </if>
+    </update>
+
+    <select id="updateForAcceptSubmit_SelectForLog" parameterType="ShipmentBillingVo" resultMap="ShipmentBillingMap">
+        select * from xms_tbl_shipment_billing
+        WHERE
+        <if test="shipmentId != null">
+            shipmentid = #{shipmentId}
+        </if>
+        <if test="airbillNumber != null">
+            And airbill_number = #{airbillNumber}
+        </if>
+        <if test="description != null">
+            And description = #{description}
+        </if>
+    </select>
+
+    <delete id="deleteShipment" parameterType="ShipmentBillingVo">
+        delete from xms_tbl_shipment_billing where shipmentid = #{shipmentId} and airbill_number = #{airbillNumber}
+    </delete>
+
+    <select id="deleteShipment_SelectForLog" parameterType="ShipmentBillingVo" resultMap="ShipmentBillingMap">
+        select * from xms_tbl_shipment_billing where shipmentid = #{shipmentId} and airbill_number = #{airbillNumber}
+    </select>
+
+
+    <delete id="deleteWarrantyService" parameterType="ShipmentBillingVo">
+        delete from xms_tbl_shipment_billing where shipmentid = #{shipmentId} and airbill_number = #{airbillNumber} and
+        description like 'Agl Warranty%'
+    </delete>
+
+    <select id="deleteWarrantyService_SelectForLog" parameterType="ShipmentBillingVo" resultMap="ShipmentBillingMap">
+        select * from xms_tbl_shipment_billing where shipmentid = #{shipmentId} and airbill_number = #{airbillNumber}
+        and description like 'agl Warranty%'
+    </select>
+
+
+    <delete id="deleteAirbillError" parameterType="ShipmentBillingVo">
+        delete from xms_tbl_shipment_billing where shipmentid = 0 and airbill_number = #{airbillNumber}
+    </delete>
+
+    <select id="deleteAirbillError_SelectForLog" parameterType="ShipmentBillingVo" resultMap="ShipmentBillingMap">
+        select * from xms_tbl_shipment_billing where shipmentid = 0 and airbill_number = #{airbillNumber}
+    </select>
+</mapper>

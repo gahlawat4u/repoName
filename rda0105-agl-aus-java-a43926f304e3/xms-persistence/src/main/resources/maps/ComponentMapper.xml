@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Component">
+    <select id="getDHLAccount" parameterType="string" resultType="string">
+        select dhl_account from
+        (select 1 as stt, dhl_account from xms_tbl_customer
+        where customer_code = #{customerCode} and dhl_account!='3p' and dhl_account is not null and dhl_account!=''
+        union
+        select 2 as stt, dhl_account from xms_tbl_franchise
+        where franchise_code = concat(left(#{customerCode},3),'00001') and dhl_account!='3p' and dhl_account is not null
+        and dhl_account!=''
+        union
+        select 3 as stt, setting_value as dhl_account from xms_tbl_system_setting
+        where setting_name = 'DHL-Third-Party-Billing-IntlAccount'
+        union
+        select 4 as stt, '3p' as dhl_account
+        ) as ss
+        order by stt
+        limit 1
+    </select>
+
+    <select id="getTollPriorityAccount" parameterType="string" resultType="string">
+        select toll_priority_account from
+        (select 1 as stt, toll_priority_account from xms_tbl_customer
+        where customer_code = #{customerCode} and toll_priority_account!='3p' and toll_priority_account is not null and
+        toll_priority_account!=''
+        union
+        select 2 as stt, toll_priority_account from xms_tbl_franchise
+        where franchise_code = concat(left(#{customerCode},3),'00001') and toll_priority_account!='3p' and
+        toll_priority_account is not null and toll_priority_account!=''
+        union
+        select 3 as stt, setting_value as toll_priority_account from xms_tbl_system_setting
+        where setting_name = 'TOLL-Third-Party-Billing-Account'
+        union
+        select 4 as stt, '3p' as toll_priority_account
+        ) as ss
+        order by stt
+        limit 1
+    </select>
+
+    <select id="getAccountNumberByScheduleCollectionId" parameterType="long" resultType="string">
+        select s.billing_account from xms_tbl_schedule_collection as sc
+        inner join xms_tbl_shipment as s on s.shipmentid = sc.shipmentid
+        where schedule_collection_id = #{scheduleCollectionId}
+    </select>
+
+    <select id="getOtherCarrierAccountNumber" parameterType="string" resultType="string">
+        select dhl_international_account from
+        (select 1 as stt,
+        if(duties_bill_to = 0 or duties_bill_to = 1,dhl_international_account,duties_account) as
+        dhl_international_account from xms_tbl_customer as c
+        inner join
+        xms_tbl_customer_default_setting as cds on cds.customer_code = c.customer_code
+        where c.customer_code = #{customerCode} and dhl_international_account!='3p' and dhl_international_account is not
+        null and dhl_international_account!=''
+        union
+        select 2 as stt,
+        if(duties_bill_to = 0 or duties_bill_to = 1,dhl_international_account,duties_account) as
+        dhl_international_account from xms_tbl_franchise as f
+        inner join
+        xms_tbl_customer_default_setting as fds on fds.customer_code = f.franchise_code
+        where franchise_code = concat(left(#{customerCode},3),'00001') and dhl_international_account!='3p' and
+        dhl_international_account is not null and dhl_international_account!=''
+        union
+        select 3 as stt, setting_value as dhl_international_account from xms_tbl_system_setting
+        where setting_name = 'DHL-Third-Party-Billing-IntlAccount'
+        union
+        select 4 as stt, '3p' as dhl_international_account
+        ) as ss
+        where ss.dhl_international_account != ''
+        order by stt
+        limit 1
+    </select>
+</mapper>

@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="InvoicePendingAirbill">
+    <resultMap id="InvoicePendingAirbillMap" type="InvoicePendingAirbillVo">
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="create_date" property="createDate"/>
+        <result column="shipment_date" property="shipmentDate"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="carrier_name" property="carrierName"/>
+        <result column="service_name" property="serviceName"/>
+        <result column="weight_unit" property="weightUnit"/>
+        <result column="city" property="city"/>
+        <result column="postal_code" property="postalCode"/>
+        <result column="country_name" property="countryName"/>
+        <result column="weight" property="weight"/>
+        <result column="no_of_pieces" property="noOfPieces"/>
+    </resultMap>
+
+    <select id="getInvoicePendingAirbillReport"
+            parameterType="com.gms.xms.filter.reports.webship.InvoicePendingAirbillFilter"
+            resultMap="InvoicePendingAirbillMap">
+        <![CDATA[
+		select * from (
+			select 
+				r.*,
+			    sum(p.weight) as weight,
+			    count(p.piece_id) as no_of_pieces
+			from
+				(select 	
+					sm.shipmentid,
+					sm.airbill_number,
+					sm.create_date,
+					sm.shipment_date,
+					sm.customer_code,
+					ca.customer_name,
+					sv.service_name as carrier_name,
+					st.shipment_type_name as service_name,
+					sm.weight_unit,
+					adr.city,
+					adr.postal_code,
+					concat(adr.city,', ',adr.postal_code) as destination,
+					ct.countryname as country_name
+				from xms_tbl_shipment as sm
+				inner join xms_tbl_customer_address as ca on ca.customer_code = sm.customer_code
+				inner join xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+				inner join xms_tbl_service as sv on sv.service_id = st.serviceid
+				left join xms_tbl_address as adr on adr.addressid = sm.receiveraddressid
+				left join xms_tbl_country as ct on ct.countryid = adr.country
+				where sm.airbill_number not in (select distinct airbill_number from xms_tbl_shipment_invoice)
+					and sm.status=0
+					and left(sm.customer_code,3) in (${franchiseList})
+					and sm.shipment_date >= #{startDate,jdbcType=DATE} and sm.shipment_date < date_add(#{endDate,jdbcType=DATE},interval 1 day)
+				) as r
+			left join xms_tbl_piece as p on p.shipmentid = r.shipmentid
+			]]>
+        <where>
+            <if test="customerCode != null and customerCode != ''">
+                r.customer_code like '%${customerCode}%'
+            </if>
+            <if test="customerName != null and customerName != ''">
+                AND r.customer_name like '%${customerName}%'
+            </if>
+            <if test="airbillNumber != null and airbillNumber != ''">
+                AND r.airbill_number like '%${airbillNumber}%'
+            </if>
+            <if test="carrierName != null and carrierName != ''">
+                AND r.carrier_name like '%${carrierName}%'
+            </if>
+            <if test="service != null and service != ''">
+                AND r.service_name like '%${service}%'
+            </if>
+            <if test="createDate != null and createDate != ''">
+                AND date(r.create_date) = date(#{createDate})
+            </if>
+            <if test="shipDate != null and shipDate != ''">
+                AND r.shipment_date = #{shipDate}
+            </if>
+            <if test="destination != null and destination != ''">
+                AND r.destination like '%${destination}%'
+            </if>
+            <if test="destinationCountry != null and destinationCountry != ''">
+                AND r.country_name like '%${destinationCountry}%'
+            </if>
+        </where>
+        group by shipmentid
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>) as r2
+        <where>
+            <if test="weight != null and weight != ''">
+                r2.weight = #{weight}
+            </if>
+            <if test="pieces != null and pieces != ''">
+                AND r2.no_of_pieces = #{pieces}
+            </if>
+        </where>
+    </select>
+
+    <select id="countInvoicePendingAirbillReport"
+            parameterType="com.gms.xms.filter.reports.webship.InvoicePendingAirbillFilter" resultType="long">
+        <![CDATA[
+		select 
+			count(*)
+		from
+			(select 
+				r.*,
+			    sum(p.weight) as weight,
+			    count(p.piece_id) as no_of_pieces
+			from
+				(select 	
+					sm.shipmentid,
+					sm.airbill_number,
+					sm.create_date,
+					sm.shipment_date,
+					sm.customer_code,
+					ca.customer_name,
+					sv.service_name as carrier_name,
+					st.shipment_type_name as service_name,
+					sm.weight_unit,
+					adr.city,
+					adr.postal_code,
+					concat(adr.city,', ',adr.postal_code) as destination,
+					ct.countryname as country_name
+				from xms_tbl_shipment as sm
+				inner join xms_tbl_customer_address as ca on ca.customer_code = sm.customer_code
+				inner join xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+				inner join xms_tbl_service as sv on sv.service_id = st.serviceid
+				left join xms_tbl_address as adr on adr.addressid = sm.receiveraddressid
+				left join xms_tbl_country as ct on ct.countryid = adr.country
+				where sm.airbill_number not in (select distinct airbill_number from xms_tbl_shipment_invoice)
+					and sm.status=0
+					and left(sm.customer_code,3) in (${franchiseList})
+					and sm.shipment_date >= #{startDate,jdbcType=DATE} and sm.shipment_date < date_add(#{endDate,jdbcType=DATE},interval 1 day)
+				) as r
+			left join xms_tbl_piece as p on p.shipmentid = r.shipmentid
+			]]>
+        <where>
+            <if test="customerCode != null and customerCode != ''">
+                r.customer_code like '%${customerCode}%'
+            </if>
+            <if test="customerName != null and customerName != ''">
+                AND r.customer_name like '%${customerName}%'
+            </if>
+            <if test="airbillNumber != null and airbillNumber != ''">
+                AND r.airbill_number like '%${airbillNumber}%'
+            </if>
+            <if test="carrierName != null and carrierName != ''">
+                AND r.carrier_name like '%${carrierName}%'
+            </if>
+            <if test="service != null and service != ''">
+                AND r.service_name like '%${service}%'
+            </if>
+            <if test="createDate != null and createDate != ''">
+                AND date(r.create_date) = date(#{createDate})
+            </if>
+            <if test="shipDate != null and shipDate != ''">
+                AND r.shipment_date = #{shipDate}
+            </if>
+            <if test="destination != null and destination != ''">
+                AND r.destination like '%${destination}%'
+            </if>
+            <if test="destinationCountry != null and destinationCountry != ''">
+                AND r.country_name like '%${destinationCountry}%'
+            </if>
+        </where>
+        group by shipmentid
+        ) as r2
+        <where>
+            <if test="weight != null and weight != ''">
+                r2.weight = #{weight}
+            </if>
+            <if test="pieces != null and pieces != ''">
+                AND r2.no_of_pieces = #{pieces}
+            </if>
+        </where>
+    </select>
+</mapper>

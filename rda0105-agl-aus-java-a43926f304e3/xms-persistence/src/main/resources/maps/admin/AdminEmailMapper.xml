@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="AdminEmail">
+    <resultMap id="AdminEmailMap" type="AdminEmailVo">
+        <id column="id" property="id"/>
+        <result column="email" property="email"/>
+        <result column="action_date" property="actionDate"/>
+        <result column="sorting_date" property="sortingDate"/>
+    </resultMap>
+
+    <select id="selectAdminEmailsList" parameterType="String" resultType="String">
+        SELECT DISTINCT
+        email
+        FROM
+        xms_tbl_admin_email AS admin
+        INNER JOIN
+        xms_tbl_admin_email_setting AS email ON admin.id = email.admin_email_id
+        INNER JOIN
+        xms_tbl_email_setting AS setting ON setting.id = email.email_setting_id
+        WHERE
+        setting.name = #{settingName}
+        AND email.status = 1
+    </select>
+
+    <select id="checkEmail" parameterType="String" resultType="int">
+        select count(*) from xms_tbl_admin_email
+        where email = #{email}
+    </select>
+    <select id="selectByFilter" parameterType="com.gms.xms.filter.admin.AdminEmailFilter" resultMap="AdminEmailMap">
+        SELECT
+        id,
+        email,
+        DATE_FORMAT(
+        action_date,
+        '%d-%m-%Y %H:%i:%s'
+        ) AS action_date,
+        action_date AS sorting_date
+        FROM
+        xms_tbl_admin_email
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectAdminEmailSetting" parameterType="com.gms.xms.filter.admin.AdminEmailFilter"
+            resultType="AdminEmailSettingV2Vo">
+        SELECT ae.id, cl1.id_setting as idSetting, ae.email,ae.action_date as actionDate,cl1.columnName as
+        emailInvoiceConfirm,cl2.columnName as EdiImportNotify,cl3.columnName as supplyRequest
+        from xms_tbl_admin_email as ae
+        INNER JOIN
+        (
+        SELECT
+        ifnull(STATUS, 0) AS columnName,
+        admin_email_id,ae.id as id_setting
+        FROM
+        xms_tbl_email_setting es
+        LEFT JOIN (
+        SELECT
+        *
+        FROM
+        xms_tbl_admin_email_setting
+        ) ae ON es.id = ae.email_setting_id
+        where es.id=1
+        ) AS cl1 ON cl1.admin_email_id = ae.id
+        INNER JOIN
+        (
+        SELECT
+        ifnull(STATUS, 0) AS columnName,
+        admin_email_id
+        FROM
+        xms_tbl_email_setting es
+        LEFT JOIN (
+        SELECT
+        *
+        FROM
+        xms_tbl_admin_email_setting
+        ) ae ON es.id = ae.email_setting_id
+        where es.id=2
+        ) AS cl2 ON cl2.admin_email_id = ae.id
+        INNER JOIN
+        (
+        SELECT
+        ifnull(STATUS, 0) AS columnName,
+        admin_email_id
+        FROM
+        xms_tbl_email_setting es
+        LEFT JOIN (
+        SELECT
+        *
+        FROM
+        xms_tbl_admin_email_setting
+        ) ae ON es.id = ae.email_setting_id
+        where es.id=3
+        ) AS cl3 ON cl3.admin_email_id = ae.id
+        ORDER BY id
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+
+    <select id="selectAdminEmailSettingCount" parameterType="com.gms.xms.filter.admin.AdminEmailFilter"
+            resultType="int">
+        SELECT count(*) from xms_tbl_admin_email
+    </select>
+
+    <insert id="insert" parameterType="AdminEmailVo" useGeneratedKeys="true" keyProperty="id">
+        insert into xms_tbl_admin_email (email,action_date)
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="email != null">
+                #{email},
+            </if>
+            <if test="actionDate == null">
+                date(now()),
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="AdminEmailVo">
+        update xms_tbl_admin_email
+        <set>
+            <if test="email != null">
+                email = #{email},
+            </if>
+            <if test="actionDate == null">
+                action_date = date(now()),
+            </if>
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+
+    <select id="update_SelectForLog" parameterType="AdminEmailVo" resultMap="AdminEmailMap">
+        DELETE FROM xms_tbl_admin_email
+        WHERE id = #{id};
+    </select>
+
+    <delete id="delete" parameterType="int">
+        DELETE FROM xms_tbl_admin_email
+        WHERE id = #{id};
+    </delete>
+    <select id="delete_SelectForLog" parameterType="int" resultMap="AdminEmailMap">
+        DELETE FROM xms_tbl_admin_email
+        WHERE id = #{id};
+    </select>
+</mapper>

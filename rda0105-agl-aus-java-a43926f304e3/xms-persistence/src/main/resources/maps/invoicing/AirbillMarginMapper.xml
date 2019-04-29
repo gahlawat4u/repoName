@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="AirbillMargin">
+    <resultMap id="AirbillMarginMap" type="AirbillMarginVo">
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="invoiceid" property="invoiceId"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="customer_cost" property="customerCost"/>
+        <result column="franchise_cost" property="franchiseCost"/>
+        <result column="carrier_cost" property="carrierCost"/>
+        <result column="franchise_margin" property="franchiseMargin"/>
+        <result column="franchise_margin_pct" property="franchiseMarginPct"/>
+        <result column="shipment_type_name" property="shipmentTypeName"/>
+    </resultMap>
+
+    <select id="getAirbillMarginByFilter" parameterType="com.gms.xms.filter.invoicing.AirbillMarginFilter"
+            resultMap="AirbillMarginMap">
+        select
+        shipmentid,
+        airbill_number,
+        invoiceid,
+        invoice_code,
+        customer_cost,
+        franchise_cost,
+        carrier_cost,
+        customer_cost-franchise_cost as franchise_margin,
+        100*(customer_cost-franchise_cost)/customer_cost as franchise_margin_pct,
+        shipment_type_name
+        from
+        (select
+        sb.shipmentid,
+        sb.airbill_number,
+        i.invoiceid,
+        i.invoice_code,
+        sb.description as shipment_type_name,
+        sum(sb.customer_cost+sb.customer_tax_amount) as customer_cost,
+        sum(sb.franchise_cost+sb.franchise_tax_amount) as franchise_cost,
+        sum(sb.carrier_cost+sb.tax_amount) as carrier_cost
+        from xms_tbl_shipment_billing as sb
+        inner join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and si.airbill_number =
+        sb.airbill_number
+        inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        where left(i.customer_code,3) in (${franchiseList})
+        <![CDATA[ and i.invoice_date>=date(#{startDate}) and i.invoice_date<date_add(date(#{endDate}),interval 1 day) ]]>
+        and i.invoice_code!=0
+        group by sb.shipmentid, sb.airbill_number
+        ) as r
+        <if test="minMargin!=null">
+            <![CDATA[ having franchise_margin_pct <= #{minMargin} ]]>
+        </if>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="sumAirbillMarginByFilter" parameterType="com.gms.xms.filter.invoicing.AirbillMarginFilter"
+            resultMap="AirbillMarginMap">
+        select
+        sum(customer_cost) as customer_cost,
+        sum(franchise_cost) as franchise_cost,
+        sum(carrier_cost) as carrier_cost,
+        sum(franchise_margin) as franchise_margin
+        from
+        (select
+        shipmentid,
+        airbill_number,
+        invoiceid,
+        invoice_code,
+        customer_cost,
+        franchise_cost,
+        carrier_cost,
+        customer_cost-franchise_cost as franchise_margin,
+        100*(customer_cost-franchise_cost)/customer_cost as franchise_margin_pct,
+        shipment_type_name
+        from
+        (select
+        sb.shipmentid,
+        sb.airbill_number,
+        i.invoiceid,
+        i.invoice_code,
+        sb.description as shipment_type_name,
+        sum(sb.customer_cost+sb.customer_tax_amount) as customer_cost,
+        sum(sb.franchise_cost+sb.franchise_tax_amount) as franchise_cost,
+        sum(sb.carrier_cost+sb.tax_amount) as carrier_cost
+        from xms_tbl_shipment_billing as sb
+        inner join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and si.airbill_number =
+        sb.airbill_number
+        inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        where left(i.customer_code,3) in (${franchiseList})
+        <![CDATA[ and i.invoice_date>=date(#{startDate}) and i.invoice_date<date_add(date(#{endDate}),interval 1 day) ]]>
+        and i.invoice_code!=0
+        group by sb.shipmentid, sb.airbill_number
+        ) as r
+        <if test="minMargin!=null">
+            <![CDATA[ having franchise_margin_pct <= #{minMargin} ]]>
+        </if>
+        ) as result
+    </select>
+
+    <select id="countAirbillMarginByFilter" parameterType="com.gms.xms.filter.invoicing.AirbillMarginFilter"
+            resultType="long">
+        select
+        count(*)
+        from
+        (select
+        shipmentid,
+        airbill_number,
+        invoiceid,
+        invoice_code,
+        customer_cost,
+        franchise_cost,
+        carrier_cost,
+        customer_cost-franchise_cost as franchise_margin,
+        100*(customer_cost-franchise_cost)/customer_cost as franchise_margin_pct,
+        shipment_type_name
+        from
+        (select
+        sb.shipmentid,
+        sb.airbill_number,
+        i.invoiceid,
+        i.invoice_code,
+        sb.description as shipment_type_name,
+        sum(sb.customer_cost+sb.customer_tax_amount) as customer_cost,
+        sum(sb.franchise_cost+sb.franchise_tax_amount) as franchise_cost,
+        sum(sb.carrier_cost+sb.tax_amount) as carrier_cost
+        from xms_tbl_shipment_billing as sb
+        inner join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and si.airbill_number =
+        sb.airbill_number
+        inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        where left(i.customer_code,3) in (${franchiseList})
+        <![CDATA[ and i.invoice_date>=date(#{startDate}) and i.invoice_date<date_add(date(#{endDate}),interval 1 day) ]]>
+        and i.invoice_code!=0
+        group by sb.shipmentid, sb.airbill_number
+        ) as r
+        <if test="minMargin!=null">
+            <![CDATA[ having franchise_margin_pct <= #{minMargin} ]]>
+        </if>
+        ) as result
+    </select>
+</mapper>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="InvoicePaymentDetail">
+    <resultMap id="InvoicePaymentDetailMap" type="com.gms.xms.txndb.vo.InvoicePaymentDetailVo">
+        <result column="invoice_paymentid" property="invoicePaymentId" jdbcType="BIGINT"/>
+        <result column="shipmentid" property="shipmentId" jdbcType="BIGINT"/>
+        <result column="airbill_number" property="airbillNumber" jdbcType="VARCHAR"/>
+        <result column="amount" property="amount" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="InvoicePaymentDetailVo">
+        insert into xms_tbl_invoice_payment_detail (invoice_paymentid, shipmentid, airbill_number, amount)
+        values (#{invoicePaymentId}, #{shipmentId}, #{airbillNumber}, #{amount})
+    </insert>
+
+    <delete id="deleteByInvoicePaymentId" parameterType="long">
+        delete from xms_tbl_invoice_payment_detail
+        where invoice_paymentid = #{invoicePaymentId}
+    </delete>
+
+    <select id="deleteByInvoicePaymentId_SelectForLog" parameterType="long" resultMap="InvoicePaymentDetailMap">
+        select * from xms_tbl_invoice_payment_detail
+        where invoice_paymentid = #{invoicePaymentId}
+    </select>
+
+    <delete id="deleteByVo" parameterType="InvoicePaymentDetailVo">
+        delete from xms_tbl_invoice_payment_detail
+        where invoice_paymentid = #{invoicePaymentId} and shipmentid = #{shipmentId}
+    </delete>
+
+    <select id="deleteByVo_SelectForLog" parameterType="InvoicePaymentDetailVo" resultMap="InvoicePaymentDetailMap">
+        select * from xms_tbl_invoice_payment_detail
+        where invoice_paymentid = #{invoicePaymentId} and shipmentid = #{shipmentId}
+    </select>
+
+    <select id="selectByInvoicePaymentId" parameterType="long" resultMap="InvoicePaymentDetailMap">
+        select * from xms_tbl_invoice_payment_detail
+        where invoice_paymentid = #{invoicePaymentId}
+    </select>
+</mapper>

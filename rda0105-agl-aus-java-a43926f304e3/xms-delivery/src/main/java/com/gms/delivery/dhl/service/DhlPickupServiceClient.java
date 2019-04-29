@@ -1,0 +1,224 @@
+package com.gms.delivery.dhl.service;
+
+import java.io.StringBufferInputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
+import java.util.Date;
+import java.util.UUID;
+
+import javax.xml.bind.JAXBException;
+
+import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.lang.StringUtils;
+
+import com.gms.delivery.dhl.xmlpi.datatype.error.response.DhlErrorResponse;
+import com.gms.delivery.dhl.xmlpi.datatype.error.response.PickupErrorResponse;
+import com.gms.delivery.dhl.xmlpi.datatype.pickup.request.BookPURequest;
+import com.gms.delivery.dhl.xmlpi.datatype.pickup.request.DimensionUnit;
+import com.gms.delivery.dhl.xmlpi.datatype.pickup.request.Pickup;
+import com.gms.delivery.dhl.xmlpi.datatype.pickup.request.Place;
+import com.gms.delivery.dhl.xmlpi.datatype.pickup.request.RegionCode;
+import com.gms.delivery.dhl.xmlpi.datatype.pickup.request.Requestor;
+import com.gms.delivery.dhl.xmlpi.datatype.pickup.request.RequestorContact;
+import com.gms.delivery.dhl.xmlpi.datatype.pickup.request.WeightSeg;
+import com.gms.delivery.dhl.xmlpi.datatype.pickup.response.BookPUResponse;
+import com.gms.delivery.dhl.xmlpi.datatype.pickup.response.PickupResult;
+import com.gms.delivery.httpclient.HttpClientFactory;
+import com.gms.xms.cache.SystemSettingCache;
+import com.gms.xms.common.utils.AppUtils;
+import com.gms.xms.common.utils.DateUtils;
+import com.gms.xms.persistence.service.shipmenttype.IShipmentTypeService;
+import com.gms.xms.persistence.service.shipmenttype.ShipmentTypeServiceImp;
+import com.gms.xms.txndb.vo.AddressVo;
+import com.gms.xms.txndb.vo.DhlCountryVo;
+import com.gms.xms.txndb.vo.LocationCodeVo;
+import com.gms.xms.txndb.vo.PieceVo;
+import com.gms.xms.txndb.vo.ScheduleCollectionVo;
+import com.gms.xms.txndb.vo.ShipmentVo;
+import com.gms.xms.txndb.vo.schedulecollection.BookPickupRequestVo;
+import com.gms.xms.txndb.vo.webship.ShipmentTypeVo;
+
+@SuppressWarnings("deprecation")
+public class DhlPickupServiceClient {
+
+    public String executeGetPickup(String xml, String xmlResponse) {
+        String uniqueString = UUID.randomUUID().toString().replace("-", "");
+        AppUtils.writeToFileByDate(xml, "/dhl_pickup_request_" + uniqueString + ".xml");
+        PostMethod post = new PostMethod(SystemSettingCache.getInstance().getValueByKey("DHL URL"));
+        post.setRequestEntity(new InputStreamRequestEntity(new StringBufferInputStream(xml)));
+        post.setRequestHeader("Content-type", "text/xml; charset=UTF-8");
+        try {
+            String pickupResponseXML;
+            if (StringUtils.isBlank(xmlResponse)) {
+                int result = HttpClientFactory.getInstance().getHttpClient().executeMethod(post);
+                if (result == 200) {
+                    pickupResponseXML = post.getResponseBodyAsString();
+                    AppUtils.writeToFileByDate(pickupResponseXML, "/dhl_pickup_response_" + uniqueString + ".xml");
+                } else {
+                    return null;
+                }
+            } else {
+                pickupResponseXML = xmlResponse;
+            }
+            return pickupResponseXML;
+        } catch (Exception e) {
+            return null;
+        } finally {
+            post.releaseConnection();
+        }
+    }
+
+    public String parsePickupXMLRequest(BookPickupRequestVo bookPickupRequestVo) throws Exception {
+        ShipmentVo shipment = bookPickupRequestVo.getShipment();
+        ScheduleCollectionVo scheduleCollection = bookPickupRequestVo.getScheduleCollection();
+        AddressVo senderAddress = bookPickupRequestVo.getSenderAddress();
+        AddressVo pickupAddress = bookPickupRequestVo.getPickupAddress();
+        LocationCodeVo locationCode = bookPickupRequestVo.getLocationCode();
+        DhlCountryVo dhlCountry = bookPickupRequestVo.getDhlCountry();
+        PieceVo pieceVo = bookPickupRequestVo.getPieceVo();
+
+        BookPURequest bookPURequest = new BookPURequest();
+        bookPURequest.setSchemaVersion(new BigDecimal("1.0").setScale(1));
+        com.gms.delivery.dhl.xmlpi.datatype.pickup.request.Request request = new com.gms.delivery.dhl.xmlpi.datatype.pickup.request.Request();
+        com.gms.delivery.dhl.xmlpi.datatype.pickup.request.ServiceHeader serviceHeader = new com.gms.delivery.dhl.xmlpi.datatype.pickup.request.ServiceHeader();
+        Requestor requestor = new Requestor();
+        RequestorContact requestorContact = new RequestorContact();
+        Place place = new Place();
+        Pickup pickup = new Pickup();
+        WeightSeg weight = new WeightSeg();
+        com.gms.delivery.dhl.xmlpi.datatype.pickup.request.Contact pickupContact = new com.gms.delivery.dhl.xmlpi.datatype.pickup.request.Contact();
+        com.gms.delivery.dhl.xmlpi.datatype.pickup.request.ShipmentDetails shipmentDetails = new com.gms.delivery.dhl.xmlpi.datatype.pickup.request.ShipmentDetails();
+        com.gms.delivery.dhl.xmlpi.datatype.pickup.request.Piece pieces = new com.gms.delivery.dhl.xmlpi.datatype.pickup.request.Piece();
+        bookPURequest.setRegionCode(RegionCode.fromValue(dhlCountry.getDhlRegion()));
+
+        // Service header
+        serviceHeader.setMessageTime(DateUtils.convertDateToString(new Date(), "yyyy-MM-dd'T'HH:mm:ssZ", SystemSettingCache.getInstance().getValueByKey("Standard Timezone")).substring(0, 22) + ":00");
+        String messageid = String.valueOf(System.nanoTime()) + String.valueOf(System.nanoTime()) + String.valueOf(System.nanoTime());
+        messageid = messageid.substring(0, 30);
+        serviceHeader.setMessageReference(messageid);
+        serviceHeader.setSiteID(SystemSettingCache.getInstance().getValueByKey("Site ID"));
+        serviceHeader.setPassword(SystemSettingCache.getInstance().getValueByKey("DHL Password"));
+        request.setServiceHeader(serviceHeader);
+        bookPURequest.setRequest(request);
+
+        // Requestor
+        requestor.setAccountType("D");
+        requestor.setAccountNumber(shipment.getBillingAccount());
+        requestorContact.setPersonName(senderAddress.getContactName());
+        requestorContact.setPhone(senderAddress.getPhone());
+        requestor.setRequestorContact(requestorContact);
+        requestor.setCompanyName(senderAddress.getCompanyName());
+        bookPURequest.setRequestor(requestor);
+
+        // Place
+        place.setLocationType(locationCode.getLocationCodeName());
+        place.setCompanyName(pickupAddress.getCompanyName());
+        place.setAddress1(pickupAddress.getAddress());
+        place.setAddress2(pickupAddress.getAddress2());
+        place.setPackageLocation(scheduleCollection.getDescription());
+        place.setCity(pickupAddress.getCity());
+        place.setStateCode(pickupAddress.getState());
+        place.setDivisionName("");
+        place.setCountryCode(pickupAddress.getCountryDetail().getCountryCode());
+        place.setPostalCode(pickupAddress.getPostalCode());
+        bookPURequest.setPlace(place);
+
+        BigDecimal totalWeight = new BigDecimal(scheduleCollection.getTotalWeight()).setScale(2, BigDecimal.ROUND_HALF_UP);
+        // Pickup
+        pickup.setPickupDate(DateUtils.convertDateToString(scheduleCollection.getPickupDate(), "yyyy-MM-dd", null));
+        pickup.setReadyByTime(scheduleCollection.getPickupTime().substring(0, 5));
+        pickup.setCloseTime(scheduleCollection.getPickupTimeNoLater().substring(0, 5));
+        pickup.setPieces(scheduleCollection.getNoOfPieces());
+        weight.setWeight(totalWeight);
+        weight.setWeightUnit(com.gms.delivery.dhl.xmlpi.datatype.pickup.request.WeightUnit.K);
+        pickup.setWeight(weight);
+        bookPURequest.setPickup(pickup);
+
+        // pickup contact
+        pickupContact.setPersonName(pickupAddress.getContactName());
+        pickupContact.setPhone(pickupAddress.getPhone());
+        bookPURequest.setPickupContact(pickupContact);
+
+        // Shipment Details
+        String globalProductCode = "";
+        String localProductCode = "";
+        String dfGlobalProductcode = SystemSettingCache.getInstance().getValueByKey("GlobalProductCode");
+        String dfLocalProductCode = SystemSettingCache.getInstance().getValueByKey("LocalProductCode");
+        IShipmentTypeService shipmentTypeService = new ShipmentTypeServiceImp();
+        ShipmentTypeVo shipmentTypeVo = shipmentTypeService.getShipmentTypeByShipmentTypeId(shipment.getShipmentTypeId());
+        if (shipment.getProductContentCode().equalsIgnoreCase("DOX")) {
+            globalProductCode = shipmentTypeVo.getGlobalProductCodeDoc();
+            localProductCode = shipmentTypeVo.getLocalProductCodeDoc();
+        } else {
+            globalProductCode = shipmentTypeVo.getGlobalProductCodeNonDoc();
+            localProductCode = shipmentTypeVo.getLocalProductCodeNonDoc();
+        }
+        globalProductCode = StringUtils.isBlank(globalProductCode) ? dfGlobalProductcode : globalProductCode;
+        localProductCode = StringUtils.isBlank(localProductCode) ? dfLocalProductCode : localProductCode;
+        shipmentDetails.setAccountType("D");
+    	shipmentDetails.setNumberOfPieces(BigInteger.valueOf(scheduleCollection.getNoOfPieces()) );
+        shipmentDetails.setWeight(totalWeight);
+        shipmentDetails.setWeightUnit(com.gms.delivery.dhl.xmlpi.datatype.pickup.request.WeightUnit.K);
+        shipmentDetails.setDoorTo(com.gms.delivery.dhl.xmlpi.datatype.pickup.request.DoorTo.DD);
+        shipmentDetails.setGlobalProductCode(globalProductCode);
+        if (shipment.getDimensionUnit().equalsIgnoreCase("cm")) {
+            shipmentDetails.setDimensionUnit(DimensionUnit.C);
+        } else {
+            shipmentDetails.setDimensionUnit(DimensionUnit.I);
+        }
+        if (shipment.getWithInsurance().compareTo(BigDecimal.ZERO) > 0) {
+            shipmentDetails.setInsuredAmount(shipment.getTotalCustomValue().setScale(2, RoundingMode.HALF_UP));
+        } else {
+
+            shipmentDetails.setInsuredAmount(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+        }
+        shipmentDetails.setInsuredCurrencyCode(shipment.getCurrencyCode());
+        shipmentDetails.getSpecialService().add("S");
+        shipmentDetails.getSpecialService().add("T");
+        pieces.setWeight(new BigDecimal(pieceVo.getWeight() > pieceVo.getDeadWeight() ? pieceVo.getWeight() : pieceVo.getDeadWeight()).setScale(2, RoundingMode.HALF_UP));
+        if (pieceVo.getDimensionH() == 0) {
+            pieceVo.setDimensionH(1D);
+        }
+        if (pieceVo.getDimensionW() == 0) {
+            pieceVo.setDimensionW(1D);
+        }
+        if (pieceVo.getDimensionL() == 0) {
+            pieceVo.setDimensionL(1D);
+        }
+        pieces.setHeight(new BigDecimal(pieceVo.getDimensionH()).toBigInteger());
+        pieces.setWidth(new BigDecimal(pieceVo.getDimensionW()).toBigInteger());
+        pieces.setDepth(new BigDecimal(pieceVo.getDimensionL()).toBigInteger());
+        shipmentDetails.setPieces(pieces);
+        bookPURequest.getShipmentDetails().add(shipmentDetails);
+        return AppUtils.Object2XmlString(bookPURequest, BookPURequest.class);
+    }
+
+    public PickupResult parseResponse(String xmlResponse) throws JAXBException {
+        if (StringUtils.isBlank(xmlResponse)) {
+            return null;
+        }
+        PickupResult pickupResult = new PickupResult();
+        BookPUResponse bookPUResponse = null;
+        DhlErrorResponse errorResponse = null;
+        PickupErrorResponse pickupErrorResponse = null;
+        if (AppUtils.checkXmlTagValue(xmlResponse, "ActionStatus", "Error")) {
+            try {
+                errorResponse = AppUtils.xmlString2Object(xmlResponse, DhlErrorResponse.class);
+                pickupResult.setErrorResponse(errorResponse);
+            } catch (Exception e) {
+            }
+            try {
+                pickupErrorResponse = AppUtils.xmlString2Object(xmlResponse, PickupErrorResponse.class);
+                pickupResult.setPickupErrorResponse(pickupErrorResponse);
+            } catch (Exception e) {
+            }
+        } else {
+            bookPUResponse = AppUtils.xmlString2Object(xmlResponse, BookPUResponse.class);
+        }
+        pickupResult.setErrorResponse(errorResponse);
+        pickupResult.setBookPUResponse(bookPUResponse);
+        return pickupResult;
+    }
+}

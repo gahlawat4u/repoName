@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ServiceMarkupRate">
+    <select id="getServiceMarkupRateByFranchiseCode"
+            parameterType="com.gms.xms.filter.admin.ratesheets.ServiceMarkupRateFilter" resultType="double">
+        select
+        case #{serviceId}
+        when 1 then ifnull(markup_rate,0)
+        when 3 then ifnull(tnt_markup_rate,0)
+        when 15 then ifnull(dhl_dom_markup_rate,0)
+        when 52 then ifnull(toll_markup_rate,0)
+        when 54 then
+        ifnull((select markup_rate from xms_tbl_franchise_service_markup
+        where franchise_code = #{code} and service_id = #{serviceId} and shipment_type_id = #{shipmentTypeId}
+        ),0) + ifnull(tnt_international_markup_rate,0)
+        when 59 then ifnull(toll_ipec_markup_rate,0)
+        when 72 then ifnull(startrack_markup_rate,0)
+        when 400 then ifnull(ups_int_markup_rate,0)
+        else 0
+        end as service_markup_rate
+        from xms_tbl_franchise
+        where franchise_code = #{code}
+    </select>
+
+    <select id="getServiceMarkupRateByCustomerCode"
+            parameterType="com.gms.xms.filter.admin.ratesheets.ServiceMarkupRateFilter" resultType="double">
+        select
+        case #{serviceId}
+        when 1 then ifnull(markup_rate,0)
+        when 3 then ifnull(tnt_markup_rate,0)
+        when 15 then ifnull(dhl_dom_markup_rate,0)
+        when 52 then ifnull(toll_markup_rate,0)
+        when 54 then
+        ifnull((select markup_rate from xms_tbl_franchise_service_markup
+        where franchise_code = f.franchise_code and service_id = #{serviceId} and shipment_type_id = #{shipmentTypeId}
+        ),0) + ifnull(tnt_international_markup_rate,0)
+        when 59 then ifnull(toll_ipec_markup_rate,0)
+        when 72 then ifnull(startrack_markup_rate,0)
+        when 400 then ifnull(ups_int_markup_rate,0)
+        else 0
+        end as service_markup_rate
+        from xms_tbl_customer as c
+        left join xms_tbl_franchise as f on f.franchise_code = concat(c.franchise_code,'00001')
+        where customer_code= #{code}
+    </select>
+
+    <select id="getServiceMarkupRateByProfileId"
+            parameterType="com.gms.xms.filter.admin.ratesheets.ServiceMarkupRateFilter" resultType="double">
+        select
+        case #{serviceId}
+        when 1 then ifnull(markup_rate,0)
+        when 3 then ifnull(tnt_markup_rate,0)
+        when 15 then ifnull(dhl_dom_markup_rate,0)
+        when 52 then ifnull(toll_markup_rate,0)
+        when 54 then
+        ifnull((select markup_rate from xms_tbl_franchise_service_markup
+        where franchise_code = f.franchise_code and service_id = #{serviceId} and shipment_type_id = #{shipmentTypeId}
+        ),0) + ifnull(tnt_international_markup_rate,0)
+        when 59 then ifnull(toll_ipec_markup_rate,0)
+        when 72 then ifnull(startrack_markup_rate,0)
+        when 400 then ifnull(ups_int_markup_rate,0)
+        else 0
+        end as service_markup_rate
+        from xms_tbl_customer_profile as cp
+        left join xms_tbl_franchise as f on f.franchise_code = concat(cp.franchise_code,'00001')
+        where profileid = #{code}
+    </select>
+</mapper>

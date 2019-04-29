@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="errors" type="XmlEncodeError" nillable="false"/>
+    <xs:complexType name="XmlEncodeError">
+        <xs:sequence minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="error" type="xs:string" nillable="false"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <properties resource="mybatis.properties"/>
+    <settings>
+        <setting name="cacheEnabled" value="true"/>
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <setting name="multipleResultSetsEnabled" value="true"/>
+        <setting name="useColumnLabel" value="true"/>
+        <setting name="useGeneratedKeys" value="false"/>
+        <setting name="autoMappingBehavior" value="PARTIAL"/>
+        <setting name="defaultExecutorType" value="SIMPLE"/>
+        <setting name="defaultStatementTimeout" value="600"/>
+        <setting name="safeRowBoundsEnabled" value="false"/>
+        <setting name="mapUnderscoreToCamelCase" value="false"/>
+        <setting name="localCacheScope" value="SESSION"/>
+        <setting name="jdbcTypeForNull" value="OTHER"/>
+        <setting name="lazyLoadTriggerMethods" value="equals,clone,hashCode,toString"/>
+    </settings>
+    <typeAliases>
+        <package name="com.gms.xms.txndb.vo"/>
+        <package name="com.gms.xms.txndb.vo.overpayment"/>
+    </typeAliases>
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${driver}"/>
+                <property name="url" value="${url}"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
+                <property name="poolMaximumActiveConnections" value="20"/>
+                <property name="poolMaximumIdleConnections" value="5"/>
+                <property name="poolMaximumCheckoutTime" value="30000"/>
+                <property name="poolTimeToWait" value="30000"/>
+                <property name="poolPingQuery" value="select 1"/>
+                <property name="poolPingEnabled" value="true"/>
+                <!-- property name="poolPingConnectionsNotUsedFor" value="30000" / -->
+            </dataSource>
+        </environment>
+    </environments>
+
+    <mappers>
+        <mapper resource="maps/ComponentMapper.xml"/>
+        <mapper resource="maps/franchisepayable/FranchiseMapper.xml"/>
+        <mapper resource="maps/franchisepayable/FranchisePayableTaskMapper.xml"/>
+        <mapper resource="maps/franchisepayable/FranchisePayableMSOverviewMapper.xml"/>
+        <mapper resource="maps/franchisepayable/FranchisePayableMSMarginMapper.xml"/>
+        <mapper resource="maps/franchisepayable/FranchisePayableMSDeductMapper.xml"/>
+        <mapper resource="maps/franchisepayable/FranchisePayableMS61DaysMapper.xml"/>
+        <mapper resource="maps/franchisepayable/FranchisePayableMSNonCentralMapper.xml"/>
+        <mapper resource="maps/franchisepayable/FranchisePayableMSCreditMapper.xml"/>
+        <mapper resource="maps/franchisepayable/FranchisePayableMSOverpaymentMapper.xml"/>
+        <mapper resource="maps/franchisepayable/FranchisePayableRptTxnIdMapper.xml"/>
+        <mapper resource="maps/franchisepayable/FranchisePayablePeriodMapper.xml"/>
+        <mapper resource="maps/franchisepayable/FranPabDeductMapper.xml"/>
+
+        <mapper resource="maps/franchisepayable/sc/FranchisePayableSCTaskMapper.xml"/>
+        <mapper resource="maps/franchisepayable/sc/FranchisePayableSCCreditMapper.xml"/>
+        <mapper resource="maps/franchisepayable/sc/FranchisePayableSCOverpaymentMapper.xml"/>
+        <mapper resource="maps/franchisepayable/sc/FranchisePayableSCShipmentMapper.xml"/>
+        <mapper resource="maps/franchisepayable/sc/FranchisePayableSCTechFeeMapper.xml"/>
+        <mapper resource="maps/franchisepayable/sc/FranchisePayableSCOverviewMapper.xml"/>
+
+        <mapper resource="maps/LanguageCodeMapper.xml"/>
+        <mapper resource="maps/LanguageMapper.xml"/>
+        <mapper resource="maps/AccountServiceMapper.xml"/>
+        <mapper resource="maps/SystemSettingMapper.xml"/>
+        <mapper resource="maps/UserMapper.xml"/>
+        <mapper resource="maps/SessionInfoMapper.xml"/>
+        <mapper resource="maps/EmailTemplateMapper.xml"/>
+        <mapper resource="maps/CountryMapper.xml"/>
+        <mapper resource="maps/ServiceMapper.xml"/>
+        <mapper resource="maps/ShipmentTypeMapper.xml"/>
+        <mapper resource="maps/PackageMapper.xml"/>
+        <mapper resource="maps/CurrencyMapper.xml"/>
+        <mapper resource="maps/BillingTypeMapper.xml"/>
+        <mapper resource="maps/AddressMapper.xml"/>
+        <mapper resource="maps/ShipmentMapper.xml"/>
+        <mapper resource="maps/ScheduleCollectionMapper.xml"/>
+        <mapper resource="maps/PieceMapper.xml"/>
+        <mapper resource="maps/WebshipGroupMapper.xml"/>
+        <mapper resource="maps/HtsGoodMapper.xml"/>
+        <mapper resource="maps/WarrantyServiceMapper.xml"/>
+
+        <mapper resource="maps/CustomerDefaultSettingMapper.xml"/>
+        <mapper resource="maps/CollectionTypeMapper.xml"/>
+        <mapper resource="maps/TradeTypeMapper.xml"/>
+        <mapper resource="maps/ShipmentDetailMapper.xml"/>
+        <mapper resource="maps/InvoiceMapper.xml"/>
+        <mapper resource="maps/DimensionMapper.xml"/>
+        <mapper resource="maps/LanguageValueMapper.xml"/>
+        <mapper resource="maps/BankMapper.xml"/>
+        <mapper resource="maps/CustomerAddressMapper.xml"/>
+        <mapper resource="maps/CustomerPaymentMapper.xml"/>
+        <mapper resource="maps/InvoicePaymentMapper.xml"/>
+        <mapper resource="maps/InvoicePaymentDetailMapper.xml"/>
+        <mapper resource="maps/ShipmentInvoiceMapper.xml"/>
+        <mapper resource="maps/SupplyMapper.xml"/>
+        <mapper resource="maps/TrackingMapper.xml"/>
+        <mapper resource="maps/OverpaymentMapper.xml"/>
+        <mapper resource="maps/CustomerMapper.xml"/>
+        <mapper resource="maps/CarrierPostCodeMapper.xml"/>
+        <mapper resource="maps/MultiZoneMapper.xml"/>
+        <mapper resource="maps/CarrierSuburbMapper.xml"/>
+        <mapper resource="maps/CustomerBaseRateMapper.xml"/>
+        <mapper resource="maps/CustomerBaseRateDetailMapper.xml"/>
+        <mapper resource="maps/AccessorialMapper.xml"/>
+        <mapper resource="maps/OverpaymentInfoMapper.xml"/>
+        <mapper resource="maps/ContentDetailMapper.xml"/>
+        <mapper resource="maps/LocationCodeMapper.xml"/>
+        <mapper resource="maps/ShipmentNoteMapper.xml"/>
+        <mapper resource="maps/StateMapper.xml"/>
+        <mapper resource="maps/NoteMapper.xml"/>
+        <mapper resource="maps/BatchProcessingFailDetailMapper.xml"/>
+        <mapper resource="maps/AirbillAdjustmentMapper.xml"/>
+        <mapper resource="maps/AirbillAdjustmentRequestMapper.xml"/>
+        <mapper resource="maps/SubAdjustmentTypeMapper.xml"/>
+        <mapper resource="maps/CreditNoteMapper.xml"/>
+        <mapper resource="maps/CreditNoteDetailMapper.xml"/>
+        <mapper resource="maps/AirbillCreditNoteMapper.xml"/>
+        <mapper resource="maps/UserLevelMapper.xml"/>
+        <mapper resource="maps/CustomerBillingAddressMapper.xml"/>
+        <mapper resource="maps/SendCreditNoteBillingInfoMapper.xml"/>
+        <mapper resource="maps/AdjustmentHistoryMapper.xml"/>
+        <mapper resource="maps/ShipmentBillingMapper.xml"/>
+        <mapper resource="maps/CarrierCreditMapper.xml"/>
+        <mapper resource="maps/AirbillPausingDeductMapper.xml"/>
+        <mapper resource="maps/QuotePieceMapper.xml"/>
+        <mapper resource="maps/AccessorialDetailMapper.xml"/>
+        <mapper resource="maps/SystemSettingDefaultValueMapper.xml"/>
+        <mapper resource="maps/CarrierZoneMapper.xml"/>
+        <mapper resource="maps/ShipmentProductDetailMapper.xml"/>
+        <mapper resource="maps/FranchiseServiceMarkupMapper.xml"/>
+        <mapper resource="maps/UserHomeMapper.xml"/>
+        <!-- BEGIN WEBSHIP -->
+        <mapper resource="maps/webship/HistoryMapper.xml"/>
+        <mapper resource="maps/webship/HistoryDetailMapper.xml"/>
+        <mapper resource="maps/webship/WebshipMapper.xml"/>
+        <mapper resource="maps/webship/CustomerAddressBookMapper.xml"/>
+        <mapper resource="maps/webship/WebshipQuoteLogMapper.xml"/>
+        <mapper resource="maps/webship/WebshipQuoteLogDetailMapper.xml"/>
+        <mapper resource="maps/webship/AddressBookDetailMapper.xml"/>
+        <mapper resource="maps/webship/ShipmentTypePackageMapper.xml"/>
+        <mapper resource="maps/webship/HistoryTrackingMapper.xml"/>
+        <mapper resource="maps/webship/UsedRateWebshipMapper.xml"/>
+        <mapper resource="maps/webship/HistoryProductAirbillMapper.xml"/>
+        <mapper resource="maps/webship/PostalCodeMapper.xml"/>
+        <mapper resource="maps/webship/ServiceAddConMapper.xml"/>
+        <mapper resource="maps/webship/ServiceAddConDetailsMapper.xml"/>
+        <mapper resource="maps/webship/TntConnoteMapper.xml"/>
+        <mapper resource="maps/webship/DhlRemoteSurchargeDataMapper.xml"/>
+        <mapper resource="maps/webship/CheckRemoteSurchargeMapper.xml"/>
+
+        <!-- TOLL PRIORITY -->
+        <mapper resource="maps/webship/services/tollpriority/TollPrioritySuburbMapper.xml"/>
+        <mapper resource="maps/webship/services/tollpriority/TollRemoteAreaMapper.xml"/>
+        <mapper resource="maps/webship/services/tollpriority/TollPriorityRateSheetMapper.xml"/>
+        <!-- END TOLL PRIORITY -->
+
+        <!-- TOLL IPEC -->
+        <mapper resource="maps/webship/services/tollipec/TollIpecKgRateMapper.xml"/>
+        <mapper resource="maps/webship/services/tollipec/TollIpecManifestMapper.xml"/>
+        <mapper resource="maps/webship/services/tollipec/TollIpecPostcodeMapper.xml"/>
+        <mapper resource="maps/webship/services/tollipec/TollIpecZoneMapper.xml"/>
+        <mapper resource="maps/webship/services/tollipec/TollIpecTotalRateMapper.xml"/>
+        <mapper resource="maps/webship/TollIpecConnoteMapper.xml"/>
+        <!-- END TOLL IPEC -->
+        <mapper resource="maps/webship/TollConnoteMapper.xml"/>
+
+        <!-- TNT -->
+        <mapper resource="maps/webship/services/tnt/TntInternationalAuZoneMapper.xml"/>
+        <mapper resource="maps/webship/services/tnt/TntRouteMapper.xml"/>
+        <mapper resource="maps/webship/services/tnt/TntRemoteAreaMapper.xml"/>
+        <mapper resource="maps/webship/services/tnt/TntSurchargeAreaRangeMapper.xml"/>
+        <!-- END TNT -->
+
+        <!-- UPS -->
+        <mapper resource="maps/webship/services/ups/UpsZoneMapper.xml"/>
+        <mapper resource="maps/webship/services/ups/UpsAreaSurchargeMapper.xml"/>
+        <mapper resource="maps/webship/UpsConnoteMapper.xml"/>
+
+        <!-- END UPS -->
+
+        <!-- DHL -->
+        <mapper resource="maps/webship/services/dhl/DhlZoneMapper.xml"/>
+        <mapper resource="maps/webship/services/dhl/DhlCountryMapper.xml"/>
+        <mapper resource="maps/webship/services/dhl/DhlEsiZoneMapper.xml"/>
+        <mapper resource="maps/webship/services/dhl/DhlEsiZoneStationMapper.xml"/>
+        <!-- END DHL -->
+
+        <!-- RATE SHEET -->
+        <mapper resource="maps/webship/services/RateSheetColumnMapper.xml"/>
+        <mapper resource="maps/webship/services/RateSheetDetailMapper.xml"/>
+        <mapper resource="maps/webship/services/RateSheetMapper.xml"/>
+        <mapper resource="maps/webship/services/RateSheetRowMapper.xml"/>
+        <!-- END RATE SHEET -->
+
+        <mapper resource="maps/webship/OtherConnoteMapper.xml"/>
+        <!-- END WEBSHIP -->
+
+        <!-- CUSTOMER AGING REPORT -->
+        <mapper resource="maps/receivables/CustomerAgingMapper.xml"/>
+        <mapper resource="maps/receivables/CustomerAgingTaskMapper.xml"/>
+
+        <!-- CUSTOMER SUMMARY REPORT -->
+        <mapper resource="maps/reports/CustomerSummaryMapper.xml"/>
+
+        <mapper resource="maps/reports/CustomerStatusMapper.xml"/>
+        <mapper resource="maps/reports/CustomerActivationMapper.xml"/>
+        <mapper resource="maps/reports/CustomerInactivityMapper.xml"/>
+        <mapper resource="maps/reports/CustomerWeekActivityMapper.xml"/>
+        <mapper resource="maps/reports/CustomerInvoiceDetailMapper.xml"/>
+        <mapper resource="maps/reports/CustomerCreditNoteDetailMapper.xml"/>
+        <mapper resource="maps/reports/ranking/OverallFranchiseRankingMapper.xml"/>
+        <mapper resource="maps/reports/ranking/SalesRepRankingMapper.xml"/>
+
+        <mapper resource="maps/reports/webship/WebshipCustomerHistoryMapper.xml"/>
+        <mapper resource="maps/reports/webship/WebshipQuoteHistoryMapper.xml"/>
+        <mapper resource="maps/reports/webship/InvoicePendingAirbillMapper.xml"/>
+        <mapper resource="maps/reports/webship/WebshipCustomerDetailMapper.xml"/>
+
+        <mapper resource="maps/account/customers/CustomerInfoMapper.xml"/>
+        <mapper resource="maps/account/customers/ManageCustomerInvoiceMapper.xml"/>
+        <mapper resource="maps/industry/IndustryMapper.xml"/>
+        <mapper resource="maps/area/AreaMapper.xml"/>
+        <mapper resource="maps/customergroup/CustomerGroupMapper.xml"/>
+        <mapper resource="maps/account/customers/MarkupMapper.xml"/>
+
+        <mapper resource="maps/InvoiceTermMapper.xml"/>
+        <mapper resource="maps/customer/CustomerCollectionMapper.xml"/>
+        <mapper resource="maps/customer/CustomerAccessorialMapper.xml"/>
+        <mapper resource="maps/customer/CustomerProfileMapper.xml"/>
+        <mapper resource="maps/franchise/FranchiseDetailMapper.xml"/>
+
+        <!-- START ADMIN TAB IN WEBSHIP-ADMIN -->
+        <mapper resource="maps/admin/AdminEmailMapper.xml"/>
+        <mapper resource="maps/admin/AdminEmailSettingMapper.xml"/>
+        <mapper resource="maps/admin/FranchiseSettingMapper.xml"/>
+        <mapper resource="maps/admin/FranchiseSettingListExtMapper.xml"/>
+        <mapper resource="maps/admin/SystemStatsListMapper.xml"/>
+        <mapper resource="maps/admin/EventLogMapper.xml"/>
+        <mapper resource="maps/admin/LoginLogMapper.xml"/>
+        <mapper resource="maps/admin/WebshipLogMapper.xml"/>
+        <mapper resource="maps/admin/administration/PermissionMapper.xml"/>
+        <mapper resource="maps/admin/administration/UserLevelPermissionMapper.xml"/>
+        <mapper resource="maps/admin/administration/CountryListMapper.xml"/>
+        <mapper resource="maps/admin/administration/CustomerProfileBaseRateExtMapper.xml"/>
+        <mapper resource="maps/admin/SetCostBasisMapper.xml"/>
+        <mapper resource="maps/admin/CountryLogMapper.xml"/>
+        <mapper resource="maps/admin/SetListRatesMapper.xml"/>
+        <mapper resource="maps/admin/CoverSheetMapper.xml"/>
+        <mapper resource="maps/admin/CarrierCoverSheetMapper.xml"/>
+        <mapper resource="maps/admin/MenuMapper.xml"/>
+        <mapper resource="maps/admin/CustomerProfileBaseRateDetailMapper.xml"/>
+        <mapper resource="maps/admin/CustomerProfileBaseRateMapper.xml"/>
+        <mapper resource="maps/admin/InvoiceSettingMapper.xml"/>
+        <mapper resource="maps/admin/SearchAirbillMapper.xml"/>
+        <mapper resource="maps/admin/import/ReconcileAirbillMapper.xml"/>
+
+        <!-- END ADMIN TAB IN WEBSHIP-ADMIN -->
+        <mapper resource="maps/admin/TerritoryMapper.xml"/>
+        <mapper resource="maps/admin/ProductCarrierMapper.xml"/>
+        <mapper resource="maps/admin/ProductMapper.xml"/>
+
+        <mapper resource="maps/SalesRepMapper.xml"/>
+        <mapper resource="maps/SalesRepServiceMapper.xml"/>
+
+        <!-- INVOICING -->
+        <mapper resource="maps/invoicing/ViewEditInvoiceMapper.xml"/>
+        <mapper resource="maps/invoicing/AccessorialInfoMapper.xml"/>
+        <mapper resource="maps/invoicing/DuplicateAirbillMapper.xml"/>
+        <mapper resource="maps/invoicing/RepairAirbillErrorMapper.xml"/>
+        <mapper resource="maps/invoicing/ImportTotalReportMapper.xml"/>
+        <mapper resource="maps/invoicing/MoveUnfrozenInvoicesMapper.xml"/>
+        <mapper resource="maps/invoicing/CostDeviationMapper.xml"/>
+        <mapper resource="maps/invoicing/AirbillMarginMapper.xml"/>
+        <mapper resource="maps/invoicing/StatementMapper.xml"/>
+        <mapper resource="maps/invoicing/CsvInvoicesMapper.xml"/>
+
+        <mapper resource="maps/admin/receivables/PaymentMapper.xml"/>
+
+        <mapper resource="maps/reports/selfinsurance/SelfInsuranceMapper.xml"/>
+
+        <mapper resource="maps/admin/payables/salesrep/SalesRepSettingsMapper.xml"/>
+        <mapper resource="maps/admin/payables/salesrep/SalesRepReportMapper.xml"/>
+        <mapper resource="maps/admin/receivables/ReminderLetterMapper.xml"/>
+        <mapper resource="maps/admin/customer/baserate/ManageCustBaseRateMapper.xml"/>
+        <mapper resource="maps/account/contact/ManageContactMapper.xml"/>
+        <mapper resource="maps/admin/customer/baserate/ManageCustProfileBaseRateMapper.xml"/>
+        <mapper resource="maps/admin/ServiceMarkupRate.xml"/>
+        <mapper resource="maps/customer/SearchCustomerMapper.xml"/>
+
+        <mapper resource="maps/AdminQuickSearchMapper.xml"/>
+
+        <!-- Import rate sheet -->
+        <mapper resource="maps/admin/import_rate_sheet/ImportRateSheetMapper.xml"/>
+
+        <!-- Mass edit -->
+        <mapper resource="maps/invoicing/MassEditMapper.xml"/>
+
+        <!-- Import billing -->
+        <mapper resource="maps/admin/import/ImportBillingMapper.xml"/>
+        <!-- Download billing -->
+        <mapper resource="maps/downloadbilling/DownloadBillingMapper.xml"/>
+
+        <mapper resource="maps/StartrackMapper.xml"/>
+        <mapper resource="maps/ratesheet/ViewRateSheetMapper.xml"/>
+        <mapper resource="maps/email/EmailAddressInfoMapper.xml"/>
+        <mapper resource="maps/invoicenumbering/InvoiceNumberingMapper.xml"/>
+        <mapper resource="maps/invoicenumbering/FranInvoiceNumberingMapper.xml"/>
+        <mapper resource="maps/statistics/StatisticsMapper.xml"/>
+        <mapper resource="maps/ProspectMapper.xml"/>
+        <mapper resource="maps/admin/AirbillLabelMapper.xml"/>
+        <mapper resource="maps/admin/systemstats/SystemStatsMapper.xml"/>
+        <mapper resource="maps/webship/TollManifestMapper.xml"/>
+        <mapper resource="maps/admin/period/PeriodMapper.xml"/>
+        <mapper resource="maps/admin/period/MonthlyMapper.xml"/>
+        <mapper resource="maps/admin/edi_generate/EdiGenerateMapper.xml"/>
+        <mapper resource="maps/admin/edi_generate/TntTransmissionMapper.xml"/>
+
+        <mapper resource="maps/admin/CustomerProfileAccessorialMapper.xml"/>
+        <mapper resource="maps/FuntionalMybatis.xml"/>
+    </mappers>
+</configuration>

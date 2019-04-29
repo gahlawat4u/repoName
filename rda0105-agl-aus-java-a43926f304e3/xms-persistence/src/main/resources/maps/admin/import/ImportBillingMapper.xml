@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ImportBilling">
+    <select id="selectCustomerByAccount" parameterType="com.gms.xms.filter.importbilling.CustomerAccountFilter"
+            resultType="long">
+        <if test="fieldStr==null or fieldStr==''">
+            <if test="'I'.equals(bound) or '1'.equals(bound)">
+                select customer_code
+                from xms_tbl_customer
+                where dhl_inbound_account = #{accountNo} and inactive = 0
+                union
+                select franchise_code as customer_code
+                from xms_tbl_franchise
+                where dhl_inbound_account = #{accountNo} and inactive = 0
+                order by customer_code
+                limit 1
+            </if>
+            <if test="!'I'.equals(bound) and !'1'.equals(bound)">
+                select customer_code
+                from xms_tbl_customer
+                where dhl_international_account = #{accountNo} and inactive = 0
+                union
+                select franchise_code as customer_code
+                from xms_tbl_franchise
+                where dhl_international_account = #{accountNo} and inactive = 0
+                order by customer_code
+                limit 1
+            </if>
+        </if>
+        <if test="fieldStr!=null and fieldStr!=''">
+            select customer_code
+            from xms_tbl_customer
+            where ${fieldStr} = #{accountNo} and inactive = 0
+            union
+            select franchise_code as customer_code
+            from xms_tbl_franchise
+            where ${fieldStr} = #{accountNo} and inactive = 0
+            order by customer_code
+            limit 1
+        </if>
+    </select>
+
+    <select id="checkCustomerOrFranchise" parameterType="string" resultType="string">
+        select
+        customer_code
+        from xms_tbl_customer
+        where customer_code = #{customerCode}
+        union
+        select
+        franchise_code as customer_code
+        from xms_tbl_franchise
+        where franchise_code = #{customerCode}
+        limit 1
+    </select>
+</mapper>

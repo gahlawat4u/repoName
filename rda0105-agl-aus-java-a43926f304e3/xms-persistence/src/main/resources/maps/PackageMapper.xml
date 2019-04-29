@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Package">
+    <resultMap id="Package" type="PackageVo">
+        <id column="packageid" property="packageId"/>
+        <result column="packagename" property="packageName"/>
+        <result column="packagetypecode" property="packageTypeCode"/>
+        <result column="addpiece" property="addPiece"/>
+        <result column="carrier" property="carrier"/>
+        <result column="localizationid" property="localizationId"/>
+        <result column="content_type" property="contentType"/>
+        <result column="config_id" property="configId"/>
+    </resultMap>
+
+    <select id="getPackageById" resultMap="Package" parameterType="int">
+        SELECT * FROM xms_tbl_package
+        WHERE packageid = #{packageId}
+    </select>
+
+    <select id="getPackageList" resultMap="Package">
+        SELECT * FROM xms_tbl_package
+    </select>
+
+    <select id="getPackageListByCarrier" parameterType="int" resultMap="Package">
+        SELECT * FROM xms_tbl_package
+        WHERE carrier = #{serviceId}
+    </select>
+
+    <select id="getPackageListByShipmentTypeId" resultMap="Package" parameterType="int">
+        SELECT
+        p.packageid,
+        p.packagename,
+        p.packagetypecode
+        FROM xms_tbl_package AS p
+        LEFT JOIN xms_tbl_shipment_type_package AS sp ON sp.packageid = p.packageid
+        WHERE sp.shipment_type_id = #{shipmentTypeId} ORDER BY sp.packageid DESC
+    </select>
+
+    <select id="getPackageListByServiceId" resultMap="Package" parameterType="int">
+        SELECT * FROM xms_tbl_package
+        WHERE packageid IN
+        (SELECT packageid FROM xms_tbl_shipment_type_package
+        WHERE shipment_type_id IN
+        (SELECT shipment_type_id FROM xms_tbl_account_service
+        WHERE serviceid = #{serviceId}))
+    </select>
+
+    <select id="selectPackageByShipmentTypeIdAndPackageId" resultMap="Package" parameterType="PackageFilter">
+        SELECT
+        p.packageid,
+        p.packagename,
+        p.packagetypecode,
+        sp.content_type,
+        sp.add_piece AS addpiece
+        FROM xms_tbl_package AS p
+        LEFT JOIN xms_tbl_shipment_type_package AS sp ON sp.packageid = p.packageid
+        WHERE p.packageid = #{packageId}
+        AND sp.shipment_type_id = #{shipmentTypeId}
+    </select>
+
+    <select id="getPackageIdByContent" parameterType="PackageVo" resultType="int">
+        select
+        packageid
+        from xms_tbl_package
+        where addpiece = #{contentType}
+        and carrier = #{carrier}
+        limit 1
+    </select>
+</mapper>

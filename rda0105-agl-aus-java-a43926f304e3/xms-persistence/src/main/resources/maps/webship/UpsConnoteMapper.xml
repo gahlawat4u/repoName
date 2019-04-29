@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="UpsConnote">
+    <resultMap id="UpsConnoteMap" type="UpsConnoteVo">
+        <id column="connote_id" property="connoteId"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="conn_number" property="connNumber"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <select id="selectConnumberByShipmentId" resultType="String"
+            parameterType="com.gms.xms.filter.webship.UpsConnoteFilter">
+        select
+        concat(#{connPrefix},lpad(conn_number, length(#{connEnd}), '0'))
+        from xms_tbl_ups_connote
+        where shipmentid = #{shipmentId};
+    </select>
+
+    <insert id="insertUpsConnote" parameterType="com.gms.xms.filter.webship.UpsConnoteFilter">
+        insert into xms_tbl_ups_connote (shipmentid,conn_number, status)
+        select
+        #{shipmentId} as shipmentid,
+        if(conn_number>=#{connEnd},#{connStart},conn_number + 1) as conn_number,
+        0 as status
+        from
+        (select ifnull(max(conn_number),#{connStart}) as conn_number
+        from xms_tbl_ups_connote
+        union
+        select #{connEnd}
+        ) as conn
+        limit 1
+    </insert>
+</mapper>

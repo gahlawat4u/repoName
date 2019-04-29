@@ -1,0 +1,1074 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Franchise">
+    <resultMap id="FranchiseMap" type="FranchiseVo">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="franchise_code" property="franchiseCode"/>
+        <result column="create_date" property="createDate"/>
+        <result column="activate_date" property="activateDate"/>
+        <result column="inactive" property="inactive"/>
+        <result column="group_id" property="groupId"/>
+        <result column="webship_groupid" property="webshipGroupid"/>
+        <result column="sales_rep_id" property="salesRepId"/>
+        <result column="registrationid" property="registrationid"/>
+        <result column="gstid" property="gstid"/>
+        <result column="franchise_territory" property="franchiseTerritory"/>
+        <result column="dhl_account" property="dhlAccount"/>
+        <result column="dhl_international_account" property="dhlInternationalAccount"/>
+        <result column="dhl_inbound_account" property="dhlInboundAccount"/>
+        <result column="other_account" property="otherAccount"/>
+        <result column="markup_rate" property="markupRate"/>
+        <result column="tnt_markup_rate" property="tntMarkupRate"/>
+        <result column="toll_markup_rate" property="tollMarkupRate"/>
+        <result column="minimun_base_charge" property="minimunBaseCharge"/>
+        <result column="invoice_sorting" property="invoiceSorting"/>
+        <result column="invoice_terms" property="invoiceTerms"/>
+        <result column="invoice_to_customerid" property="invoiceToCustomerid"/>
+        <result column="pickup_fee" property="pickupFee"/>
+        <result column="invoice_late_fee" property="invoiceLateFee"/>
+        <result column="email_invoice" property="emailInvoice"/>
+        <result column="download_csv_invoice" property="downloadCsvInvoice"/>
+        <result column="overnight" property="overnight"/>
+        <result column="next_afternoon" property="nextAfternoon"/>
+        <result column="second_day" property="secondDay"/>
+        <result column="ground" property="ground"/>
+        <result column="intl_outbound" property="intlOutbound"/>
+        <result column="intl_inbound" property="intlInbound"/>
+        <result column="other" property="other"/>
+        <result column="express_per_airbill" property="expressPerAirbill"/>
+        <result column="freight_per_airbill" property="freightPerAirbill"/>
+        <result column="invoicing_fee" property="invoicingFee"/>
+        <result column="charge1" property="charge1"/>
+        <result column="charge1_amount" property="charge1Amount"/>
+        <result column="charge2" property="charge2"/>
+        <result column="charge2_amount" property="charge2Amount"/>
+        <result column="charge3" property="charge3"/>
+        <result column="charge3_amount" property="charge3Amount"/>
+        <result column="sw_maintenance" property="swMaintenance"/>
+        <result column="sw_development" property="swDevelopment"/>
+        <result column="marketing" property="marketing"/>
+        <result column="webship" property="webship"/>
+        <result column="admin_function" property="adminFunction"/>
+        <result column="webship_adminid" property="webshipAdminid"/>
+        <result column="dhl_domestic_account" property="dhlDomesticAccount"/>
+        <result column="franchise_start_date" property="franchiseStartDate"/>
+        <result column="area_id" property="areaId"/>
+        <result column="created_userid" property="createdUserid"/>
+        <result column="tnt_account" property="tntAccount"/>
+        <result column="aae_account" property="aaeAccount"/>
+        <result column="hub_account" property="hubAccount"/>
+        <result column="profit_share" property="profitShare"/>
+        <result column="fedex_account" property="fedexAccount"/>
+        <result column="toll_priority_account" property="tollPriorityAccount"/>
+        <result column="uk_mail_account" property="ukMailAccount"/>
+        <result column="ups_account" property="upsAccount"/>
+        <result column="booking_email_notification" property="bookingEmailNotification"/>
+        <result column="tnt_international_markup_rate" property="tntInternationalMarkupRate"/>
+        <result column="invoicing_charge" property="invoicingCharge"/>
+        <result column="toll_ipec_account" property="tollIpecAccount"/>
+        <result column="ram_account" property="ramAccount"/>
+        <result column="exclude_from_all" property="excludeFromAll"/>
+        <result column="sw_webship_usage" property="swWebshipUsage"/>
+        <result column="sw_collection_service_fee" property="swCollectionServiceFee"/>
+        <result column="management_margin" property="managementMargin"/>
+        <result column="international_shipment_fee" property="internationalShipmentFee"/>
+        <result column="domestic_shipment_fee" property="domesticShipmentFee"/>
+        <result column="printing_fee" property="printingFee"/>
+        <result column="postage_fee" property="postageFee"/>
+        <result column="usps_account" property="uspsAccount"/>
+        <result column="ontrac_account" property="ontracAccount"/>
+        <result column="toll_ipec_markup_rate" property="tollIpecMarkupRate"/>
+        <result column="dispatch_id" property="dispatchId"/>
+        <result column="startrack_markup_rate" property="startrackMarkupRate"/>
+        <result column="startrack_account" property="startrackAccount"/>
+        <result column="dhl_dom_markup_rate" property="dhlDomMarkupRate"/>
+        <result column="enable_si" property="enableSi"/>
+        <result column="ups_int_markup_rate" property="upsMarkupRate"/>
+        <result column="profile_image" property="profileImage"/>
+    </resultMap>
+
+    <resultMap type="FranchiseVo" id="selectFranchiseWithCusAddressMap" extends="FranchiseMap">
+        <association property="customerAddress" javaType="CustomerAddressVo" autoMapping="true"
+                     resultMap="CustomerAddress.CustomerAddressWithCountryMap"></association>
+        <association property="webshipGroup" javaType="WebshipGroupVo" autoMapping="true"
+                     resultMap="WebshipGroup.WebshipGroupMap"></association>
+        <association property="customerBilling" javaType="CustomerBillingAddressVo" autoMapping="true"
+                     resultMap="CustomerBillingAddress.CustomerBillingAddressMap"></association>
+    </resultMap>
+
+    <select id="selectFranchiseByFilter" parameterType="com.gms.xms.filter.account.franchises.ManageFranchiseFilter"
+            resultMap="selectFranchiseWithCusAddressMap">
+        SELECT
+        f.*, ca.*, ct.*, cba.*, wg.*
+        FROM
+        xms_tbl_franchise AS f
+        LEFT JOIN xms_tbl_customer_address AS ca ON ca.customer_code = f.franchise_code
+        LEFT JOIN xms_tbl_country AS ct ON ct.countryid = ca.country
+        LEFT JOIN xms_tbl_customer_billing_address AS cba ON cba.customer_code = f.franchise_code
+        LEFT JOIN xms_tbl_webship_group AS wg ON wg.webship_groupid = f.webship_groupid
+        WHERE
+        f.franchise_code = #{franchiseCode}
+    </select>
+
+    <select id="selectByFranchiseCode" parameterType="string" resultMap="FranchiseMap">
+        select * from xms_tbl_franchise
+        where franchise_code = #{franchiseCode}
+    </select>
+
+    <select id="selectByCode" parameterType="String" resultType="FranchiseInfoVo">
+        SELECT
+        LEFT(f.franchise_code, 3) AS code,
+        f.franchise_territory AS name,
+        f.registrationid,
+        cba.billing_customer_name AS customerName,
+        cba.billing_contact_name AS contactName,
+        cba.billing_contact_title AS contactTitle,
+        cba.billing_address1 AS address1,
+        cba.billing_address2 AS address2,
+        cba.billing_city AS city,
+        s.state_name AS state,
+        c.countryname AS country,
+        cba.billing_postal_code AS postalCode,
+        cba.billing_phone AS phone,
+        cba.billing_fax AS fax,
+        cba.billing_email AS email,
+        cba.billing_mobile AS mobile
+        FROM xms_tbl_franchise AS f
+        LEFT JOIN xms_tbl_customer_billing_address AS cba ON cba.customer_code = f.franchise_code
+        LEFT JOIN xms_tbl_country AS c ON c.countryid = cba.billing_country
+        LEFT JOIN xms_tbl_state AS s ON s.state_code = cba.billing_state_code
+        WHERE LEFT(f.franchise_code, 3) = #{code}
+        GROUP BY f.franchise_code
+    </select>
+
+    <select id="selectByUser" resultType="FranchiseInfoVo" parameterType="UserVo">
+        <choose>
+            <when test="userLevelCode==1 or userLevelCode==2">
+                select id, left(franchise_code,3) as code, franchise_territory as name from xms_tbl_franchise
+                order by code
+            </when>
+            <!--
+            <when test="userLevelCode==6">
+                select
+                    @franchise_id := f.id as id,
+                    left(f.franchise_code,3) as code,
+                    f.franchise_territory as name
+                from xms_tbl_user as u
+                inner join xms_tbl_franchise as f on left(f.franchise_code,3) = left(u.user_code,3)
+                where u.userid = #{userId}
+                    union
+                select
+                    f.id,
+                    left(f.franchise_code,3) as code,
+                    f.franchise_territory as name
+                from xms_tbl_user as u
+                inner join xms_tbl_franchise as f on left(f.franchise_code,3) = left(u.user_code,3)
+                where f.group_id = @franchise_id and f.sales_rep_id = #{userId}
+                order by code
+            </when>
+            -->
+            <otherwise>
+                select
+                @franchise_id := f.id as id,
+                left(f.franchise_code,3) as code,
+                f.franchise_territory as name
+                from xms_tbl_user as u
+                inner join xms_tbl_franchise as f on left(f.franchise_code,3) = left(u.user_code,3)
+                where u.userid = #{userId}
+                union
+                select
+                f.id,
+                left(f.franchise_code,3) as code,
+                f.franchise_territory as name
+                from xms_tbl_user as u
+                inner join xms_tbl_franchise as f on left(f.franchise_code,3) = left(u.user_code,3)
+                where f.group_id = @franchise_id
+                order by code
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="selectParentByCode" resultType="FranchiseInfoVo" parameterType="String">
+        SELECT LEFT(f.franchise_code,3) as code, f.franchise_territory as name, cba.billing_email AS email FROM
+        xms_tbl_franchise AS f
+        LEFT JOIN xms_tbl_customer_billing_address AS cba ON cba.customer_code = f.franchise_code
+        WHERE f.id = (SELECT group_id FROM xms_tbl_franchise
+        WHERE LEFT(franchise_code,3)=#{code})
+    </select>
+
+    <select id="selectByUserId" resultType="FranchiseInfoVo" parameterType="String">
+        SELECT LEFT(f.franchise_code,3) as code, f.franchise_territory as name, cba.billing_email AS email FROM
+        xms_tbl_franchise AS f
+        INNER JOIN xms_tbl_user AS u ON LEFT(u.user_code,3) = LEFT(f.franchise_code,3)
+        LEFT JOIN xms_tbl_customer_billing_address AS cba ON cba.customer_code = f.franchise_code
+        WHERE u.userid = #{userId}
+        LIMIT 0,1
+    </select>
+
+    <select id="getCount" resultType="_long">
+        select count(*) from xms_tbl_franchise
+    </select>
+
+    <select id="selectMinimumBaseChargeByFranchiseCode" resultType="float" parameterType="long">
+        SELECT
+        minimun_base_charge
+        FROM
+        xms_tbl_franchise
+        WHERE
+        franchise_code = #{franchiseCode}
+    </select>
+
+    <select id="selectFranchiseByFranchiseCode" resultMap="FranchiseMap" parameterType="String">
+        SELECT
+        *
+        FROM
+        xms_tbl_franchise
+        WHERE
+        LEFT(franchise_code, 3) = LEFT(#{franchiseCode},3)
+    </select>
+
+    <select id="selectFranchiseByFranchiseCodeExt" resultMap="FranchiseMap" parameterType="String">
+        SELECT
+        *
+        FROM
+        xms_tbl_franchise
+        WHERE
+        franchise_code = CONCAT(LEFT(#{franchiseCode}, 3),"00001")
+    </select>
+
+    <select id="selectSaleRepByCustomerCode" parameterType="String" resultType="Long">
+        Select sales_rep_id from xms_tbl_franchise where franchise_code = CONCAT(LEFT(#{customerCode}, 3),"00001")
+    </select>
+
+    <select id="checkAglWarranty" parameterType="long" resultType="int">
+        select
+        enable_si
+        from
+        xms_tbl_franchise
+        where
+        franchise_code = #{franchiseCode}
+    </select>
+
+    <resultMap id="MarkupRateMap" type="MarkupRateVo" extends="FranchiseMap">
+        <result column="tnt_service_markup_rate" property="tntServiceMarkupRate"/>
+    </resultMap>
+
+    <select id="selectMarkupRateByCustomerCode" parameterType="com.gms.xms.filter.BaseFilter" resultMap="MarkupRateMap">
+        select
+        f.markup_rate,
+        dhl_dom_markup_rate,
+        tnt_markup_rate,
+        tnt_international_markup_rate,
+        toll_markup_rate,
+        toll_ipec_markup_rate,
+        startrack_markup_rate,
+        fsm.markup_rate as tnt_service_markup_rate
+        from
+        xms_tbl_franchise f
+        left join
+        xms_tbl_franchise_service_markup fsm on f.franchise_code = fsm.franchise_code
+        where
+        f.franchise_code = concat(left(#{customerCode}, 3), "00001")
+        <if test="shipmentTypeId!=null">
+            and fsm.shipment_type_id = #{shipmentTypeId}
+        </if>
+        <if test="shipmentTypeId==null">
+            limit 1
+        </if>
+    </select>
+
+    <resultMap type="FranchiseServiceMarkupVo" id="FranchiseServiceMarkupMap">
+        <result column="markup_id" property="markupId"/>
+        <result column="franchise_code" property="franchiseCode"/>
+        <result column="service_id" property="serviceId"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="markup_rate" property="markupRate"/>
+    </resultMap>
+
+    <select id="getFranchiseServiceMarkup"
+            parameterType="com.gms.xms.filter.account.franchises.FranchiseServiceMarkupFilter"
+            resultMap="FranchiseServiceMarkupMap">
+        select
+        *
+        from xms_tbl_franchise_service_markup
+        where franchise_code = #{franchiseCode}
+        and service_id = #{serviceId}
+        and shipment_type_id = #{shipmentTypeId}
+    </select>
+
+    <update id="update" parameterType="FranchiseVo">
+        update xms_tbl_franchise
+        <set>
+            <if test="createDate!=null">
+                create_date = #{createDate},
+            </if>
+            <if test="activateDate!=null">
+                activate_date = #{activateDate},
+            </if>
+            <if test="inactive!=null">
+                inactive = #{inactive},
+            </if>
+            <if test="groupId!=null">
+                group_id = #{groupId},
+            </if>
+            <if test="webshipGroupid!=null">
+                webship_groupid = #{webshipGroupid},
+            </if>
+            <if test="salesRepId!=null">
+                sales_rep_id = #{salesRepId},
+            </if>
+            <if test="registrationid!=null">
+                registrationid = #{registrationid},
+            </if>
+            <if test="gstid!=null">
+                gstid = #{gstid},
+            </if>
+            <if test="franchiseTerritory!=null">
+                franchise_territory = #{franchiseTerritory},
+            </if>
+            <if test="dhlAccount!=null">
+                dhl_account = #{dhlAccount},
+            </if>
+            <if test="dhlInternationalAccount!=null">
+                dhl_international_account = #{dhlInternationalAccount},
+            </if>
+            <if test="dhlInboundAccount!=null">
+                dhl_inbound_account = #{dhlInboundAccount},
+            </if>
+            <if test="otherAccount!=null">
+                other_account = #{otherAccount},
+            </if>
+            <if test="markupRate!=null">
+                markup_rate = #{markupRate},
+            </if>
+            <if test="dhlDomMarkupRate!=null">
+                dhl_dom_markup_rate = #{dhlDomMarkupRate},
+            </if>
+            <if test="tntMarkupRate!=null">
+                tnt_markup_rate = #{tntMarkupRate},
+            </if>
+            <if test="tollMarkupRate!=null">
+                toll_markup_rate = #{tollMarkupRate},
+            </if>
+            <if test="minimunBaseCharge!=null">
+                minimun_base_charge = #{minimunBaseCharge},
+            </if>
+            <if test="invoiceSorting!=null">
+                invoice_sorting = #{invoiceSorting},
+            </if>
+            <if test="invoiceTerms!=null">
+                invoice_terms = #{invoiceTerms},
+            </if>
+            <if test="invoiceToCustomerid!=null">
+                invoice_to_customerid = #{invoiceToCustomerid},
+            </if>
+            <if test="pickupFee!=null">
+                pickup_fee = #{pickupFee},
+            </if>
+            <if test="invoiceLateFee!=null">
+                invoice_late_fee = #{invoiceLateFee},
+            </if>
+            <if test="emailInvoice!=null">
+                email_invoice = #{emailInvoice},
+            </if>
+            <if test="downloadCsvInvoice!=null">
+                download_csv_invoice = #{downloadCsvInvoice},
+            </if>
+            <if test="overnight!=null">
+                overnight = #{overnight},
+            </if>
+            <if test="nextAfternoon!=null">
+                next_afternoon = #{nextAfternoon},
+            </if>
+            <if test="secondDay!=null">
+                second_day = #{secondDay},
+            </if>
+            <if test="ground!=null">
+                ground = #{ground},
+            </if>
+            <if test="intlOutbound!=null">
+                intl_outbound = #{intlOutbound},
+            </if>
+            <if test="intlInbound!=null">
+                intl_inbound = #{intlInbound},
+            </if>
+            <if test="other!=null">
+                other = #{other},
+            </if>
+            <if test="expressPerAirbill!=null">
+                express_per_airbill = #{expressPerAirbill},
+            </if>
+            <if test="freightPerAirbill!=null">
+                freight_per_airbill = #{freightPerAirbill},
+            </if>
+            <if test="invoicingFee!=null">
+                invoicing_fee = #{invoicingFee},
+            </if>
+            <if test="charge1!=null">
+                charge1 = #{charge1},
+            </if>
+            <if test="charge1Amount!=null">
+                charge1_amount = #{charge1Amount},
+            </if>
+            <if test="charge2!=null">
+                charge2 = #{charge2},
+            </if>
+            <if test="charge2Amount!=null">
+                charge2_amount = #{charge2Amount},
+            </if>
+            <if test="charge3!=null">
+                charge3 = #{charge3},
+            </if>
+            <if test="charge3Amount!=null">
+                charge3_amount = #{charge3Amount},
+            </if>
+            <if test="swMaintenance!=null">
+                sw_maintenance = #{swMaintenance},
+            </if>
+            <if test="swDevelopment!=null">
+                sw_development = #{swDevelopment},
+            </if>
+            <if test="marketing!=null">
+                marketing = #{marketing},
+            </if>
+            <if test="webship!=null">
+                webship = #{webship},
+            </if>
+            <if test="adminFunction!=null">
+                admin_function = #{adminFunction},
+            </if>
+            <if test="webshipAdminid!=null">
+                webship_adminid = #{webshipAdminid},
+            </if>
+            <if test="dhlDomesticAccount!=null">
+                dhl_domestic_account = #{dhlDomesticAccount},
+            </if>
+            <if test="franchiseStartDate!=null">
+                franchise_start_date = #{franchiseStartDate},
+            </if>
+            <if test="areaId!=null">
+                area_id = #{areaId},
+            </if>
+            <if test="createdUserid!=null">
+                created_userid = #{createdUserid},
+            </if>
+            <if test="tntAccount!=null">
+                tnt_account = #{tntAccount},
+            </if>
+            <if test="aaeAccount!=null">
+                aae_account = #{aaeAccount},
+            </if>
+            <if test="hubAccount!=null">
+                hub_account = #{hubAccount},
+            </if>
+            <if test="profitShare!=null">
+                profit_share = #{profitShare},
+            </if>
+            <if test="fedexAccount!=null">
+                fedex_account = #{fedexAccount},
+            </if>
+            <if test="tollPriorityAccount!=null">
+                toll_priority_account = #{tollPriorityAccount},
+            </if>
+            <if test="ukMailAccount!=null">
+                uk_mail_account = #{ukMailAccount},
+            </if>
+            <if test="upsAccount!=null">
+                ups_account = #{upsAccount},
+            </if>
+            <if test="bookingEmailNotification!=null">
+                booking_email_notification = #{bookingEmailNotification},
+            </if>
+            <if test="tntInternationalMarkupRate!=null">
+                tnt_international_markup_rate = #{tntInternationalMarkupRate},
+            </if>
+            <if test="invoicingCharge!=null">
+                invoicing_charge = #{invoicingCharge},
+            </if>
+            <if test="tollIpecAccount!=null">
+                toll_ipec_account = #{tollIpecAccount},
+            </if>
+            <if test="ramAccount!=null">
+                ram_account = #{ramAccount},
+            </if>
+            <if test="excludeFromAll!=null">
+                exclude_from_all = #{excludeFromAll},
+            </if>
+            <if test="swWebshipUsage!=null">
+                sw_webship_usage = #{swWebshipUsage},
+            </if>
+            <if test="swCollectionServiceFee!=null">
+                sw_collection_service_fee = #{swCollectionServiceFee},
+            </if>
+            <if test="managementMargin!=null">
+                management_margin = #{managementMargin},
+            </if>
+            <if test="internationalShipmentFee!=null">
+                international_shipment_fee = #{internationalShipmentFee},
+            </if>
+            <if test="domesticShipmentFee!=null">
+                domestic_shipment_fee = #{domesticShipmentFee},
+            </if>
+            <if test="printingFee!=null">
+                printing_fee = #{printingFee},
+            </if>
+            <if test="postageFee!=null">
+                postage_fee = #{postageFee},
+            </if>
+            <if test="uspsAccount!=null">
+                usps_account = #{uspsAccount},
+            </if>
+            <if test="ontracAccount!=null">
+                ontrac_account = #{ontracAccount},
+            </if>
+            <if test="tollIpecMarkupRate!=null">
+                toll_ipec_markup_rate = #{tollIpecMarkupRate},
+            </if>
+            <if test="startrackMarkupRate!=null">
+                startrack_markup_rate = #{startrackMarkupRate},
+            </if>
+            <if test="startrackAccount!=null">
+                startrack_account = #{startrackAccount},
+            </if>
+            <if test="dispatchId!=null">
+                dispatch_id = #{dispatchId},
+            </if>
+            <if test="enableSi!=null">
+                enable_si = #{enableSi},
+            </if>
+            <if test="upsMarkupRate!=null">
+                ups_int_markup_rate = #{upsMarkupRate},
+            </if>
+            <if test="profileImage!=null">
+                profile_image = #{profileImage},
+            </if>
+        </set>
+        where franchise_code = #{franchiseCode}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="FranchiseVo" resultMap="FranchiseMap">
+        select * from xms_tbl_franchise
+        where franchise_code = #{franchiseCode}
+    </select>
+
+    <update id="updateActiveDateByFranchiseCode" parameterType="FranchiseVo">
+        update xms_tbl_franchise
+        set
+        activate_date = #{activateDate}
+        where
+        franchise_code = #{franchiseCode}
+    </update>
+
+    <insert id="insert" parameterType="FranchiseVo" useGeneratedKeys="true" keyProperty="id">
+        insert into xms_tbl_franchise
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="franchiseCode != null">
+                franchise_code,
+            </if>
+            <if test="createDate!=null">
+                create_date,
+            </if>
+            <if test="activateDate!=null">
+                activate_date,
+            </if>
+            <if test="inactive!=null">
+                inactive,
+            </if>
+            <if test="groupId!=null">
+                group_id,
+            </if>
+            <if test="webshipGroupid!=null">
+                webship_groupid,
+            </if>
+            <if test="salesRepId!=null">
+                sales_rep_id,
+            </if>
+            <if test="registrationid!=null">
+                registrationid,
+            </if>
+            <if test="gstid!=null">
+                gstid,
+            </if>
+            <if test="franchiseTerritory!=null">
+                franchise_territory,
+            </if>
+            <if test="dhlAccount!=null">
+                dhl_account,
+            </if>
+            <if test="dhlInternationalAccount!=null">
+                dhl_international_account,
+            </if>
+            <if test="dhlInboundAccount!=null">
+                dhl_inbound_account,
+            </if>
+            <if test="otherAccount!=null">
+                other_account,
+            </if>
+            <if test="markupRate!=null">
+                markup_rate,
+            </if>
+            <if test="tntMarkupRate!=null">
+                tnt_markup_rate,
+            </if>
+            <if test="tollMarkupRate!=null">
+                toll_markup_rate,
+            </if>
+            <if test="minimunBaseCharge!=null">
+                minimun_base_charge,
+            </if>
+            <if test="invoiceSorting!=null">
+                invoice_sorting,
+            </if>
+            <if test="invoiceTerms!=null">
+                invoice_terms,
+            </if>
+            <if test="invoiceToCustomerid!=null">
+                invoice_to_customerid,
+            </if>
+            <if test="pickupFee!=null">
+                pickup_fee,
+            </if>
+            <if test="invoiceLateFee!=null">
+                invoice_late_fee,
+            </if>
+            <if test="emailInvoice!=null">
+                email_invoice,
+            </if>
+            <if test="downloadCsvInvoice!=null">
+                download_csv_invoice,
+            </if>
+            <if test="overnight!=null">
+                overnight,
+            </if>
+            <if test="nextAfternoon!=null">
+                next_afternoon ,
+            </if>
+            <if test="secondDay!=null">
+                second_day,
+            </if>
+            <if test="ground!=null">
+                ground,
+            </if>
+            <if test="intlOutbound!=null">
+                intl_outbound,
+            </if>
+            <if test="intlInbound!=null">
+                intl_inbound,
+            </if>
+            <if test="other!=null">
+                other,
+            </if>
+            <if test="expressPerAirbill!=null">
+                express_per_airbill,
+            </if>
+            <if test="freightPerAirbill!=null">
+                freight_per_airbill,
+            </if>
+            <if test="invoicingFee!=null">
+                invoicing_fee,
+            </if>
+            <if test="charge1!=null">
+                charge1,
+            </if>
+            <if test="charge1Amount!=null">
+                charge1_amount,
+            </if>
+            <if test="charge2!=null">
+                charge2,
+            </if>
+            <if test="charge2Amount!=null">
+                charge2_amount,
+            </if>
+            <if test="charge3!=null">
+                charge3 ,
+            </if>
+            <if test="charge3Amount!=null">
+                charge3_amount,
+            </if>
+            <if test="swMaintenance!=null">
+                sw_maintenance,
+            </if>
+            <if test="swDevelopment!=null">
+                sw_development,
+            </if>
+            <if test="marketing!=null">
+                marketing,
+            </if>
+            <if test="webship!=null">
+                webship ,
+            </if>
+            <if test="adminFunction!=null">
+                admin_function,
+            </if>
+            <if test="webshipAdminid!=null">
+                webship_adminid,
+            </if>
+            <if test="dhlDomesticAccount!=null">
+                dhl_domestic_account,
+            </if>
+            <if test="franchiseStartDate!=null">
+                franchise_start_date,
+            </if>
+            <if test="areaId!=null">
+                area_id,
+            </if>
+            <if test="createdUserid!=null">
+                created_userid,
+            </if>
+            <if test="tntAccount!=null">
+                tnt_account,
+            </if>
+            <if test="aaeAccount!=null">
+                aae_account ,
+            </if>
+            <if test="hubAccount!=null">
+                hub_account,
+            </if>
+            <if test="profitShare!=null">
+                profit_share ,
+            </if>
+            <if test="fedexAccount!=null">
+                fedex_account,
+            </if>
+            <if test="tollPriorityAccount!=null">
+                toll_priority_account,
+            </if>
+            <if test="ukMailAccount!=null">
+                uk_mail_account,
+            </if>
+            <if test="upsAccount!=null">
+                ups_account,
+            </if>
+            <if test="bookingEmailNotification!=null">
+                booking_email_notification,
+            </if>
+            <if test="tntInternationalMarkupRate!=null">
+                tnt_international_markup_rate,
+            </if>
+            <if test="invoicingCharge!=null">
+                invoicing_charge,
+            </if>
+            <if test="tollIpecAccount!=null">
+                toll_ipec_account,
+            </if>
+            <if test="ramAccount!=null">
+                ram_account,
+            </if>
+            <if test="excludeFromAll!=null">
+                exclude_from_all,
+            </if>
+            <if test="swWebshipUsage!=null">
+                sw_webship_usage,
+            </if>
+            <if test="swCollectionServiceFee!=null">
+                sw_collection_service_fee,
+            </if>
+            <if test="managementMargin!=null">
+                management_margin,
+            </if>
+            <if test="internationalShipmentFee!=null">
+                international_shipment_fee,
+            </if>
+            <if test="domesticShipmentFee!=null">
+                domestic_shipment_fee,
+            </if>
+            <if test="printingFee!=null">
+                printing_fee,
+            </if>
+            <if test="postageFee!=null">
+                postage_fee,
+            </if>
+            <if test="uspsAccount!=null">
+                usps_account,
+            </if>
+            <if test="ontracAccount!=null">
+                ontrac_account,
+            </if>
+            <if test="tollIpecMarkupRate!=null">
+                toll_ipec_markup_rate,
+            </if>
+            <if test="startrackMarkupRate!=null">
+                startrack_markup_rate,
+            </if>
+            <if test="startrackAccount!=null">
+                startrack_account,
+            </if>
+            <if test="dispatchId!=null">
+                dispatch_id,
+            </if>
+            <if test="dhlDomMarkupRate!=null">
+                dhl_dom_markup_rate,
+            </if>
+            <if test="enableSi!=null">
+                enable_si,
+            </if>
+            <if test="profileImage!=null">
+                profile_image,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="franchiseCode != null">
+                #{franchiseCode},
+            </if>
+            <if test="createDate!=null">
+                #{createDate},
+            </if>
+            <if test="activateDate!=null">
+                #{activateDate},
+            </if>
+            <if test="inactive!=null">
+                #{inactive},
+            </if>
+            <if test="groupId!=null">
+                #{groupId},
+            </if>
+            <if test="webshipGroupid!=null">
+                #{webshipGroupid},
+            </if>
+            <if test="salesRepId!=null">
+                #{salesRepId},
+            </if>
+            <if test="registrationid!=null">
+                #{registrationid},
+            </if>
+            <if test="gstid!=null">
+                #{gstid},
+            </if>
+            <if test="franchiseTerritory!=null">
+                #{franchiseTerritory},
+            </if>
+            <if test="dhlAccount!=null">
+                #{dhlAccount},
+            </if>
+            <if test="dhlInternationalAccount!=null">
+                #{dhlInternationalAccount},
+            </if>
+            <if test="dhlInboundAccount!=null">
+                #{dhlInboundAccount},
+            </if>
+            <if test="otherAccount!=null">
+                #{otherAccount},
+            </if>
+            <if test="markupRate!=null">
+                #{markupRate},
+            </if>
+            <if test="tntMarkupRate!=null">
+                #{tntMarkupRate},
+            </if>
+            <if test="tollMarkupRate!=null">
+                #{tollMarkupRate},
+            </if>
+            <if test="minimunBaseCharge!=null">
+                #{minimunBaseCharge},
+            </if>
+            <if test="invoiceSorting!=null">
+                #{invoiceSorting},
+            </if>
+            <if test="invoiceTerms!=null">
+                #{invoiceTerms},
+            </if>
+            <if test="invoiceToCustomerid!=null">
+                #{invoiceToCustomerid},
+            </if>
+            <if test="pickupFee!=null">
+                #{pickupFee},
+            </if>
+            <if test="invoiceLateFee!=null">
+                #{invoiceLateFee},
+            </if>
+            <if test="emailInvoice!=null">
+                #{emailInvoice},
+            </if>
+            <if test="downloadCsvInvoice!=null">
+                #{downloadCsvInvoice},
+            </if>
+            <if test="overnight!=null">
+                #{overnight},
+            </if>
+            <if test="nextAfternoon!=null">
+                #{nextAfternoon},
+            </if>
+            <if test="secondDay!=null">
+                #{secondDay},
+            </if>
+            <if test="ground!=null">
+                #{ground},
+            </if>
+            <if test="intlOutbound!=null">
+                #{intlOutbound},
+            </if>
+            <if test="intlInbound!=null">
+                #{intlInbound},
+            </if>
+            <if test="other!=null">
+                #{other},
+            </if>
+            <if test="expressPerAirbill!=null">
+                #{expressPerAirbill},
+            </if>
+            <if test="freightPerAirbill!=null">
+                #{freightPerAirbill},
+            </if>
+            <if test="invoicingFee!=null">
+                #{invoicingFee},
+            </if>
+            <if test="charge1!=null">
+                #{charge1},
+            </if>
+            <if test="charge1Amount!=null">
+                #{charge1Amount},
+            </if>
+            <if test="charge2!=null">
+                #{charge2},
+            </if>
+            <if test="charge2Amount!=null">
+                #{charge2Amount},
+            </if>
+            <if test="charge3!=null">
+                #{charge3},
+            </if>
+            <if test="charge3Amount!=null">
+                #{charge3Amount},
+            </if>
+            <if test="swMaintenance!=null">
+                #{swMaintenance},
+            </if>
+            <if test="swDevelopment!=null">
+                #{swDevelopment},
+            </if>
+            <if test="marketing!=null">
+                #{marketing},
+            </if>
+            <if test="webship!=null">
+                #{webship},
+            </if>
+            <if test="adminFunction!=null">
+                #{adminFunction},
+            </if>
+            <if test="webshipAdminid!=null">
+                #{webshipAdminid},
+            </if>
+            <if test="dhlDomesticAccount!=null">
+                #{dhlDomesticAccount},
+            </if>
+            <if test="franchiseStartDate!=null">
+                #{franchiseStartDate},
+            </if>
+            <if test="areaId!=null">
+                #{areaId},
+            </if>
+            <if test="createdUserid!=null">
+                #{createdUserid},
+            </if>
+            <if test="tntAccount!=null">
+                #{tntAccount},
+            </if>
+            <if test="aaeAccount!=null">
+                #{aaeAccount},
+            </if>
+            <if test="hubAccount!=null">
+                #{hubAccount},
+            </if>
+            <if test="profitShare!=null">
+                #{profitShare},
+            </if>
+            <if test="fedexAccount!=null">
+                #{fedexAccount},
+            </if>
+            <if test="tollPriorityAccount!=null">
+                #{tollPriorityAccount},
+            </if>
+            <if test="ukMailAccount!=null">
+                #{ukMailAccount},
+            </if>
+            <if test="upsAccount!=null">
+                #{upsAccount},
+            </if>
+            <if test="bookingEmailNotification!=null">
+                #{bookingEmailNotification},
+            </if>
+            <if test="tntInternationalMarkupRate!=null">
+                #{tntInternationalMarkupRate},
+            </if>
+            <if test="invoicingCharge!=null">
+                #{invoicingCharge},
+            </if>
+            <if test="tollIpecAccount!=null">
+                #{tollIpecAccount},
+            </if>
+            <if test="ramAccount!=null">
+                #{ramAccount},
+            </if>
+            <if test="excludeFromAll!=null">
+                #{excludeFromAll},
+            </if>
+            <if test="swWebshipUsage!=null">
+                #{swWebshipUsage},
+            </if>
+            <if test="swCollectionServiceFee!=null">
+                #{swCollectionServiceFee},
+            </if>
+            <if test="managementMargin!=null">
+                #{managementMargin},
+            </if>
+            <if test="internationalShipmentFee!=null">
+                #{internationalShipmentFee},
+            </if>
+            <if test="domesticShipmentFee!=null">
+                #{domesticShipmentFee},
+            </if>
+            <if test="printingFee!=null">
+                #{printingFee},
+            </if>
+            <if test="postageFee!=null">
+                #{postageFee},
+            </if>
+            <if test="uspsAccount!=null">
+                #{uspsAccount},
+            </if>
+            <if test="ontracAccount!=null">
+                #{ontracAccount},
+            </if>
+            <if test="tollIpecMarkupRate!=null">
+                #{tollIpecMarkupRate},
+            </if>
+            <if test="startrackMarkupRate!=null">
+                #{startrackMarkupRate},
+            </if>
+            <if test="startrackAccount!=null">
+                #{startrackAccount},
+            </if>
+            <if test="dispatchId!=null">
+                #{dispatchId},
+            </if>
+            <if test="dhlDomMarkupRate!=null">
+                #{dhlDomMarkupRate},
+            </if>
+            <if test="enableSi!=null">
+                #{enableSi},
+            </if>
+             <if test="profileImage!=null">
+                #{profileImage},
+            </if>
+        </trim>
+    </insert>
+    <select id="getUserIdByFranchiseCode" parameterType="string" resultType="long">
+        <bind name="franchiseCode" value="_parameter"/>
+        select id from xms_tbl_franchise
+        where franchise_code = #{franchiseCode}
+    </select>
+    
+    <update id="updateFranchiseProfileImage" parameterType="FranchiseVo">
+        update xms_tbl_franchise
+        set
+        profile_image = #{profileImage}
+        where
+        franchise_code = #{franchiseCode}
+          
+    </update>
+    
+    
+   
+</mapper>

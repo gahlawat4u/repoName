@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CarrierPostCode">
+    <resultMap id="CarrierPostCodeMap" type="com.gms.xms.txndb.vo.CarrierPostCodeVo">
+        <result column="zone_code" property="zoneCode"/>
+        <result column="post_code" property="postCode"/>
+        <result column="carrier" property="carrier"/>
+    </resultMap>
+    <select id="selectCarrierPostCodeByPostCodeAndCarrier" resultMap="CarrierPostCodeMap"
+            parameterType="CarrierPostCodeFilter">
+        select distinct * from xms_tbl_carrier_post_code
+        where post_code = #{postCode} and carrier = #{carrier}
+        limit 1
+    </select>
+    <select id="getTntPostCodes" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsFilter"
+            resultMap="CarrierPostCodeMap">
+        select * from xms_tbl_carrier_post_code
+        where carrier = 3
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+    <select id="countTntPostCodes" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsFilter"
+            resultType="long">
+        select count(*) from xms_tbl_carrier_post_code
+        where carrier = 3
+    </select>
+    <insert id="insertCarrierPostCode" parameterType="com.gms.xms.txndb.vo.CarrierPostCodeVo">
+        insert into xms_tbl_carrier_post_code (zone_code, post_code, carrier)
+        values (#{zoneCode}, #{postCode}, #{carrier})
+    </insert>
+</mapper>

@@ -1,0 +1,954 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Invoice">
+    <resultMap id="Invoice" type="InvoiceVo">
+        <id column="invoiceid" property="invoiceId"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="late_fee" property="lateFee"/>
+        <result column="status" property="status"/>
+        <result column="paid" property="paid"/>
+        <result column="inv_create_date" property="invCreateDate"/>
+    </resultMap>
+
+    <resultMap type="InvoiceVo" id="InvoiceWithPayment" extends="Invoice">
+        <result column="total_amount" property="totalAmount"/>
+        <result column="total_payment" property="totalPayment"/>
+        <result column="due_date" property="dueDate"/>
+    </resultMap>
+
+    <resultMap type="InvoiceVo" id="InvoiceWithPaymentDetails" extends="InvoiceWithPayment">
+        <collection property="shipmentInvoices" column="invoiceid" ofType="ShipmentInvoiceVo" javaType="ArrayList">
+            <result column="invoiceid" property="invoiceId"/>
+            <result column="shipmentid" property="shipmentId"/>
+            <result column="airbill_number" property="airbillNumber"/>
+            <result column="awb_total_amount" property="totalAmount"/>
+            <result column="awb_total_payment" property="totalPayment"/>
+            <result column="adjustment_credit" property="adjustmentCredit"/>
+            <result column="pending_adjustment" property="pendingAdjustment"/>
+            <result column="denied_adjustment" property="deniedAdjustment"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="TaxInvoiceMap" type="TaxInvoiceVo">
+        <result column="invoiceid" property="invoiceId"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="airbill_count" property="airbillCount"/>
+        <result column="due_date" property="dueDate"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="total_payment" property="totalPayment"/>
+        <result column="invoice_late_fee" property="invoiceLateFee"/>
+        <result column="customer_code" property="customerCode"/>
+    </resultMap>
+
+    <resultMap id="GSTSummaryMap" type="GSTSummaryVo">
+        <result column="gst_customer_cost" property="gstCustomerCost"/>
+        <result column="non_gst_customer_cost" property="nonGstCustomerCost"/>
+        <result column="customer_tax_amount" property="customerTaxAmount"/>
+        <result column="customer_tax_percent" property="customerTaxPercent"/>
+    </resultMap>
+
+    <resultMap id="AirbillDetailMap" type="com.gms.xms.txndb.vo.webship.invoices.AirbillDetailVo">
+        <result column="service_name" property="serviceName"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="sender_country_code" property="senderCountryCode"/>
+        <result column="receiver_country_code" property="receiverCountryCode"/>
+        <result column="shipment_date" property="shipmentDate"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="shipper_reference" property="shipperReference"/>
+        <result column="billing_reference2" property="billingReference"/>
+        <result column="bill_actual_dimension" property="billActualDimension"/>
+        <result column="sender_companyname" property="senderCompanyName"/>
+        <result column="sender_contact_name" property="senderContactName"/>
+        <result column="sender_address" property="senderAddress"/>
+        <result column="sender_address2" property="senderAddress2"/>
+        <result column="sender_city" property="senderCity"/>
+        <result column="sender_postal_code" property="senderPostalCode"/>
+        <result column="sender_state" property="senderState"/>
+        <result column="receiver_companyname" property="receiverCompanyName"/>
+        <result column="receiver_contact_name" property="receiverContactName"/>
+        <result column="receiver_address" property="receiverAddress"/>
+        <result column="receiver_address2" property="receiverAddress2"/>
+        <result column="receiver_city" property="receiverCity"/>
+        <result column="receiver_postal_code" property="receiverPostalCode"/>
+        <result column="receiver_state" property="receiverState"/>
+        <result column="receiver_country" property="receiverCountry"/>
+        <result column="no_of_pieces" property="noOfPieces"/>
+        <result column="packagetypecode" property="packageTypeCode"/>
+        <result column="receiver_zone" property="receiverZone"/>
+        <result column="sender_zone" property="senderZone"/>
+        <result column="carrier" property="carrier"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="weight" property="weight"/>
+        <result column="service_area_code_origin" property="serviceAreaCodeOrigin"/>
+        <result column="service_area_code_destination" property="serviceAreaCodeDestination"/>
+        <result column="senderaddressid" property="senderAddressId"/>
+        <result column="receiveraddressid" property="receiverAddressId"/>
+        <result column="zone" property="zone"/>
+        <result column="display_description" property="displayDescription"/>
+    </resultMap>
+
+    <resultMap id="AirbillChargeMap" type="AirbillChargeVo">
+        <result column="description" property="description"/>
+        <result column="display_description" property="displayDescription"/>
+        <result column="customer_cost" property="customerCost"/>
+        <result column="customer_tax_amount" property="customerTaxAmount"/>
+    </resultMap>
+
+    <select id="selectInvoicesDateByFranchiseCodeListAndStatus" parameterType="InvoiceFilter" resultType="InvoiceVo">
+        SELECT
+        invoice_date as invoiceDate
+        FROM
+        (SELECT
+        customer_code AS code, email_invoice
+        FROM
+        xms_tbl_customer
+        where franchise_code in
+        <foreach item="franchiseCode" index="index" collection="franchiseCodes" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        UNION SELECT
+        franchise_code AS code, email_invoice
+        FROM
+        xms_tbl_franchise
+        where left(franchise_code,3) in
+        <foreach item="franchiseCode" index="index" collection="franchiseCodes" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        ) AS c
+        INNER JOIN
+        xms_tbl_invoice AS i ON i.customer_code = c.code
+        WHERE i.status = #{status}
+        <if test="emailInvoice != null and emailInvoice != ''">
+            and c.email_invoice = #{emailInvoice}
+        </if>
+        GROUP BY invoiceDate
+        ORDER BY invoiceDate DESC
+    </select>
+
+    <select id="getInvoiceDatesToUnfreeze" parameterType="InvoiceFilter" resultType="InvoiceVo">
+        SELECT
+        invoice_date as invoiceDate
+        FROM
+        (SELECT
+        customer_code AS code
+        FROM xms_tbl_customer
+        WHERE franchise_code in
+        <foreach item="franCode" index="index" collection="franchiseCodes" open="(" close=")" separator=",">
+            #{franCode}
+        </foreach>
+        UNION SELECT
+        franchise_code AS code
+        FROM xms_tbl_franchise
+        WHERE left(franchise_code,3) in
+        <foreach item="franCode" index="index" collection="franchiseCodes" open="(" close=")" separator=",">
+            #{franCode}
+        </foreach>
+        ) AS c
+        INNER JOIN xms_tbl_invoice AS i ON i.customer_code = c.code
+        WHERE i.status != 0
+        AND i.invoice_date > DATE_SUB(DATE(NOW()), INTERVAL 3 MONTH)
+        <if test="_parameter.getFranchiseCode()!=null">
+            <bind name="franchiseCode" value="_parameter.getFranchiseCode() + '%'"/>
+            AND i.customer_code LIKE #{franchiseCode}
+        </if>
+        GROUP BY invoiceDate
+        ORDER BY invoiceDate DESC
+    </select>
+
+    <select id="selectChargeListByAWB" parameterType="com.gms.xms.txndb.vo.ShipmentVo" resultMap="AirbillChargeMap">
+        select
+        description,
+        display_description,
+        customer_cost,
+        customer_tax_amount
+        from xms_tbl_shipment_billing
+        where airbill_number = #{airbillNumber}
+        and shipmentid = #{shipmentId}
+    </select>
+
+    <select id="selectCsvInvoicesList" parameterType="String" resultType="CsvInvoicesVo">
+        SELECT
+        i.invoiceid as invoiceId,
+        i.invoice_code as invoiceCode,
+        CONCAT(i.invoice_code, ' - ', cad.customer_name) as invoiceStr
+        FROM
+        xms_tbl_invoice i
+        INNER JOIN
+        (SELECT
+        customer_code, download_csv_invoice
+        FROM
+        xms_tbl_customer UNION SELECT
+        franchise_code AS customer_code, download_csv_invoice
+        FROM
+        xms_tbl_franchise) cus ON cus.customer_code = i.customer_code
+        LEFT JOIN
+        xms_tbl_customer_address AS cad ON cad.customer_code = cus.customer_code
+        WHERE
+        LEFT(i.customer_code, 3) = #{franchiseCode}
+        AND cus.download_csv_invoice = 1
+        ORDER BY i.customer_code
+    </select>
+
+    <select id="selectByCode" parameterType="String" resultMap="Invoice">
+        select * from xms_tbl_invoice
+        where invoice_code = #{invoiceCode}
+        limit 1
+    </select>
+
+    <select id="selectById" parameterType="Long" resultMap="Invoice">
+        select * from xms_tbl_invoice
+        where invoiceid = #{invoiceId}
+    </select>
+
+    <select id="countShipmentInvoiceByInvoiceId" parameterType="long" resultType="long">
+        select count(*) from xms_tbl_shipment_invoice
+        where invoiceid = #{invoiceId};
+    </select>
+
+    <select id="getOutstandingInvoicesByCustCode" resultMap="InvoiceWithPayment"
+            parameterType="com.gms.xms.txndb.vo.InvoiceFilter">
+        <![CDATA[
+		SELECT * FROM 
+			(SELECT
+				i.*,
+				IFNULL(SUM(ip.amount), 0) AS total_payment,
+				(SELECT SUM(sb.customer_cost + sb.customer_tax_amount) FROM xms_tbl_shipment_invoice AS si
+				INNER JOIN xms_tbl_shipment_billing AS sb ON sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+				WHERE si.invoiceid = i.invoiceid) 
+					AS total_amount,
+				DATE_ADD(i.invoice_date, INTERVAL it.days DAY) AS due_date
+			FROM xms_tbl_invoice AS i
+			LEFT JOIN xms_tbl_invoice_payment AS ip ON ip.invoiceid = i.invoiceid
+			LEFT JOIN xms_tbl_customer AS c ON c.customer_code = i.customer_code
+			LEFT JOIN xms_tbl_invoice_terms AS it ON it.invoice_terms_id = ifnull(c.invoice_terms,(select invoice_terms from xms_tbl_franchise where franchise_code = i.customer_code))
+				WHERE i.customer_code = #{customerCode} AND i.status>0
+			GROUP BY i.invoiceid) AS r
+		WHERE total_payment<total_amount
+		]]>
+        <if test="orderBy!=null">
+            ORDER BY ${orderBy}
+        </if>
+        <if test="startRecord!=null and recordSize!=null">
+            LIMIT #{startRecord}, #{recordSize}
+        </if>
+    </select>
+
+    <select id="getOutstandingInvoiceTotalByCustCode" resultMap="InvoiceWithPayment"
+            parameterType="com.gms.xms.txndb.vo.InvoiceFilter">
+        <![CDATA[
+		SELECT
+			SUM(total_amount) AS total_amount,
+			SUM(total_payment) AS total_payment
+		FROM 
+			(SELECT
+				i.*,
+				IFNULL(SUM(ip.amount), 0) AS total_payment,
+				(SELECT SUM(sb.customer_cost + sb.customer_tax_amount) FROM xms_tbl_shipment_invoice AS si
+				INNER JOIN xms_tbl_shipment_billing AS sb ON sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+				WHERE si.invoiceid = i.invoiceid) 
+					AS total_amount,
+				DATE_ADD(i.invoice_date, INTERVAL it.days DAY) AS due_date
+			FROM xms_tbl_invoice AS i
+			LEFT JOIN xms_tbl_invoice_payment AS ip ON ip.invoiceid = i.invoiceid
+			LEFT JOIN xms_tbl_customer AS c ON c.customer_code = i.customer_code
+			LEFT JOIN xms_tbl_invoice_terms AS it ON it.invoice_terms_id = ifnull(c.invoice_terms,(select invoice_terms from xms_tbl_franchise where franchise_code = i.customer_code))
+				WHERE i.customer_code = #{customerCode} AND i.status>0
+			GROUP BY i.invoiceid) AS r
+		WHERE total_payment<total_amount
+		]]>
+    </select>
+
+    <select id="getOutstandingInvoicesCountByCustCode" resultType="long"
+            parameterType="com.gms.xms.txndb.vo.InvoiceFilter">
+        <![CDATA[
+		SELECT COUNT(*) FROM 
+			(SELECT
+				i.*,
+				IFNULL(SUM(ip.amount), 0) AS total_payment,
+				(SELECT SUM(sb.customer_cost + sb.customer_tax_amount) FROM xms_tbl_shipment_invoice AS si
+				INNER JOIN xms_tbl_shipment_billing AS sb ON sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+				WHERE si.invoiceid = i.invoiceid) 
+					AS total_amount,
+				DATE_ADD(i.invoice_date, INTERVAL it.days DAY) AS due_date
+			FROM xms_tbl_invoice AS i
+			LEFT JOIN xms_tbl_invoice_payment AS ip ON ip.invoiceid = i.invoiceid
+			LEFT JOIN xms_tbl_customer AS c ON c.customer_code = i.customer_code
+			LEFT JOIN xms_tbl_invoice_terms AS it ON it.invoice_terms_id = ifnull(c.invoice_terms,(select invoice_terms from xms_tbl_franchise where franchise_code = i.customer_code))
+				WHERE i.customer_code = #{customerCode} AND i.status>0
+			GROUP BY i.invoiceid) AS r
+		WHERE total_payment<total_amount
+		]]>
+    </select>
+
+    <select id="getPaidInvoicesByCustCode" resultMap="InvoiceWithPayment"
+            parameterType="com.gms.xms.txndb.vo.InvoiceFilter">
+        <![CDATA[
+		SELECT * FROM 
+			(SELECT
+				i.*,
+				IFNULL(SUM(ip.amount), 0) AS total_payment,
+				(SELECT SUM(sb.customer_cost + sb.customer_tax_amount) FROM xms_tbl_shipment_invoice AS si
+				INNER JOIN xms_tbl_shipment_billing AS sb ON sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+				WHERE si.invoiceid = i.invoiceid) 
+					AS total_amount,
+				DATE_ADD(i.invoice_date, INTERVAL it.days DAY) AS due_date
+			FROM xms_tbl_invoice AS i
+			LEFT JOIN xms_tbl_invoice_payment AS ip ON ip.invoiceid = i.invoiceid
+			LEFT JOIN xms_tbl_customer AS c ON c.customer_code = i.customer_code
+			LEFT JOIN xms_tbl_invoice_terms AS it ON it.invoice_terms_id = ifnull(c.invoice_terms,(select invoice_terms from xms_tbl_franchise where franchise_code = i.customer_code))
+				WHERE i.customer_code = #{customerCode} AND i.status>0
+			GROUP BY i.invoiceid) AS r
+		WHERE total_payment>=total_amount
+		]]>
+        <if test="orderBy!=null">
+            ORDER BY ${orderBy}
+        </if>
+        <if test="startRecord!=null and recordSize!=null">
+            LIMIT #{startRecord}, #{recordSize}
+        </if>
+    </select>
+
+    <select id="getPaidInvoiceTotalByCustCode" resultMap="InvoiceWithPayment"
+            parameterType="com.gms.xms.txndb.vo.InvoiceFilter">
+        <![CDATA[
+		SELECT
+			SUM(total_amount) AS total_amount,
+			SUM(total_payment) AS total_payment
+		FROM 
+			(SELECT
+				i.*,
+				IFNULL(SUM(ip.amount), 0) AS total_payment,
+				(SELECT SUM(sb.customer_cost + sb.customer_tax_amount) FROM xms_tbl_shipment_invoice AS si
+				INNER JOIN xms_tbl_shipment_billing AS sb ON sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+				WHERE si.invoiceid = i.invoiceid) 
+					AS total_amount,
+				DATE_ADD(i.invoice_date, INTERVAL it.days DAY) AS due_date
+			FROM xms_tbl_invoice AS i
+			LEFT JOIN xms_tbl_invoice_payment AS ip ON ip.invoiceid = i.invoiceid
+			LEFT JOIN xms_tbl_customer AS c ON c.customer_code = i.customer_code
+			LEFT JOIN xms_tbl_invoice_terms AS it ON it.invoice_terms_id = ifnull(c.invoice_terms,(select invoice_terms from xms_tbl_franchise where franchise_code = i.customer_code))
+				WHERE i.customer_code = #{customerCode} AND i.status>0
+			GROUP BY i.invoiceid) AS r
+		WHERE total_payment>=total_amount
+		]]>
+    </select>
+
+    <select id="getPaidInvoicesCountByCustCode" resultType="long" parameterType="com.gms.xms.txndb.vo.InvoiceFilter">
+        <![CDATA[
+		SELECT COUNT(*) FROM 
+			(SELECT
+				i.*,
+				IFNULL(SUM(ip.amount), 0) AS total_payment,
+				(SELECT SUM(sb.customer_cost + sb.customer_tax_amount) FROM xms_tbl_shipment_invoice AS si
+				INNER JOIN xms_tbl_shipment_billing AS sb ON sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+				WHERE si.invoiceid = i.invoiceid) 
+					AS total_amount,
+				DATE_ADD(i.invoice_date, INTERVAL it.days DAY) AS due_date
+			FROM xms_tbl_invoice AS i
+			LEFT JOIN xms_tbl_invoice_payment AS ip ON ip.invoiceid = i.invoiceid
+			LEFT JOIN xms_tbl_customer AS c ON c.customer_code = i.customer_code
+			LEFT JOIN xms_tbl_invoice_terms AS it ON it.invoice_terms_id = ifnull(c.invoice_terms,(select invoice_terms from xms_tbl_franchise where franchise_code = i.customer_code))
+				WHERE i.customer_code = #{customerCode} AND i.status>0
+			GROUP BY i.invoiceid) AS r
+		WHERE total_payment>=total_amount
+		]]>
+    </select>
+
+    <select id="selectOutstandingInvoicesByCustOrInvoiceCode" parameterType="com.gms.xms.txndb.vo.InvoiceFilter"
+            resultMap="InvoiceWithPaymentDetails">
+        <![CDATA[
+		select
+			i.invoiceid,
+		    i.invoice_code,
+		    i.invoice_date,
+		    date_add(i.invoice_date, interval ifnull(it.days,0) day) as due_date,
+		    i.late_fee,
+		    round(ifnull(tc.total_cost,0), 2) as total_amount,
+		    round(ifnull(tp.total_paid,0), 2) as total_payment,
+		    si.shipmentid,
+		    si.airbill_number,
+		    round(ifnull(atc.total_cost,0), 2) as awb_total_amount,
+		    round(ifnull(atp.total_paid,0), 2) as awb_total_payment,
+		    round(ifnull(cad.total_cost,0), 2) as adjustment_credit,
+			round(ifnull(pad.total_cost,0), 2) as pending_adjustment,
+			round(ifnull(dad.total_cost,0), 2) as denied_adjustment
+		from xms_tbl_invoice as i
+		inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+		inner join
+			(select customer_code, invoice_terms from xms_tbl_customer
+				union
+			select franchise_code as customer_code, invoice_terms from xms_tbl_franchise
+			) as c on c.customer_code = i.customer_code
+		left join xms_tbl_invoice_terms as it on it.invoice_terms_id = c.invoice_terms
+		left join
+			(select si.invoiceid, sum(customer_cost+round(customer_tax_amount, 2)) as total_cost from xms_tbl_shipment_invoice as si
+			inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+			inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+			where i.status > 0 and (i.customer_code = #{customerCode} or i.invoice_code = #{invoiceCode})
+			group by si.invoiceid
+			) as tc on tc.invoiceid = i.invoiceid
+		left join
+			(select ip.invoiceid, sum(ip.amount) as total_paid from xms_tbl_invoice_payment as ip
+			inner join xms_tbl_invoice as i on i.invoiceid = ip.invoiceid
+			where i.status > 0 and (i.customer_code = #{customerCode} or i.invoice_code = #{invoiceCode})
+			group by ip.invoiceid
+			) as tp on tp.invoiceid = i.invoiceid
+		left join
+			(select si.invoiceid, si.shipmentid, si.airbill_number, sum(sb.customer_cost+round(sb.customer_tax_amount, 2)) as total_cost from xms_tbl_shipment_invoice as si
+			inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+			inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+			where i.status > 0 and (i.customer_code = #{customerCode} or i.invoice_code = #{invoiceCode})
+			group by si.invoiceid, si.shipmentid, si.airbill_number
+			) as atc on atc.invoiceid = si.invoiceid and atc.shipmentid = si.shipmentid and atc.airbill_number = si.airbill_number
+		left join
+			(select ip.invoiceid, ipd.shipmentid, ipd.airbill_number, sum(ipd.amount) as total_paid from xms_tbl_invoice_payment_detail as ipd
+			inner join xms_tbl_invoice_payment as ip on ip.invoice_paymentid = ipd.invoice_paymentid
+			inner join xms_tbl_invoice as i on i.invoiceid = ip.invoiceid
+			where i.status > 0 and (i.customer_code = #{customerCode} or i.invoice_code = #{invoiceCode})
+			group by ip.invoiceid, ipd.shipmentid, ipd.airbill_number
+			) as atp on atp.invoiceid = si.invoiceid and atp.shipmentid = si.shipmentid and atp.airbill_number = si.airbill_number
+		left join
+			(select i.invoiceid, adj.shipmentid, adj.airbill_number, sum(adj.customer_amount+adj.gst_customer_amount) as total_cost from xms_tbl_airbill_adjustment as adj
+			inner join xms_tbl_credit_note_detail as cnd on cnd.adjustmentid = adj.adjustmentid
+			inner join xms_tbl_credit_note as cn on cn.credit_note_id = cnd.credit_note_id
+			inner join xms_tbl_invoice as i on i.invoice_code = cn.invoice_code
+			where adj.status = 4 and i.status > 0 and (i.customer_code = #{customerCode} or i.invoice_code = #{invoiceCode})
+			group by i.invoiceid, adj.shipmentid, adj.airbill_number
+			) as cad on cad.invoiceid = si.invoiceid and cad.shipmentid = si.shipmentid and cad.airbill_number = si.airbill_number
+		left join
+			(select i.invoiceid, adj.shipmentid, adj.airbill_number, sum(adj.customer_amount+adj.gst_customer_amount) as total_cost from xms_tbl_airbill_adjustment as adj
+			inner join xms_tbl_credit_note_detail as cnd on cnd.adjustmentid = adj.adjustmentid
+			inner join xms_tbl_credit_note as cn on cn.credit_note_id = cnd.credit_note_id
+			inner join xms_tbl_invoice as i on i.invoice_code = cn.invoice_code
+			where adj.status = 1 and i.status>0 and (i.customer_code = #{customerCode} or i.invoice_code = #{invoiceCode})
+			group by i.invoiceid, adj.shipmentid, adj.airbill_number
+			) as pad on pad.invoiceid = si.invoiceid and pad.shipmentid = si.shipmentid and pad.airbill_number = si.airbill_number
+		left join
+			(select i.invoiceid, adj.shipmentid, adj.airbill_number, sum(adj.customer_amount+adj.gst_customer_amount) as total_cost from xms_tbl_airbill_adjustment as adj
+			inner join xms_tbl_credit_note_detail as cnd on cnd.adjustmentid = adj.adjustmentid
+			inner join xms_tbl_credit_note as cn on cn.credit_note_id = cnd.credit_note_id
+			inner join xms_tbl_invoice as i on i.invoice_code = cn.invoice_code
+			where adj.status = 3 and i.status > 0 and (i.customer_code = #{customerCode} or i.invoice_code = #{invoiceCode})
+			group by i.invoiceid, adj.shipmentid, adj.airbill_number
+			) as dad on dad.invoiceid = si.invoiceid and dad.shipmentid = si.shipmentid and dad.airbill_number = si.airbill_number
+		where i.status > 0 and (i.customer_code = #{customerCode} or i.invoice_code = #{invoiceCode})
+		having total_payment < total_amount
+		order by i.invoice_date asc
+		]]>
+    </select>
+
+    <select id="selectByAirbillNumber" resultMap="Invoice" parameterType="com.gms.xms.txndb.vo.ShipmentVo">
+        select i.* from xms_tbl_shipment_invoice as si
+        inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        where si.airbill_number = #{airbillNumber}
+        and si.shipmentid = #{shipmentId}
+    </select>
+
+    <select id="getTaxInvoiceByCode" parameterType="String" resultMap="TaxInvoiceMap">
+        select
+        i.invoiceid,
+        i.invoice_code,
+        i.invoice_date,
+        i.customer_code,
+        (select count(*) from xms_tbl_shipment_invoice
+        where invoiceid = i.invoiceid) as airbill_count,
+        DATE_ADD(i.invoice_date, INTERVAL it.days DAY) AS due_date,
+        (select sum(sb.customer_cost+sb.customer_tax_amount) from xms_tbl_shipment_invoice as si
+        inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number =
+        si.airbill_number
+        where si.invoiceid = i.invoiceid) as total_amount,
+        (select ifnull(sum(amount),0) from xms_tbl_invoice_payment
+        where invoiceid = i.invoiceid) as total_payment,
+        ifnull(c.invoice_late_fee,0) as invoice_late_fee
+        from xms_tbl_invoice as i
+        left join xms_tbl_customer AS c ON c.customer_code = i.customer_code
+        left join xms_tbl_invoice_terms AS it ON
+        it.invoice_terms_id = ifnull(c.invoice_terms,(select invoice_terms from xms_tbl_franchise where franchise_code =
+        i.customer_code))
+        where invoice_code = #{invoiceCode}
+    </select>
+
+    <select id="getGSTSummaryByInvoiceId" parameterType="long" resultMap="GSTSummaryMap">
+        <![CDATA[
+		SELECT 
+		    SUM(gst_customer_cost) AS gst_customer_cost,
+		    SUM(non_gst_customer_cost) AS non_gst_customer_cost,
+		    SUM(customer_tax_amount) AS customer_tax_amount,
+		    MAX(customer_tax_percent) AS customer_tax_percent
+		FROM
+		    (SELECT 
+		        invoiceid,
+				IF(sb.customer_tax_percent > 0, sb.customer_cost, '0.00') AS gst_customer_cost,
+				sb.customer_tax_amount,
+				IF(sb.customer_tax_percent <= 0, sb.customer_cost, '0.00') AS non_gst_customer_cost,
+				customer_tax_percent
+		    FROM xms_tbl_shipment_invoice si
+		    INNER JOIN xms_tbl_shipment_billing sb ON sb.shipmentid = si.shipmentid
+		        AND sb.airbill_number = si.airbill_number
+		    WHERE invoiceid = #{invoiceId}) AS r
+		GROUP BY invoiceid
+		]]>
+    </select>
+
+    <select id="getAirbillListByInvoiceCode" parameterType="String" resultMap="AirbillDetailMap">
+        SELECT
+        s.service_name,
+        sb.airbill_number,
+        sc.countrycode AS sender_country_code,
+        rc.countrycode AS receiver_country_code,
+        sb.ship_date AS shipment_date,
+        i.customer_code,
+        sb.shipper_reference,
+        sb.billing_reference2,
+        sb.bill_actual_dimension,
+        sa.companyname AS sender_companyname,
+        sa.contact_name AS sender_contact_name,
+        sa.address AS sender_address,
+        sa.address2 AS sender_address2,
+        sa.city AS sender_city,
+        sa.postal_code AS sender_postal_code,
+        sa.state AS sender_state,
+        sc.display_name AS sender_country,
+        ra.companyname AS receiver_companyname,
+        ra.contact_name AS receiver_contact_name,
+        ra.address AS receiver_address,
+        ra.address2 AS receiver_address2,
+        ra.city AS receiver_city,
+        ra.postal_code AS receiver_postal_code,
+        ra.state AS
+        receiver_state,
+        rc.display_name AS receiver_country,
+        sb.pal AS no_of_pieces,
+        pk.packagetypecode,
+        dc.dhl_ap_zone AS receiver_zone,
+        dr.dhl_ap_zone AS sender_zone,
+        sb.carrier,
+        si.shipmentid,
+        IFNULL(sb.weight, 0) AS weight,
+        sh.service_area_code_origin,
+        sh.service_area_code_destination,
+        sb.senderaddressid,
+        sb.receiveraddressid,
+        sb.zone,
+        sb.display_description
+        FROM xms_tbl_shipment_invoice AS si
+        INNER JOIN xms_tbl_invoice AS i ON (si.invoiceid = i.invoiceid)
+        INNER JOIN xms_tbl_shipment_billing AS sb ON si.shipmentid = sb.shipmentid AND si.airbill_number =
+        sb.airbill_number
+        INNER JOIN xms_tbl_service AS s ON (sb.carrier = s.service_id)
+        INNER JOIN xms_tbl_shipment AS sh ON (sb.shipmentid = sh.shipmentid)
+        INNER JOIN xms_tbl_address AS sa ON (sb.senderaddressid = sa.addressid)
+        INNER JOIN xms_tbl_country AS sc ON
+        (sa.country = sc.countryid)
+        INNER JOIN xms_tbl_address AS ra ON (sb.receiveraddressid = ra.addressid)
+        INNER JOIN xms_tbl_country AS rc ON (ra.country = rc.countryid)
+        LEFT JOIN xms_tbl_piece AS p ON (sh.shipmentid = p.shipmentid)
+        LEFT JOIN xms_tbl_package AS pk ON (sh.packageid = pk.packageid)
+        LEFT JOIN xms_tbl_dhl_country AS dc ON (rc.countryname =
+        dc.dhl_countryname)
+        LEFT JOIN xms_tbl_dhl_country AS dr ON
+        (sc.countryname = dr.dhl_countryname)
+        WHERE i.invoice_code = #{invoiceCode}
+        GROUP BY sb.shipmentid , sb.airbill_number
+        ORDER BY shipment_date , airbill_number ASC
+    </select>
+
+    <select id="selectAllInvoiceForViewEdit" resultMap="Invoice"
+            parameterType="com.gms.xms.filter.invoicing.manageinvoice.ViewEditInvoiceFilter">
+        SELECT invoice_date FROM xms_tbl_invoice
+        where invoice_date!='0000-00-00'
+        and LEFT(customer_code, 3) IN (${franchiseList})
+        GROUP BY invoice_date
+        ORDER BY invoice_date DESC
+    </select>
+
+    <select id="selectInvoiceByFilter" parameterType="com.gms.xms.filter.invoicing.manageinvoice.ViewEditInvoiceFilter"
+            resultMap="Invoice">
+        select i.* from xms_tbl_invoice as i
+        inner join
+        (select customer_code, email_invoice from xms_tbl_customer
+        union
+        select franchise_code, email_invoice from xms_tbl_franchise
+        ) as c on c.customer_code = i.customer_code
+        left join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+        where left(i.customer_code,3) in (${franchiseList})
+        <if test="searchType==0">
+            <if test="customerCode!=null and customerCode!=''">
+                and i.customer_code LIKE CONCAT(#{customerCode},'%')
+            </if>
+            <if test="fromDate!=null and fromDate!=''">
+                AND i.invoice_date >= DATE(#{fromDate})
+            </if>
+            <if test="toDate!=null and toDate!=''">
+                <![CDATA[
+					and i.invoice_date <= DATE(#{toDate})
+				]]>
+            </if>
+        </if>
+        <if test="searchType==1">
+            <if test="invoiceDate != null">
+                AND i.invoice_date = #{invoiceDate}
+            </if>
+        </if>
+        <if test="franchiseSearchType =='exclude'">
+            AND LEFT(i.customer_code,3) NOT IN (${franchiseSearchTypeValue})
+        </if>
+        <if test="franchiseSearchType =='include'">
+            AND LEFT(i.customer_code,3) IN (${franchiseSearchTypeValue})
+        </if>
+        <if test="status != null">
+            AND i.status=#{status}
+        </if>
+        <if test="emailInvoice!=null ">
+            and c.email_invoice = #{emailInvoice}
+        </if>
+        group by i.invoiceid
+        <if test="minAirbills!=null or maxAirbills!=null">
+            having
+            <if test="minAirbills!=null">
+                count(si.invoiceid)>=#{minAirbills}
+                <if test="maxAirbills!=null">
+                    <![CDATA[ and count(si.invoiceid)<=#{maxAirbills}]]>
+                </if>
+            </if>
+            <if test="minAirbills==null">
+                <if test="maxAirbills!=null">
+                    <![CDATA[ count(si.invoiceid)<=#{maxAirbills}]]>
+                </if>
+            </if>
+        </if>
+        order by i.invoice_code asc
+    </select>
+
+    <select id="selectInvoicesByInvDatesAndStatus" parameterType="InvoiceFilter" resultMap="Invoice">
+        SELECT
+        *
+        FROM
+        xms_tbl_invoice
+        WHERE
+        invoice_date = #{invoiceDate}
+        AND status = #{status}
+        AND left(customer_code,3) in
+        <foreach item="franchiseCode" index="index" collection="franchiseCodes" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+
+    <select id="checkFreezedInvoiceByDate" parameterType="date" resultType="long">
+        select
+        count(*) freezed
+        from xms_tbl_invoice
+        where invoice_date = #{invoiceDate}
+        and status!=0
+    </select>
+
+    <resultMap id="ReceiveInvoicelist" type="ReceiveInvoicelistVo" extends="Invoice">
+        <result column="detail_count" property="detailCount"/>
+        <result column="detail_amount" property="detailAmount"/>
+        <result column="customer_cost" property="customerCost"/>
+        <result column="payment_paid" property="paymentPaid"/>
+        <result column="cus_paymentid" property="cusPaymentId"/>
+        <result column="remain" property="remain"/>
+    </resultMap>
+
+    <select id="selectReceiveInvoicelistByInvoiceid" parameterType="long" resultMap="ReceiveInvoicelist">
+        select
+        result.*
+        from
+        (select
+        count(id.amount) as detail_count,
+        ifnull(payment.paid, '0.00') - ifnull(sum(id.amount), '0.00') as detail_amount,
+        invoice.invoiceid,
+        invoice.late_fee,
+        invoice.invoice_code,
+        date_format(invoice.invoice_date, '%d-%m-%Y') as invoice_date,
+        sum(bill.customer_cost) as customer_cost,
+        ifnull(payment.paid, '0.00') as paid,
+        payment.cus_paymentid as cus_paymentid,
+        (sum(bill.customer_cost) + invoice.late_fee) - ifnull(payment.paid, '0.00') as remain,
+        invoice.customer_code
+        from xms_tbl_invoice as invoice
+        left join xms_tbl_customer as cus on cus.customer_code = invoice.customer_code
+        left join
+        (select
+        si.invoiceid,
+        sum(customer_cost + customer_tax_amount) customer_cost
+        from xms_tbl_shipment_billing sb
+        left join xms_tbl_shipment_invoice si on (sb.shipmentid = si.shipmentid
+        and sb.airbill_number = si.airbill_number)
+        where si.invoiceid = #{invoiceId}
+        group by si.invoiceid) bill on bill.invoiceid = invoice.invoiceid
+        left join
+        (select
+        invoice_paymentid,
+        invoiceid,
+        cus_paymentid,
+        sum(amount) as paid
+        from xms_tbl_invoice_payment
+        group by invoiceid) as payment on payment.invoiceid = invoice.invoiceid
+        left join
+        (select
+        sum(invdetail.amount) as amount,
+        invpay.invoiceid
+        from xms_tbl_invoice_payment_detail invdetail
+        left join xms_tbl_invoice_payment invpay on invdetail.invoice_paymentid = invpay.invoice_paymentid
+        where invpay.invoiceid = #{invoiceId}
+        group by invoiceid) as id on id.invoiceid = invoice.invoiceid
+        where invoice.status > 0 and invoice.paid = 0
+        and invoice.invoiceid = #{invoiceId}
+        group by payment.invoiceid , invoice.invoiceid) as result
+        where invoiceid = #{invoiceId}
+        and remain != '0.00'
+        order by 1 asc
+    </select>
+
+    <resultMap id="ShipmentDetailForInvoice" type="ShipmentDetailInvoiceVo" extends="Invoice">
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="customer_cost" property="customerCost"/>
+        <result column="payment_paid" property="paymentPaid"/>
+        <result column="remain" property="remain"/>
+        <result column="adj_credit" property="adjCredit"/>
+        <result column="penadj" property="penAdj"/>
+        <result column="denied" property="denied"/>
+    </resultMap>
+
+    <select id="selectShipmentDetailForInvoice" parameterType="long" resultMap="ShipmentDetailForInvoice">
+        select
+        *
+        from
+        (select
+        invoice.invoiceid,
+        bill.shipmentid,
+        bill.airbill_number,
+        invoice.invoice_code,
+        invoice.invoice_date,
+        sum(bill.customer_cost + bill.customer_tax_amount) as customer_cost,
+        ifnull(payment.paid, '0.00') as payment_paid,
+        sum(bill.customer_cost + bill.customer_tax_amount) - (ifnull(payment.paid, '0.00')) as remain,
+        crd.crd_amount as adj_credit,
+        adj.padj as penadj,
+        dadj as denied,
+        invoice.customer_code
+        from xms_tbl_invoice as invoice
+        left join xms_tbl_shipment_invoice as ship on ship.invoiceid = invoice.invoiceid
+        left join xms_tbl_shipment_billing bill on (bill.shipmentid = ship.shipmentid
+        and bill.airbill_number = ship.airbill_number)
+        left join
+        (select
+        shipmentid,
+        airbill_number,
+        sum(if(status = 2, customer_amount, '0.00')) as padj,
+        sum(if(status = 3, customer_amount, '0.00')) as dadj
+        from xms_tbl_airbill_adjustment
+        group by shipmentid) as adj on adj.shipmentid = bill.shipmentid
+        and adj.airbill_number = bill.airbill_number
+        left join
+        (select
+        pay.invoiceid,
+        detail.shipmentid,
+        detail.airbill_number,
+        sum(detail.amount) as paid,
+        pay.cus_paymentid
+        from xms_tbl_invoice_payment pay
+        left join xms_tbl_invoice_payment_detail detail on pay.invoice_paymentid = detail.invoice_paymentid
+        where pay.invoiceid = #{invoiceId}
+        group by detail.shipmentid , detail.airbill_number) as payment on payment.shipmentid = ship.shipmentid
+        and payment.airbill_number = ship.airbill_number
+        left join
+        (select
+        cus_paymentid,
+        sum(adj.customer_amount + adj.gst_customer_amount) as crd_amount
+        from xms_tbl_credit_note_detail as cnd
+        left join xms_tbl_airbill_adjustment as adj on (cnd.adjustmentid = adj.adjustmentid)
+        group by cnd.cus_paymentid) as crd on payment.cus_paymentid = crd.cus_paymentid
+        where ship.invoiceid = invoice.invoiceid
+        and invoice.status > 0
+        and ship.invoiceid = #{invoiceId}
+        group by bill.shipmentid , bill.airbill_number) as inv_res
+        where inv_res.remain != 0
+        order by remain desc
+    </select>
+
+    <select id="selectTotalDueAmount" parameterType="string" resultType="double">
+        SELECT
+        SUM(IFNULL(tc.total_cost, 0) - IFNULL(tp.total_paid, 0)) AS total_due
+        FROM
+        xms_tbl_invoice AS i
+        LEFT JOIN
+        (SELECT
+        si.invoiceid,
+        SUM(sb.customer_cost + sb.customer_tax_amount) AS total_cost
+        FROM
+        xms_tbl_shipment_invoice AS si
+        INNER JOIN xms_tbl_shipment_billing AS sb ON sb.shipmentid = si.shipmentid
+        AND sb.airbill_number = si.airbill_number
+        INNER JOIN xms_tbl_invoice AS i ON i.invoiceid = si.invoiceid
+        WHERE
+        i.customer_code = #{customerCode}
+        GROUP BY si.invoiceid) AS tc ON tc.invoiceid = i.invoiceid
+        LEFT JOIN
+        (SELECT
+        invoiceid, SUM(amount) AS total_paid
+        FROM
+        xms_tbl_invoice_payment
+        GROUP BY invoiceid) AS tp ON tp.invoiceid = i.invoiceid
+        WHERE
+        i.customer_code = #{customerCode}
+        GROUP BY i.customer_code
+    </select>
+
+    <update id="updateInvoiceStatusByInvCode" parameterType="InvoiceVo">
+        UPDATE `xms_tbl_invoice`
+        SET
+        status = #{status}
+        WHERE
+        `invoice_code` = #{invoiceCode}
+    </update>
+
+    <select id="updateInvoiceStatusByInvCode_SelectForLog" parameterType="InvoiceVo" resultMap="Invoice">
+        select * from xms_tbl_invoice
+        where invoice_code = #{invoiceCode}
+    </select>
+
+    <update id="update" parameterType="InvoiceVo">
+        update xms_tbl_invoice
+        <set>
+            <if test="invoiceCode!=null">
+                invoice_code = #{invoiceCode},
+            </if>
+            <if test="customerCode!=null">
+                customer_code = #{customerCode},
+            </if>
+            <if test="invoiceDate!=null">
+                invoice_date = #{invoiceDate},
+            </if>
+            <if test="lateFee!=null">
+                late_fee = #{lateFee},
+            </if>
+            <if test="status!=null">
+                status = #{status},
+            </if>
+            <if test="paid!=null">
+                paid = #{paid},
+            </if>
+            <if test="invCreateDate!=null">
+                inv_create_date = #{invCreateDate},
+            </if>
+        </set>
+        where invoiceid = #{invoiceId}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="InvoiceVo" resultMap="Invoice">
+        select * from xms_tbl_invoice
+        where invoiceid = #{invoiceId}
+    </select>
+
+    <insert id="insert" parameterType="InvoiceVo" useGeneratedKeys="true" keyProperty="invoiceId">
+        INSERT INTO xms_tbl_invoice
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="invoiceCode!=null">
+                invoice_code,
+            </if>
+            <if test="customerCode!=null">
+                customer_code,
+            </if>
+            <if test="invoiceDate!=null">
+                invoice_date,
+            </if>
+            <if test="lateFee!=null">
+                late_fee,
+            </if>
+            <if test="status!=null">
+                status,
+            </if>
+            <if test="paid!=null">
+                paid,
+            </if>
+            <if test="invCreateDate!=null">
+                inv_create_date,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="invoiceCode!=null">
+                #{invoiceCode},
+            </if>
+            <if test="customerCode!=null">
+                #{customerCode},
+            </if>
+            <if test="invoiceDate!=null">
+                #{invoiceDate},
+            </if>
+            <if test="lateFee!=null">
+                #{lateFee},
+            </if>
+            <if test="status!=null">
+                #{status},
+            </if>
+            <if test="paid!=null">
+                #{paid},
+            </if>
+            <if test="invCreateDate!=null">
+                #{invCreateDate},
+            </if>
+        </trim>
+    </insert>
+
+    <delete id="deleteById" parameterType="long">
+        delete from xms_tbl_invoice
+        where invoiceid = #{invoiceId}
+    </delete>
+
+    <select id="deleteById_SelectForLog" parameterType="long" resultMap="Invoice">
+        select * from xms_tbl_invoice
+        where invoiceid = #{invoiceId}
+    </select>
+
+    <select id="selectMinInvoiceDateByCustomerCode" parameterType="long" resultType="date">
+        select
+        ifnull(min(invoice_date), 0) as inv_date
+        from
+        xms_tbl_invoice
+        where
+        customer_code = #{customerCode}
+    </select>
+
+    <resultMap id="markUpByAirbillShipment" type="MarkUpByAirbillShipmentVo" extends="Invoice">
+        <result column="markup_rate" property="markupRate"/>
+    </resultMap>
+
+    <select id="selectMarkUpByAirbillShipment" parameterType="ShipmentInvoiceVo" resultMap="markUpByAirbillShipment">
+        select
+        fran.markup_rate, inv.customer_code, inv.invoice_date
+        from
+        xms_tbl_invoice as inv
+        inner join
+        xms_tbl_shipment_invoice as sh_inv on (inv.invoiceid = sh_inv.invoiceid)
+        left join
+        xms_tbl_franchise as fran on (substring(inv.customer_code, 1, 3) = substring(fran.franchise_code, 1, 3))
+        where
+        sh_inv.shipmentid = #{shipmentId}
+        and sh_inv.airbill_number = #{airbillNumber}
+    </select>
+
+    <select id="getByCode" parameterType="string" resultMap="Invoice">
+        select * from xms_tbl_invoice
+        where invoice_code = #{invoiceCode}
+    </select>
+
+    <select id="getMinInvoiceDateByCustCode" parameterType="string" resultType="date">
+        <bind name="customerCode" value="_parameter"/>
+        select min(invoice_date) from xms_tbl_invoice
+        where customer_code = #{customerCode}
+    </select>
+    <select id="getInvoiceByAirbill" parameterType="com.gms.xms.txndb.vo.AirbillAdjustmentVo" resultMap="Invoice">
+        select i.* from xms_tbl_shipment_invoice as si
+        inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        where si.shipmentid = #{shipmentId} and si.airbill_number = #{airbillNumber}
+        order by i.invoiceid desc
+        limit 1
+    </select>
+</mapper>

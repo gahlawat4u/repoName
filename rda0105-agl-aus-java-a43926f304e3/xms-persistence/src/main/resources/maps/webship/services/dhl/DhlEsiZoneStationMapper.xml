@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="DhlEsiZoneStation">
+    <resultMap id="DhlEsiZoneStation" type="com.gms.xms.txndb.vo.dhl.DhlEsiZoneStationVo">
+        <id column="id" property="id"/>
+        <result column="station_code" property="stationCode"/>
+        <result column="bound" property="bound"/>
+        <result column="zone" property="zone"/>
+    </resultMap>
+    <select id="selectEsiZone" resultMap="DhlEsiZoneStation" parameterType="DhlEsiZoneStationFilter">
+        <![CDATA[
+	SELECT 
+	    *
+	FROM
+	    xms_tbl_dhl_esi_zone_station
+	WHERE
+	    bound = #{bound}
+	        AND station_code = (SELECT 
+	            station_code
+	        FROM
+	            xms_tbl_dhl_esi_zone
+	        WHERE
+	            city_name = #{cityName}
+	                AND (from_postcode <= #{postalCode}
+	                AND to_postcode >= #{postalCode}))
+	]]>
+    </select>
+</mapper>

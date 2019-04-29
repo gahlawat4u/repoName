@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="History">
+    <resultMap id="historyDetail" type="com.gms.xms.txndb.vo.webship.HistoryDetailScheduleInfoVo">
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="shi_contact_name" property="shiContactName"/>
+        <result column="shi_address" property="shiAddress"/>
+        <result column="shi_address2" property="shiAddress2"/>
+        <result column="shi_city" property="shiCity"/>
+        <result column="shi_postal_code" property="shiPostalCode"/>
+        <result column="shi_state" property="shiState"/>
+        <result column="shi_phone" property="shiPhone"/>
+        <result column="shi_companyname" property="shiCompanyName"/>
+        <result column="rec_phone" property="recPhone"/>
+        <result column="rec_companyname" property="recCompanyName"/>
+        <result column="rec_contact_name" property="recContactName"/>
+        <result column="rec_address" property="recAddress"/>
+        <result column="rec_address2" property="recAddress2"/>
+        <result column="rec_city" property="recCity"/>
+        <result column="rec_postal_code" property="recPostalCode"/>
+        <result column="rec_state" property="recState"/>
+    </resultMap>
+
+    <select id="selectHistoryDetailScheduleCollection" parameterType="long" resultMap="historyDetail">
+        SELECT airbill_number, adr.contact_name as shi_contact_name,adr.address as shi_address,
+        adr.address2 as shi_address2, adr.city as shi_city,adr.postal_code as shi_postal_code,adr.state as shi_state,
+        adr.phone as shi_phone, adr.companyname as shi_companyname,
+        adr2.phone as rec_phone , adr2.companyname as rec_companyname,adr2.contact_name as rec_contact_name,
+        adr2.address as rec_address,adr2.address2 as rec_address2 ,adr2.city as rec_city,adr2.postal_code as rec_postal_code,
+        adr2.state as rec_state,adr2.phone as rec_phone
+        FROM xms_tbl_shipment as sm
+        left JOIN xms_tbl_address as adr on adr.addressid=sm.senderaddressid
+        left JOIN xms_tbl_address as adr2 on adr2.addressid=sm.receiveraddressid
+        WHERE sm.shipmentid=#{shipmentId}
+    </select>
+
+    <select id="selectByFilter" parameterType="HistoryFilter" resultType="HistoryVo">
+        SELECT
+        sm.commercial_invoice_id as commercialInvoiceId,
+        sm.packinglist as packingList,
+        sm.shipmentid as shipmentId,
+        sv.service_name AS serviceName,
+        sv.service_id AS serviceId,
+        IF(sm.status=0, 'NO','YES') AS voidStatus,
+        sm.airbill_number AS airbillNumber,
+        DATE_FORMAT(sm.create_date,'%d-%m-%Y') AS createDate,
+        DATE_FORMAT(sm.create_date,'%H:%i:%s') AS `timeStamp`,
+        DATE_FORMAT(sm.shipment_date,'%d-%m-%Y') AS shipDate,
+        sm.noOfPiece_tmp as noOfPieces,
+        sm_t.shipment_type_name AS shipmentType,
+        pac.packagename as packageName,
+        sm.weight_tmp AS weight,
+        sm.dead_weight as deadWeight,
+        IF(pac.packageid = 0, 'Letter', CONCAT(sm.dimension_l,' X ', sm.dimension_w, ' X ', sm.dimension_h, ' ',
+        sm.dimension_unit)) AS dimensions,
+        (ROUND(IFNULL(sm.withinsurance, 0) + IFNULL(sm.base_charge, 0) + IF (sm_d.accessorialid != 0,SUM(sm_d.amount),0)
+        + IFNULL(sm.non_standard_charge, 0)
+        + IFNULL(sm.manual_handling_surcharge, 0) +
+        (
+        IF(
+        IF(sCountry.countryname = rCountry.countryname,
+        (select setting_value from xms_tbl_system_setting where setting_name IN ('Domestic Tax Percentage')),
+        (select setting_value from xms_tbl_system_setting where setting_name IN ('VAT percent based on Base Charge'))
+        ) = '',0,
+        (IFNULL(sm.withinsurance, 0) + IFNULL(sm.base_charge, 0) + IFNULL(sm.non_standard_charge, 0) + IFNULL(sm.manual_handling_surcharge, 0) +
+        IF (sm_d.accessorialid != 0, SUM(sm_d.amount), 0 )) * 0.1
+        )
+        ) ,2)
+        ) AS total,
+        IF(sm.withinsurance > 0, sm.total_custom_value, '') AS withInsurance,
+        CASE IFNULL( schcoll.schedule_collection_id, 0 )
+        WHEN 0 THEN CASE sm.collection_type_id
+        WHEN '2' THEN 'Already booked'
+        WHEN '3' THEN 'Book later'
+        WHEN '4' THEN 'Daily'
+        WHEN '5' THEN 'Drop off'
+        WHEN '6' THEN 'Manual Booking'
+        ELSE 'Book later'
+        END
+        ELSE
+        CASE schcoll.`status`
+        WHEN '0' THEN 'Book later'
+        ELSE 'YES'
+        END
+        END AS schedule,
+        schcoll.schedule_collection_id as schId,
+        IFNULL(
+        CASE schcoll.`status`
+        WHEN '0' THEN '' ELSE
+        CONCAT(DATE_FORMAT(schcoll.pickup_date,'%d-%m-%Y'), ' ', DATE_FORMAT(schcoll.pickup_time,'%H:%i:%s'))
+        END,"") AS `schcollTimeStamp`,
+        CASE IFNULL( schcoll.schedule_collection_id, 0 )
+        WHEN 0 THEN sm.dhl_note
+        ELSE schcoll.confirmation_no
+        END AS confirmationNo,
+        sm.reference AS reference,
+        CASE sm.billing_type
+        WHEN 1 THEN 'S'
+        WHEN 2 THEN 'R'
+        WHEN 3 THEN 'T'
+        ELSE ' '
+        END AS billingParty,
+        sender.companyname AS senderCompany,
+        sender.contact_name AS senderName,
+        CONCAT(sender.city, ', ' , sender.postal_code) AS senderLocation,
+        reciver.companyname AS reciverCompany,
+        reciver.contact_name AS reciverContact,
+        CONCAT(reciver.city, ', ' , reciver.postal_code) AS destinations,
+        rCountry.countryname AS destCountry
+
+        FROM
+
+        (
+        SELECT
+        sm_tmp.shipment_date,
+        sm_tmp. STATUS,
+        sm_tmp.packinglist,
+        sm_tmp.shipmentid,
+        sm_tmp.total_custom_value,
+        sm_tmp.dhl_note,
+        sm_tmp.customer_code,
+        sm_tmp.reference,
+        sm_tmp.airbill_number,
+        sm_tmp.create_date,
+        sm_tmp.senderaddressid,
+        sm_tmp.receiveraddressid,
+        sm_tmp.shipment_type_id,
+        sm_tmp.packageid,
+        sm_tmp.billing_type,
+        sm_tmp.collection_type_id,
+        sm_tmp.dimension_unit,
+        sm_tmp.no_of_pieces,
+        sm_tmp.withinsurance,
+        sm_tmp.base_charge,
+        sm_tmp.non_standard_charge,
+        sm_tmp.manual_handling_surcharge,
+        sm_tmp.weight_unit,
+        sm_tmp.commercial_invoice_id ,
+        sm_tmp.bound_status ,
+        COUNT(pic_tmp.shipmentid) AS noOfPiece_tmp,
+        SUM(pic_tmp.weight) AS weight_tmp,
+        SUM(pic_tmp.dead_weight) as dead_weight,
+        pic_tmp.dimension_h,
+        pic_tmp.dimension_l,
+        pic_tmp.dimension_w
+        FROM
+        xms_tbl_shipment AS sm_tmp IGNORE INDEX (collection_type_id,webshipid,shipment_type_id,packageid,airbill_number)
+        LEFT JOIN xms_tbl_piece AS pic_tmp ON sm_tmp.shipmentid = pic_tmp.shipmentid
+        LEFT JOIN xms_tbl_address AS sender ON sm_tmp.senderaddressid = sender.addressid
+        LEFT JOIN xms_tbl_address AS reciver ON sm_tmp.receiveraddressid = reciver.addressid
+
+        WHERE 1=1
+        <if test="listShipmentId!=null">
+            AND sm_tmp.shipmentid IN
+            <foreach item="shipmentId" collection="listShipmentId" open="(" close=")" separator=",">
+                #{shipmentId}
+            </foreach>
+        </if>
+        <if test="customerCode != null">
+            AND sm_tmp.customer_code = #{customerCode}
+        </if>
+        <if test="toDate!=null and fromDate != null">
+            AND DATE(sm_tmp.create_date) BETWEEN DATE(#{fromDate}) AND DATE(#{toDate})
+        </if>
+        <if test="totalDate != null and totalDate != 0">
+            AND DATE(sm_tmp.create_date) BETWEEN SUBDATE(DATE(NOW()), #{totalDate}) AND DATE(NOW())
+        </if>
+        <if test="senderName != null ">
+            AND sender.contact_name LIKE CONCAT('%',#{senderName},'%')
+        </if>
+        <if test="reciverName != null ">
+            AND reciver.contact_name LIKE CONCAT('%',#{reciverName},'%')
+        </if>
+        <if test="connoteNumber != null ">
+            AND sm_tmp.airbill_number LIKE CONCAT('%',#{connoteNumber},'%')
+        </if>
+        <if test="senderCity != null ">
+            AND sender.city LIKE CONCAT('%',#{senderCity},'%')
+        </if>
+        <if test="reciverCity != null ">
+            AND reciver.city LIKE CONCAT('%',#{reciverCity},'%')
+        </if>
+        GROUP BY sm_tmp.shipmentid
+        <if test="orderBy != null ">
+            ORDER BY #{orderBy}
+        </if>
+        <if test="orderBy == null ">
+            ORDER BY sm_tmp.create_date DESC
+        </if>
+        <if test="startRecord != null and recordSize != null">
+            LIMIT #{startRecord},#{recordSize}
+        </if>
+        ) AS sm
+
+        INNER JOIN
+        (
+        SELECT
+        serviceid,
+        shipment_type_id,
+        IF ( s.localizationid > 0, IF ( LD.detail = '' OR LD.detail IS NULL, L.default_text, LD.detail ),
+        shipment_type_name
+        ) AS shipment_type_name
+        FROM
+        xms_tbl_shipment_type AS s
+        LEFT JOIN xms_tbl_localization AS L ON s.localizationid = L.localizationid
+        LEFT JOIN xms_tbl_localization_detail AS LD ON LD.languageid = 0 AND s.localizationid = LD.localizationid
+        ) AS sm_t ON sm.shipment_type_id = sm_t.shipment_type_id
+        INNER JOIN xms_tbl_service AS sv ON sm_t.serviceid = sv.service_id
+        INNER JOIN
+        (
+        SELECT packageid, If(LD.detail='' or LD.detail is null,P.packagename,LD.detail) AS packagename
+        FROM xms_tbl_package AS P
+        LEFT JOIN xms_tbl_localization AS L ON P.localizationid = L.localizationid
+        LEFT JOIN xms_tbl_localization_detail AS LD ON LD.languageid = 0 AND P.localizationid = LD.localizationid
+        ) AS pac ON pac.packageid = sm.packageid
+        LEFT JOIN xms_tbl_shipment_detail AS sm_d ON sm_d.shipmentid = sm.shipmentid
+        LEFT JOIN xms_tbl_schedule_collection AS schcoll ON schcoll.shipmentid = sm.shipmentid and schcoll.status=1
+        INNER JOIN xms_tbl_address AS sender ON sender.addressid = sm.senderaddressid
+        INNER JOIN xms_tbl_address AS reciver ON reciver.addressid = sm.receiveraddressid
+        INNER JOIN xms_tbl_country AS rCountry ON rCountry.countryid = reciver.country
+        INNER JOIN xms_tbl_country AS sCountry ON sCountry.countryid = sender.country
+        GROUP BY sm.shipmentid
+        <if test="orderBy != null ">
+            ORDER BY #{orderBy}
+        </if>
+        <if test="orderBy == null ">
+            ORDER BY sm.create_date DESC
+        </if>
+    </select>
+
+    <select id="selectCountByFilter" resultType="int" parameterType="HistoryFilter">
+        SELECT
+        count(sm.shipmentid)
+        FROM
+        (
+        SELECT
+        sm_tmp.shipmentid,
+        sm_tmp.senderaddressid,
+        sm_tmp.receiveraddressid,
+        sm_tmp.airbill_number
+        FROM xms_tbl_shipment AS sm_tmp
+        LEFT JOIN xms_tbl_address AS sender ON sm_tmp.senderaddressid = sender.addressid
+        LEFT JOIN xms_tbl_address AS reciver ON sm_tmp.receiveraddressid = reciver.addressid
+        WHERE 1=1
+        <if test="listShipmentId!=null">
+            AND shipmentid IN
+            <foreach item="shipmentId" collection="listShipmentId" open="(" close=")" separator=",">
+                #{shipmentId}
+            </foreach>
+        </if>
+        <if test="customerCode != null">
+            AND sm_tmp.customer_code = #{customerCode}
+        </if>
+        <if test="toDate!=null and fromDate != null">
+            AND DATE(sm_tmp.create_date) BETWEEN DATE(#{fromDate}) AND DATE(#{toDate})
+        </if>
+        <if test="totalDate != null and totalDate != 0">
+            AND DATE(sm_tmp.create_date) BETWEEN SUBDATE(DATE(NOW()), #{totalDate}) AND DATE(NOW())
+        </if>
+
+        <if test="senderName != null ">
+            AND sender.contact_name LIKE CONCAT('%',#{senderName},'%')
+        </if>
+        <if test="reciverName != null ">
+            AND reciver.contact_name LIKE CONCAT('%',#{reciverName},'%')
+        </if>
+        <if test="connoteNumber != null ">
+            AND sm_tmp.airbill_number LIKE CONCAT('%',#{connoteNumber},'%')
+        </if>
+        <if test="senderCity != null ">
+            AND sender.city LIKE CONCAT('%',#{senderCity},'%')
+        </if>
+        <if test="reciverCity != null ">
+            AND reciver.city LIKE CONCAT('%',#{reciverCity},'%')
+        </if>
+        GROUP BY sm_tmp.shipmentid
+        )AS sm
+
+    </select>
+</mapper>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<decorators defaultdir="/decorators">
+    <decorator name="main" page="main.jsp">
+        <pattern>/jsp/**</pattern>
+    </decorator>
+    <decorator name="login" page="login.jsp">
+        <pattern>/jsp/login.jsp</pattern>
+        <pattern>/jsp/reset_password/*</pattern>
+    </decorator>
+    <decorator name="blank" page="blank.jsp">
+        <pattern>/jsp/*/components/**</pattern>
+    </decorator>
+    <decorator name="json" page="blank.jsp">
+        <pattern>/jsp/json/**</pattern>
+    </decorator>
+    <decorator name="nolink-menu" page="nolink-menu.jsp">
+        <pattern>**/require_change_password.jsp</pattern>
+    </decorator>
+    <excludes>
+        <pattern>**/*_data.jsp*</pattern>
+    </excludes>
+</decorators>

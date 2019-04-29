@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<app-setting>
+    <app-mode>PRODUCTION</app-mode>
+    <xms1-url>http://localhost</xms1-url>
+    <franchise-receive-payment>false</franchise-receive-payment>
+    <default-date-format>dd-MM-yyyy</default-date-format>
+    <default-date-time-format>dd-MM-yyyy HH:mm:ss</default-date-time-format>
+    <default-time-format>HH:mm a</default-time-format>
+    <default-language-code>en</default-language-code>
+    <encryption-key>globalwave1234567890</encryption-key>
+    <sender-email-user>datotestmail@gmail.com</sender-email-user>
+    <sender-email-password>p@ssw0rdtest</sender-email-password>
+    <carier-centralized>1,15,53,61,62,63,64</carier-centralized>
+    <franchise-payable-start-date>31-12-2011</franchise-payable-start-date>
+    <enable-non-centralized-tab>true</enable-non-centralized-tab>
+    <development-email>xms2tuat@gmail.com</development-email>
+    <default-page-size>25</default-page-size>
+    <default-links-on-page>5</default-links-on-page>
+    <password-chars>abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ0123456789!@$?_-</password-chars>
+    <password-pattern>((?=.*\d)(?=.*[a-zA-Z]).{8,20})</password-pattern>
+    <page-size-list>25,50,100</page-size-list>
+    <active-carriers>1,2,3,15,40,50,51,52,54,55,56,59,72</active-carriers>
+    <default-notify-email>gwtrms1@gmail.com</default-notify-email>
+    <ignored-ctx-param-log>
+        franchise_payable_payment_margin_details_result,
+        franchise_list_result,
+        franchise_payable_overview_result,
+        FRANCHISE_PAYABLE_INV_EXPORT_DATA_RESULT,
+        franchise_payable_payment_margin_details_result,
+        franchise_payable_61days_payment_credit_details_result,
+        franchise_payable_carrier_cost_deduction_result,
+        franchise_payable_non_centralized_details_result,
+        franchise_payable_carrier_credit_details_result,
+        FRANCHISE_PAYABLE_SHIPMENT_DETAILS_RESULT,
+        FRANCHISE_PAYABLE_TECH_FEE_DETAILS_RESULT,
+        franchise_payable_overpayment_result,
+        CREDIT_NOTE_LIST_RESULT,
+        webship_password,
+        user_password,
+    </ignored-ctx-param-log>
+    <enable-show-langcode>false</enable-show-langcode>
+    <franchise-receive-payment>true</franchise-receive-payment>
+    <payment-methods>
+        <payment id="0" name="Cheque"/>
+        <payment id="1" name="Cash"/>
+        <payment id="2" name="Bank Transfer"/>
+        <payment id="3" name="Paypal"/>
+        <payment id="4" name="Credit Card"/>
+        <payment id="5" name="Manual Debits"/>
+        <payment id="6" name="Direct Debits"/>
+    </payment-methods>
+    <default-webship-password>agl@123</default-webship-password>
+    <star-track-tracking-api-1.0>https://admin.inxpress.com.au/xms/startrack/startrack_tracking_api.php
+    </star-track-tracking-api-1.0>
+    <self-insurance-start-date>07-05-2016</self-insurance-start-date>
+    <default-process-record-size>1000</default-process-record-size>
+    <max-export-process-record>20000</max-export-process-record>
+    <enable-php-home>N</enable-php-home>
+    <php-home-path>/xms/admin</php-home-path>
+    <permission-map>
+        <entry>
+        </entry>
+    </permission-map>
+
+    <action-config-map>
+        <entry>
+        </entry>
+    </action-config-map>
+</app-setting>

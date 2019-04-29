@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<decorators defaultdir="/decorators">
+    <decorator name="new_layout" page="new_layout.jsp">
+        <pattern>**/*.jsp</pattern>
+    </decorator>
+    <decorator name="login" page="login.jsp">
+        <pattern>/jsp/login.jsp</pattern>
+    </decorator>
+    <excludes>
+        <pattern>**/*_data.jsp*</pattern>
+        <pattern>/index.jsp*</pattern>
+        <pattern>/jsp/admin/recache.jsp</pattern>
+        <pattern>/jsp/admin/import/import_billing_files/download_billing_files.jsp</pattern>
+    </excludes>
+</decorators>

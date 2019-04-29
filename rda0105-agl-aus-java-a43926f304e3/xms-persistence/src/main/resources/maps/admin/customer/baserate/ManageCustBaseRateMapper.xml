@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ManageCustBaseRate">
+    <resultMap id="CustBaseRateMap" type="com.gms.xms.txndb.vo.admin.customer.baserate.CustBaseRateVo">
+        <result column="customer_base_rate_id" property="customerBaseRateId"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="rate_type" property="rateType"/>
+        <result column="weight" property="weight"/>
+        <result column="rate" property="rate"/>
+        <result column="zone_check" property="zoneCheck"/>
+        <result column="content" property="content"/>
+        <result column="bound" property="bound"/>
+        <result column="baserate_description" property="baserateDescription"/>
+        <result column="carrierid" property="carrierId"/>
+    </resultMap>
+
+    <resultMap id="OtherCustBaseRateMap" type="com.gms.xms.txndb.vo.admin.customer.baserate.OtherCustBaseRateVo"
+               extends="CustBaseRateMap">
+        <result column="service_id" property="serviceId"/>
+        <result column="service_name" property="serviceName"/>
+    </resultMap>
+
+    <resultMap id="CustBaseRateDetailMap" type="com.gms.xms.txndb.vo.admin.customer.baserate.CustBaseRateDetailVo">
+        <result column="customer_base_rate_id" property="customerBaseRateId"/>
+        <result column="zone" property="zone"/>
+        <result column="rate" property="rate"/>
+    </resultMap>
+
+    <resultMap id="ServiceTypeMap" type="com.gms.xms.txndb.vo.admin.customer.baserate.ServiceTypeVo">
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="serviceid" property="serviceId"/>
+        <result column="shipment_type_name" property="shipmentTypeName"/>
+        <result column="allow_carrier" property="allowCarrier"/>
+        <result column="allow_non_carrier" property="allowNonCarrier"/>
+        <result column="show_status" property="showStatus"/>
+        <result column="document_type" property="documentType"/>
+        <result column="content" property="content"/>
+        <result column="bound" property="bound"/>
+        <result column="carrier_document_rate" property="carrierDocRate"/>
+        <result column="carrier_document_inbound_rate" property="carrierDocInRate"/>
+        <result column="carrier_package_rate" property="carrierPackRate"/>
+        <result column="carrier_package_perweight_rate" property="carrierPackPerWeightRate"/>
+        <result column="carrier_package_inbound_rate" property="carrierPackInRate"/>
+        <result column="carrier_package_inbound_perweight_rate" property="carrierPackInPerWeightRate"/>
+        <result column="carrier_pak_rate" property="carrierPakRate"/>
+        <result column="carrier_pak_perweight_rate" property="carrierPakPerWeightRate"/>
+        <result column="carrier_pak_inbound_rate" property="carrierPakInRate"/>
+        <result column="carrier_pak_inbound_perweight_rate" property="carrierPakInPerWeightRate"/>
+        <result column="non_carrier_document_rate" property="nonCarrierDocRate"/>
+        <result column="non_carrier_document_inbound_rate" property="nonCarrierDocInRate"/>
+        <result column="non_carrier_package_rate" property="nonCarrierPackRate"/>
+        <result column="non_carrier_package_perweight_rate" property="nonCarrierPackPerWeightRate"/>
+        <result column="non_carrier_package_inbound_rate" property="nonCarrierPackInRate"/>
+        <result column="non_carrier_package_inbound_perweight_rate" property="nonCarrierPackInPerWeightRate"/>
+        <result column="non_carrier_pak_rate" property="nonCarrierPakRate"/>
+        <result column="non_carrier_pak_perweight_rate" property="nonCarrierPakPerWeightRate"/>
+        <result column="non_carrier_pak_inbound_rate" property="nonCarrierPakInRate"/>
+        <result column="non_carrier_pak_inbound_perweight_rate" property="nonCarrierPakInPerWeightRate"/>
+    </resultMap>
+
+    <select id="getServiceTypeByCarrier" parameterType="long" resultMap="ServiceTypeMap">
+        select
+        st.shipment_type_id,
+        st.serviceid,
+        st.shipment_type_name,
+        st.allow_carrier,
+        st.allow_non_carrier,
+        st.show_status,
+        dt.document_type,
+        dt.content,
+        dt.bound,
+        st.carrier_document_rate,
+        st.carrier_document_inbound_rate,
+        st.carrier_package_rate,
+        st.carrier_package_perweight_rate,
+        st.carrier_package_inbound_rate,
+        st.carrier_package_inbound_perweight_rate,
+        st.carrier_pak_rate,
+        st.carrier_pak_perweight_rate,
+        st.carrier_pak_inbound_rate,
+        st.carrier_pak_inbound_perweight_rate,
+        st.non_carrier_document_rate,
+        st.non_carrier_document_inbound_rate,
+        st.non_carrier_package_rate,
+        st.non_carrier_package_perweight_rate,
+        st.non_carrier_package_inbound_rate,
+        st.non_carrier_package_inbound_perweight_rate,
+        st.non_carrier_pak_rate,
+        st.non_carrier_pak_perweight_rate,
+        st.non_carrier_pak_inbound_rate,
+        st.non_carrier_pak_inbound_perweight_rate
+        from xms_tbl_shipment_type as st
+        inner join
+        (select 0 as content, 0 as bound, 1 as doc, 0 as doc_in, 0 as pack, 0 as pack_in, 0 as pak, 0 as pak_in, 0 as
+        document_type
+        union
+        select 0 as content, 1 as bound, 0 as doc, 1 as doc_in, 0 as pack, 0 as pack_in, 0 as pak, 0 as pak_in, 1 as
+        document_type
+        union
+        select 1 as content, 0 as bound, 0 as doc, 0 as doc_in, 1 as pack, 0 as pack_in, 0 as pak, 0 as pak_in, 2 as
+        document_type
+        union
+        select 1 as content, 1 as bound, 0 as doc, 0 as doc_in, 0 as pack, 1 as pack_in, 0 as pak, 0 as pak_in, 3 as
+        document_type
+        union
+        select 2 as content, 0 as bound, 0 as doc, 0 as doc_in, 0 as pack, 0 as pack_in, 1 as pak, 0 as pak_in, 4 as
+        document_type
+        union
+        select 2 as content, 1 as bound, 0 as doc, 0 as doc_in, 0 as pack, 0 as pack_in, 0 as pak, 1 as pak_in, 5 as
+        document_type
+        union
+        select -1 as content, 0 as bound, 0 as doc, 0 as doc_in, 0 as pack, 0 as pack_in, 0 as pak, 0 as pak_in, 6 as
+        document_type
+        ) as dt on (dt.doc = st.document and st.document = 1)
+        or (dt.doc_in = st.document_inbound and st.document_inbound = 1)
+        or (dt.pack = st.package and st.package = 1)
+        or (dt.pack_in = st.package_inbound and st.package_inbound = 1)
+        or (dt.pak = st.pak and st.pak = 1)
+        or (dt.pak_in = st.pak_inbound and st.pak_inbound = 1)
+        or (dt.doc = st.document and dt.doc_in=st.document_inbound and dt.pack = st.package and dt.pack_in =
+        st.package_inbound and dt.pak = st.pak and dt.pak_in = st.pak_inbound and dt.doc = 0)
+        where st.serviceid = #{serviceId}
+        order by service_priority, bound, content
+    </select>
+
+    <select id="getServiceTypeByShipmentTypeId"
+            parameterType="com.gms.xms.txndb.vo.admin.customer.baserate.ServiceTypeVo" resultMap="ServiceTypeMap">
+        select
+        st.shipment_type_id,
+        st.serviceid,
+        st.shipment_type_name,
+        st.allow_carrier,
+        st.allow_non_carrier,
+        st.show_status,
+        dt.document_type,
+        dt.content,
+        dt.bound,
+        st.carrier_document_rate,
+        st.carrier_document_inbound_rate,
+        st.carrier_package_rate,
+        st.carrier_package_perweight_rate,
+        st.carrier_package_inbound_rate,
+        st.carrier_package_inbound_perweight_rate,
+        st.carrier_pak_rate,
+        st.carrier_pak_perweight_rate,
+        st.carrier_pak_inbound_rate,
+        st.carrier_pak_inbound_perweight_rate,
+        st.non_carrier_document_rate,
+        st.non_carrier_document_inbound_rate,
+        st.non_carrier_package_rate,
+        st.non_carrier_package_perweight_rate,
+        st.non_carrier_package_inbound_rate,
+        st.non_carrier_package_inbound_perweight_rate,
+        st.non_carrier_pak_rate,
+        st.non_carrier_pak_perweight_rate,
+        st.non_carrier_pak_inbound_rate,
+        st.non_carrier_pak_inbound_perweight_rate
+        from xms_tbl_shipment_type as st
+        inner join
+        (select 0 as content, 0 as bound, 1 as doc, 0 as doc_in, 0 as pack, 0 as pack_in, 0 as pak, 0 as pak_in, 0 as
+        document_type
+        union
+        select 0 as content, 1 as bound, 0 as doc, 1 as doc_in, 0 as pack, 0 as pack_in, 0 as pak, 0 as pak_in, 1 as
+        document_type
+        union
+        select 1 as content, 0 as bound, 0 as doc, 0 as doc_in, 1 as pack, 0 as pack_in, 0 as pak, 0 as pak_in, 2 as
+        document_type
+        union
+        select 1 as content, 1 as bound, 0 as doc, 0 as doc_in, 0 as pack, 1 as pack_in, 0 as pak, 0 as pak_in, 3 as
+        document_type
+        union
+        select 2 as content, 0 as bound, 0 as doc, 0 as doc_in, 0 as pack, 0 as pack_in, 1 as pak, 0 as pak_in, 4 as
+        document_type
+        union
+        select 2 as content, 1 as bound, 0 as doc, 0 as doc_in, 0 as pack, 0 as pack_in, 0 as pak, 1 as pak_in, 5 as
+        document_type
+        union
+        select -1 as content, 0 as bound, 0 as doc, 0 as doc_in, 0 as pack, 0 as pack_in, 0 as pak, 0 as pak_in, 6 as
+        document_type
+        ) as dt on (dt.doc = st.document and st.document = 1)
+        or (dt.doc_in = st.document_inbound and st.document_inbound = 1)
+        or (dt.pack = st.package and st.package = 1)
+        or (dt.pack_in = st.package_inbound and st.package_inbound = 1)
+        or (dt.pak = st.pak and st.pak = 1)
+        or (dt.pak_in = st.pak_inbound and st.pak_inbound = 1)
+        or (dt.doc = st.document and dt.doc_in=st.document_inbound and dt.pack = st.package and dt.pack_in =
+        st.package_inbound and dt.pak = st.pak and dt.pak_in = st.pak_inbound and dt.doc = 0)
+        where st.shipment_type_id = #{shipmentTypeId} and dt.content = #{content} and dt.bound = #{bound}
+    </select>
+
+    <select id="getOtherBaseRateByCustomerCode" parameterType="string" resultMap="OtherCustBaseRateMap">
+        select
+        sv.service_id,
+        sv.service_name,
+        cbr.customer_base_rate_id,
+        ifnull(cbr.customer_code,#{customerCode}) as customer_code,
+        ifnull(cbr.shipment_type_id,0) as shipment_type_id,
+        ifnull(cbr.rate_type,1) as rate_type,
+        ifnull(cbr.weight,0) as weight,
+        ifnull(cbr.rate,0) as rate,
+        ifnull(cbr.zone_check,0) as zone_check,
+        ifnull(cbr.content,0) as content,
+        ifnull(cbr.bound,0) as bound,
+        ifnull(cbr.baserate_description,sv.service_name) as baserate_description,
+        ifnull(cbr.carrierid,sv.service_id) as carrierid
+        from
+        (select
+        service_id, service_name
+        from xms_tbl_service as s
+        left join xms_tbl_shipment_type as st on s.service_id = st.serviceid
+        where service_id not in (1,2,3,15,40,50,51,52,54,55,56,59,58,57,72,400)
+        and inactive = 0
+        and st.show_status = 1
+        group by s.service_id
+        ) as sv
+        left join xms_tbl_customer_base_rate as cbr on sv.service_id = cbr.carrierid and cbr.customer_code =
+        #{customerCode}
+        order by service_id
+    </select>
+
+    <select id="getCustBaseRateByFilter" parameterType="com.gms.xms.txndb.vo.admin.customer.baserate.CustBaseRateVo"
+            resultMap="CustBaseRateMap">
+        select * from xms_tbl_customer_base_rate
+        where shipment_type_id = #{shipmentTypeId} and content = #{content} and bound = #{bound} and customer_code =
+        #{customerCode} order by weight
+    </select>
+
+    <select id="getCustBaseRateDetailByFilter"
+            parameterType="com.gms.xms.txndb.vo.admin.customer.baserate.CustBaseRateDetailByFilter"
+            resultMap="CustBaseRateDetailMap">
+        select * from xms_tbl_customer_base_rate_detail
+        where customer_base_rate_id = #{customerBaseRateId}
+        and zone in
+        <foreach item="zone" collection="zones" open="(" close=")" separator=",">
+            #{zone}
+        </foreach>
+        order by zone
+    </select>
+
+    <select id="getZonesBySheetId" parameterType="long" resultType="string">
+        select column_name from xms_tbl_rate_sheet_column
+        where sheet_id = #{sheetId}
+        order by column_name
+    </select>
+</mapper>

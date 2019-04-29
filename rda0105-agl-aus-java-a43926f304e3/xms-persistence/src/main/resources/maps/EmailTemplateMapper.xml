@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="EmailTemplate">
+    <resultMap id="EmailTemplateResultMap" type="com.gms.xms.txndb.vo.EmailTemplateVo">
+        <id column="template_id" property="templateId"/>
+        <result column="template_name" property="templateName"/>
+        <result column="template_content" property="templateContent"/>
+        <result column="subject" property="subject"/>
+        <result column="variable" property="variable"/>
+        <result column="type" property="type"/>
+        <result column="invoice_attachment" property="invoiceAttachment"/>
+        <result column="statement_attachment" property="statementAttachment"/>
+    </resultMap>
+
+    <select id="getEmailTemplateList" resultMap="EmailTemplateResultMap">
+        SELECT * FROM xms_tbl_emailtemplate
+    </select>
+
+    <select id="getNormalEmailTemplateList" resultMap="EmailTemplateResultMap">
+        SELECT template_id, template_name FROM xms_tbl_emailtemplate
+        where type=0
+        order by template_name
+    </select>
+
+    <select id="getEmailTemplateByName" resultMap="EmailTemplateResultMap" parameterType="String">
+        SELECT * FROM xms_tbl_emailtemplate
+        WHERE template_name = #{templateName}
+    </select>
+
+    <select id="getEmailTemplateById" resultMap="EmailTemplateResultMap" parameterType="Integer">
+        SELECT * FROM xms_tbl_emailtemplate
+        WHERE template_id = #{templateId}
+    </select>
+
+    <select id="selectAdminEmaillistByName" parameterType="string" resultType="string">
+        select
+        email
+        from xms_tbl_admin_email as admin
+        inner join xms_tbl_admin_email_setting as email on admin.id = email.admin_email_id
+        inner join xms_tbl_email_setting as setting on setting.id = email.email_setting_id
+        where setting.name = #{name}
+        and email.status = 1
+    </select>
+
+    <update id="update" parameterType="EmailTemplateVo">
+        update xms_tbl_emailtemplate
+        <set>
+            <if test="templateName!=null">
+                template_name = #{templateName},
+            </if>
+            <if test="templateContent!=null">
+                template_content = #{templateContent},
+            </if>
+            <if test="subject!=null">
+                subject = #{subject},
+            </if>
+            <if test="variable!=null">
+                variable = #{variable},
+            </if>
+            <if test="type!=null">
+                type = #{type},
+            </if>
+            <if test="invoiceAttachment!=null">
+                invoice_attachment = #{invoiceAttachment},
+            </if>
+            <if test="statementAttachment!=null">
+                statement_attachment = #{statementAttachment},
+            </if>
+        </set>
+        where template_id = #{templateId}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="EmailTemplateVo" resultMap="EmailTemplateResultMap">
+        select * from xms_tbl_emailtemplate
+        where template_id = #{templateId}
+    </select>
+</mapper>

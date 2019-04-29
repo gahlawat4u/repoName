@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerProfileBaseRateDetail">
+    <resultMap id="CustomerProfileBaseRateDetailMap" type="CustomerProfileBaseRateDetailVo">
+        <result column="customer_profile_base_rate_id" property="customerProfileBaseRateId"/>
+        <result column="zone" property="zone"/>
+        <result column="rate" property="rate"/>
+    </resultMap>
+    <select id="selectByZoneAndShipmentId" resultMap="CustomerProfileBaseRateDetailMap"
+            parameterType="com.gms.xms.filter.admin.customerprofile.CustomerProfileFilter">
+        SELECT * FROM xms_tbl_customer_profile_base_rate_detail WHERE customer_profile_base_rate_id=#{baseRateId} AND
+        zone=#{zone} limit 1
+    </select>
+    <insert id="insert" parameterType="CustomerProfileBaseRateVo">
+        insert into xms_tbl_customer_profile_base_rate_detail (
+        customer_profile_base_rate_id,
+        zone,
+        rate
+        )
+        values (
+        #{customerProfileBaseRateId},
+        #{zone},
+        #{rate}
+        )
+    </insert>
+    <delete id="deleteByProfileId" parameterType="Long">
+        delete from xms_tbl_customer_profile_base_rate_detail
+        where customer_profile_base_rate_id
+        in
+        (select customer_profile_base_rate_id from xms_tbl_customer_profile_base_rate
+        where profileid = #{profileId}
+        )
+    </delete>
+
+    <select id="deleteByProfileId_SelectForLog" parameterType="Long" resultMap="CustomerProfileBaseRateDetailMap">
+        select * from xms_tbl_customer_profile_base_rate_detail
+        where customer_profile_base_rate_id
+        in
+        (select customer_profile_base_rate_id from xms_tbl_customer_profile_base_rate
+        where profileid = #{profileId}
+        )
+    </select>
+
+</mapper>

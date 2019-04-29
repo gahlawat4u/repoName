@@ -1,0 +1,16 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+    <xs:element name="Envelope">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element type="Body" name="Body"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="Body">
+        <xs:sequence>
+            <xs:element type="xs:string" name="SubmitBookingResponse"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

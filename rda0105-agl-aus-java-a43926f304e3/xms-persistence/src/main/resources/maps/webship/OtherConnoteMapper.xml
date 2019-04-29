@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="OtherConnote">
+    <resultMap id="OtherConnoteMap" type="OtherConnoteVo">
+        <id column="connote_id" property="connoteId"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="conn_number" property="connNumber"/>
+    </resultMap>
+
+    <select id="selectConnumberByShipmentId" resultType="String"
+            parameterType="com.gms.xms.filter.webship.OtherConnoteFilter">
+        select conn_number from xms_tbl_other_connote
+        where shipmentid = #{shipmentId}
+        order by connote_id desc
+        limit 1
+    </select>
+
+    <insert id="insertOtherConnote" parameterType="com.gms.xms.filter.webship.OtherConnoteFilter">
+        <![CDATA[
+		insert into xms_tbl_other_connote (shipmentid,conn_number)
+		select
+		    #{shipmentId} as shipmentid,
+		    if(conn_number>=#{connEnd},#{connStart},conn_number + 1) as conn_number
+		from
+		    (select ifnull(conn_number, #{connEnd}) as conn_number
+		    from
+		        (select conn_number as conn_number
+		    	from xms_tbl_other_connote
+		    	order by connote_id desc
+		    	limit 1
+		    	) as maxconn 
+		    union 
+		    select #{connEnd}
+		    ) as conn
+		limit 1
+		]]>
+    </insert>
+
+    <delete id="deleteByShipmentId" parameterType="long">
+        delete from xms_tbl_other_connote
+        where shipmentid = #{shipmentId}
+    </delete>
+
+    <select id="deleteByShipmentId_SelectForLog" parameterType="long" resultMap="OtherConnoteMap">
+        select * from xms_tbl_other_connote
+        where shipmentid = #{shipmentId}
+    </select>
+</mapper>

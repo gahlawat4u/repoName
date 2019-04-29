@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerWeekActivity">
+    <resultMap id="CustomerWeekActivityMap" type="CustomerWeekActivityVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="revenue" property="revenue"/>
+        <result column="franchise_cost" property="franchiseCost"/>
+        <result column="carrier_cost" property="carrierCost"/>
+        <result column="gross_margin" property="grossMargin"/>
+        <result column="gross_margin_pct" property="grossMarginPct"/>
+        <result column="document_shipment_count" property="documentShipmentCount"/>
+        <result column="document_revenue" property="documentRevenue"/>
+        <result column="package_shipment_count" property="packageShipmentCount"/>
+        <result column="package_revenue" property="packageRevenue"/>
+        <result column="total_airbills" property="totalAirbills"/>
+        <result column="gross_margin_per_awb" property="grossMarginPerAwb"/>
+        <result column="gross_margin_per_awb_pct" property="grossMarginPerAwbPct"/>
+    </resultMap>
+
+    <select id="getWeekActivityReport"
+            parameterType="com.gms.xms.filter.reports.customer.thirdteenweeks.CustomerWeekActivityFilter"
+            resultMap="CustomerWeekActivityMap">
+        select
+        r.customer_code,
+        ca.customer_name,
+        r.revenue,
+        r.franchise_cost,
+        r.carrier_cost,
+        r.gross_margin,
+        if(r.revenue=0,0,100*r.gross_margin/r.revenue) as gross_margin_pct,
+        r.document_shipment_count,
+        r.document_revenue,
+        r.package_shipment_count,
+        r.package_revenue,
+        r.total_airbills,
+        if(r.total_airbills=0,0,r.gross_margin/r.total_airbills) as gross_margin_per_awb,
+        if(r.revenue=0 or r.total_airbills=0,0,100*r.gross_margin/r.revenue/r.total_airbills) as
+        gross_margin_per_awb_pct
+        from
+        (select
+        c.customer_code,
+        sum(sb.customer_cost+sb.customer_tax_amount) as revenue,
+        sum(sb.franchise_cost) as franchise_cost,
+        sum(sb.carrier_cost) as carrier_cost,
+        sum(sb.customer_cost-sb.franchise_cost) as gross_margin,
+        sum(if(sb.accessorial_count=0 and sb.display_description like '%Doc',1,0)) as document_shipment_count,
+        sum(if(sb.display_description like '%Doc',sb.customer_cost+sb.customer_tax_amount,0)) as document_revenue,
+        sum(if(sb.accessorial_count=0 and sb.display_description not like '%Doc',1,0)) as package_shipment_count,
+        sum(if(sb.display_description not like '%Doc',sb.customer_cost+sb.customer_tax_amount,0)) as package_revenue,
+        sum(if(sb.accessorial_count=0,1,0)) as total_airbills
+        from
+        (select customer_code from xms_tbl_customer
+        where franchise_code in (${franchiseList})
+        union
+        select franchise_code as customer_code from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        ) as c
+        inner join xms_tbl_invoice as i on i.customer_code = c.customer_code
+        inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+        inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number =
+        si.airbill_number
+        where i.invoice_date between date_sub(date(now()),interval 13 week) and date(now())
+        group by c.customer_code
+        ) as r
+        inner join xms_tbl_customer_address as ca on ca.customer_code = r.customer_code
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="getWeekActivityCount"
+            parameterType="com.gms.xms.filter.reports.customer.thirdteenweeks.CustomerWeekActivityFilter"
+            resultType="long">
+        select
+        count(*)
+        from
+        (select
+        c.customer_code,
+        sum(sb.customer_cost+sb.customer_tax_amount) as revenue,
+        sum(sb.franchise_cost) as franchise_cost,
+        sum(sb.carrier_cost) as carrier_cost,
+        sum(sb.customer_cost-sb.franchise_cost) as gross_margin,
+        sum(if(sb.accessorial_count=0 and sb.display_description like '%Doc',1,0)) as document_shipment_count,
+        sum(if(sb.display_description like '%Doc',sb.customer_cost+sb.customer_tax_amount,0)) as document_revenue,
+        sum(if(sb.accessorial_count=0 and sb.display_description not like '%Doc',1,0)) as package_shipment_count,
+        sum(if(sb.display_description not like '%Doc',sb.customer_cost+sb.customer_tax_amount,0)) as package_revenue,
+        sum(if(sb.accessorial_count=0,1,0)) as total_airbills
+        from
+        (select customer_code from xms_tbl_customer
+        where franchise_code in (${franchiseList})
+        union
+        select franchise_code as customer_code from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        ) as c
+        inner join xms_tbl_invoice as i on i.customer_code = c.customer_code
+        inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+        inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number =
+        si.airbill_number
+        where i.invoice_date between date_sub(date(now()),interval 13 week) and date(now())
+        group by c.customer_code
+        ) as r
+        inner join xms_tbl_customer_address as ca on ca.customer_code = r.customer_code
+    </select>
+</mapper>

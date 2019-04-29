@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FranchisePayablePeriod">
+
+    <select id="selectByDateRange" parameterType="FranchisePayableFilter"
+            resultType="FranchisePayablePeriodVo">
+        SELECT
+        start_date AS startDate,
+        end_date AS endDate,
+        franchise_payable_status AS franchisePayableStatus,
+        freeze_calculate_status AS freezeCalculateStatus,
+        franchise_payable_revenue_share AS franchisePayableRevenueShare,
+        franchise_receivables_revenue_share AS franchiseReceivablesRevenueShare,
+        rpt_txn_id AS rptTxnId
+        FROM xms_tbl_period
+        WHERE start_date = #{startDate} AND end_date = #{endDate}
+    </select>
+
+    <update id="update" parameterType="FranchisePayablePeriodVo">
+        UPDATE xms_tbl_period
+        SET franchise_payable_status = #{franchisePayableStatus},
+        freeze_calculate_status = #{freezeCalculateStatus},
+        franchise_payable_revenue_share = #{franchisePayableRevenueShare},
+        franchise_receivables_revenue_share = #{franchiseReceivablesRevenueShare},
+        rpt_txn_id = #{rptTxnId}
+        WHERE start_date = #{startDate} AND end_date = #{endDate}
+    </update>
+
+    <select id="selectUnfrozen" resultType="FranchisePayablePeriodVo">
+        SELECT
+        start_date AS startDate,
+        end_date AS endDate,
+        franchise_payable_status AS franchisePayableStatus,
+        freeze_calculate_status AS freezeCalculateStatus,
+        franchise_payable_revenue_share AS franchisePayableRevenueShare,
+        franchise_receivables_revenue_share AS franchiseReceivablesRevenueShare,
+        rpt_txn_id AS rptTxnId
+        FROM xms_tbl_period
+        WHERE franchise_payable_status = 0
+        order by start_date desc
+    </select>
+
+    <select id="selectFrozen" resultType="FranchisePayablePeriodVo">
+        SELECT
+        start_date AS startDate,
+        end_date AS endDate,
+        franchise_payable_status AS franchisePayableStatus,
+        freeze_calculate_status AS freezeCalculateStatus,
+        franchise_payable_revenue_share AS franchisePayableRevenueShare,
+        franchise_receivables_revenue_share AS franchiseReceivablesRevenueShare,
+        rpt_txn_id AS rptTxnId
+        FROM xms_tbl_period
+        WHERE franchise_payable_status = 1 order by start_date desc
+    </select>
+</mapper>

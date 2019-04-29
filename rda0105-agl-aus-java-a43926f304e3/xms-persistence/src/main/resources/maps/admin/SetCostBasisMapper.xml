@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="SetCostBasisTable">
+    <resultMap type="SetCostBasisTableVo" id="SetCostBasisTableMap">
+        <result column="service_id" property="serviceId"/>
+        <result column="service_name" property="serviceName"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="shipment_type_name" property="shipmentTypeName"/>
+        <result column="package_type_name" property="packageTypeName"/>
+        <result column="is_per_weight" property="isPerWeight"/>
+        <result column="content" property="content"/>
+        <result column="bound" property="bound"/>
+        <result column="sheet_id" property="sheetId"/>
+        <result column="sheet_name" property="sheetName"/>
+    </resultMap>
+
+    <resultMap id="SetCostBasisSelectBox" type="RateSheetVo">
+        <id column="sheet_id" property="sheetId"/>
+        <result column="sheet_name" property="sheetName"/>
+        <result column="create_date" property="createDate"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="cells" property="cells"/>
+        <result column="source_zone" property="sourceZone"/>
+        <result column="carrier_cost" property="carrierCost"/>
+        <result column="is_per_weight" property="isPerWeight"/>
+        <result column="content" property="content"/>
+        <result column="bound" property="bound"/>
+    </resultMap>
+    <select id="selectSetCostBasisTable" resultMap="SetCostBasisTableMap">
+        SELECT
+        r.*, rs.sheet_name
+        FROM
+        (SELECT
+        sv.service_id,
+        sv.service_name,
+        st.shipment_type_id,
+        st.shipment_type_name,
+        pt.package_type_name,
+        IFNULL(pt.content, 0) AS content,
+        IFNULL(pt.bound, 0) AS bound,
+        IFNULL(pt.is_per_weight, 0) AS is_per_weight,
+        CASE pt.package_type
+        WHEN 1 THEN st.carrier_document_rate
+        WHEN 2 THEN st.carrier_document_inbound_rate
+        WHEN 3 THEN st.carrier_package_rate
+        WHEN 4 THEN st.carrier_package_perweight_rate
+        WHEN 5 THEN st.carrier_package_inbound_rate
+        WHEN 6 THEN st.carrier_package_inbound_perweight_rate
+        WHEN 7 THEN st.carrier_pak_rate
+        WHEN 8 THEN st.carrier_pak_perweight_rate
+        WHEN 9 THEN st.carrier_pak_inbound_rate
+        WHEN 10 THEN st.carrier_pak_inbound_perweight_rate
+        ELSE st.carrier_document_rate
+        END AS sheet_id
+        FROM
+        xms_tbl_service AS sv
+        LEFT JOIN xms_tbl_shipment_type AS st ON st.serviceid = sv.service_id
+        LEFT JOIN (SELECT
+        1 AS doc,
+        - 1 AS doc_in,
+        - 1 AS package,
+        - 1 AS package_in,
+        - 1 AS pak,
+        - 1 AS pak_in,
+        'Document' AS package_type_name,
+        1 AS package_type,
+        0 AS content,
+        0 AS bound,
+        0 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        1 AS doc_in,
+        - 1 AS package,
+        - 1 AS package_in,
+        - 1 AS pak,
+        - 1 AS pak_in,
+        'Document (Inbound)' AS package_type_name,
+        2 AS package_type,
+        0 AS content,
+        1 AS bound,
+        0 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        1 AS package,
+        - 1 AS package_in,
+        - 1 AS pak,
+        - 1 AS pak_in,
+        'Package' AS package_type_name,
+        3 AS package_type,
+        1 AS content,
+        0 AS bound,
+        0 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        1 AS package,
+        - 1 AS package_in,
+        - 1 AS pak,
+        - 1 AS pak_in,
+        'Package (Per Weight)' AS package_type_name,
+        4 AS package_type,
+        1 AS content,
+        0 AS bound,
+        1 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        - 1 AS package,
+        1 AS package_in,
+        - 1 AS pak,
+        - 1 AS pak_in,
+        'Package (Inbound)' AS package_type_name,
+        5 AS package_type,
+        1 AS content,
+        1 AS bound,
+        0 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        - 1 AS package,
+        1 AS package_in,
+        - 1 AS pak,
+        - 1 AS pak_in,
+        'Package (Inbound) (Per Weight)' AS package_type_name,
+        6 AS package_type,
+        1 AS content,
+        1 AS bound,
+        1 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        - 1 AS package,
+        - 1 AS package_in,
+        1 AS pak,
+        - 1 AS pak_in,
+        'Pak' AS package_type_name,
+        7 AS package_type,
+        2 AS content,
+        0 AS bound,
+        0 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        - 1 AS package,
+        - 1 AS package_in,
+        1 AS pak,
+        - 1 AS pak_in,
+        'Pak (Per Weight)' AS package_type_name,
+        8 AS package_type,
+        2 AS content,
+        0 AS bound,
+        0 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        - 1 AS package,
+        - 1 AS package_in,
+        - 1 AS pak,
+        1 AS pak_in,
+        'Pak (Inbound)' AS package_type_name,
+        9 AS package_type,
+        2 AS content,
+        1 AS bound,
+        0 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        - 1 AS package,
+        - 1 AS package_in,
+        - 1 AS pak,
+        1 AS pak_in,
+        'Pak (Inbound) (Per Weight)' AS package_type_name,
+        10 AS package_type,
+        2 AS content,
+        1 AS bound,
+        1 AS is_per_weight
+        ) AS pt ON pt.doc = st.document
+        OR pt.doc_in = st.document_inbound
+        OR pt.package = st.package
+        OR pt.package_in = st.package_inbound
+        OR pt.pak = st.pak
+        OR pt.pak = st.pak_inbound
+        WHERE
+        st.allow_carrier = 1
+        <![CDATA[
+		            	AND st.serviceid <> 0) AS r
+		            ]]>
+        LEFT JOIN
+        xms_tbl_rate_sheet AS rs ON r.sheet_id = rs.sheet_id
+        ORDER BY service_name ASC , sheet_name DESC
+    </select>
+
+    <select id="selectSetCostBasisTableByFilter" resultMap="SetCostBasisTableMap"
+            parameterType="com.gms.xms.filter.admin.ratesheets.SetCostBasisSearchFilter">
+        SELECT
+        r.*, rs.sheet_name
+        FROM
+        (SELECT
+        sv.service_id,
+        sv.service_name,
+        st.shipment_type_id,
+        st.shipment_type_name,
+        pt.package_type_name,
+        concat(st.shipment_type_name,' ',pt.package_type_name) as search_shipment_type_name,
+        IFNULL(pt.content, 0) AS content,
+        IFNULL(pt.bound, 0) AS bound,
+        IFNULL(pt.is_per_weight, 0) AS is_per_weight,
+        CASE pt.package_type
+        WHEN 1 THEN st.carrier_document_rate
+        WHEN 2 THEN st.carrier_document_inbound_rate
+        WHEN 3 THEN st.carrier_package_rate
+        WHEN 4 THEN st.carrier_package_perweight_rate
+        WHEN 5 THEN st.carrier_package_inbound_rate
+        WHEN 6 THEN st.carrier_package_inbound_perweight_rate
+        WHEN 7 THEN st.carrier_pak_rate
+        WHEN 8 THEN st.carrier_pak_perweight_rate
+        WHEN 9 THEN st.carrier_pak_inbound_rate
+        WHEN 10 THEN st.carrier_pak_inbound_perweight_rate
+        ELSE st.carrier_document_rate
+        END AS sheet_id
+        FROM
+        xms_tbl_service AS sv
+        LEFT JOIN xms_tbl_shipment_type AS st ON st.serviceid = sv.service_id
+        LEFT JOIN (SELECT
+        1 AS doc,
+        - 1 AS doc_in,
+        - 1 AS package,
+        - 1 AS package_in,
+        - 1 AS pak,
+        - 1 AS pak_in,
+        'Document' AS package_type_name,
+        1 AS package_type,
+        0 AS content,
+        0 AS bound,
+        0 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        1 AS doc_in,
+        - 1 AS package,
+        - 1 AS package_in,
+        - 1 AS pak,
+        - 1 AS pak_in,
+        'Document (Inbound)' AS package_type_name,
+        2 AS package_type,
+        0 AS content,
+        1 AS bound,
+        0 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        1 AS package,
+        - 1 AS package_in,
+        - 1 AS pak,
+        - 1 AS pak_in,
+        'Package' AS package_type_name,
+        3 AS package_type,
+        1 AS content,
+        0 AS bound,
+        0 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        1 AS package,
+        - 1 AS package_in,
+        - 1 AS pak,
+        - 1 AS pak_in,
+        'Package (Per Weight)' AS package_type_name,
+        4 AS package_type,
+        1 AS content,
+        0 AS bound,
+        1 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        - 1 AS package,
+        1 AS package_in,
+        - 1 AS pak,
+        - 1 AS pak_in,
+        'Package (Inbound)' AS package_type_name,
+        5 AS package_type,
+        1 AS content,
+        1 AS bound,
+        0 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        - 1 AS package,
+        1 AS package_in,
+        - 1 AS pak,
+        - 1 AS pak_in,
+        'Package (Inbound) (Per Weight)' AS package_type_name,
+        6 AS package_type,
+        1 AS content,
+        1 AS bound,
+        1 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        - 1 AS package,
+        - 1 AS package_in,
+        1 AS pak,
+        - 1 AS pak_in,
+        'Pak' AS package_type_name,
+        7 AS package_type,
+        2 AS content,
+        0 AS bound,
+        0 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        - 1 AS package,
+        - 1 AS package_in,
+        1 AS pak,
+        - 1 AS pak_in,
+        'Pak (Per Weight)' AS package_type_name,
+        8 AS package_type,
+        2 AS content,
+        0 AS bound,
+        0 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        - 1 AS package,
+        - 1 AS package_in,
+        - 1 AS pak,
+        1 AS pak_in,
+        'Pak (Inbound)' AS package_type_name,
+        9 AS package_type,
+        2 AS content,
+        1 AS bound,
+        0 AS is_per_weight
+        UNION SELECT
+        - 1 AS doc,
+        - 1 AS doc_in,
+        - 1 AS package,
+        - 1 AS package_in,
+        - 1 AS pak,
+        1 AS pak_in,
+        'Pak (Inbound) (Per Weight)' AS package_type_name,
+        10 AS package_type,
+        2 AS content,
+        1 AS bound,
+        1 AS is_per_weight
+        ) AS pt ON pt.doc = st.document
+        OR pt.doc_in = st.document_inbound
+        OR pt.package = st.package
+        OR pt.package_in = st.package_inbound
+        OR pt.pak = st.pak
+        OR pt.pak = st.pak_inbound
+        WHERE
+        st.allow_carrier = 1
+        <![CDATA[
+		            	AND st.serviceid <> 0
+		            ]]>
+        <if test="carrier != null and carrier != ''">
+            AND sv.service_name like '%${carrier}%'
+        </if>
+        ) AS r
+        LEFT JOIN
+        xms_tbl_rate_sheet AS rs ON r.sheet_id = rs.sheet_id
+        <where>
+            <if test="currentValue != null and currentValue != ''">
+                rs.sheet_name like '%${currentValue}%'
+            </if>
+            <if test="serviceDescription != null and serviceDescription != ''">
+                AND r.search_shipment_type_name like '%${serviceDescription}%'
+            </if>
+        </where>
+        ORDER BY service_name ASC , sheet_name DESC
+    </select>
+
+    <select id="selectRateSheets" parameterType="RateSheetFilter" resultMap="SetCostBasisSelectBox">
+        SELECT
+        *
+        FROM
+        xms_tbl_rate_sheet
+        WHERE
+        shipment_type_id = #{shipmentTypeId}
+        AND content = #{content}
+        AND bound = #{bound}
+        AND is_per_weight = #{isPerWeight}
+        AND carrier_cost = 1
+    </select>
+
+    <update id="setCostBasis" parameterType="RateSheetVo">
+        UPDATE xms_tbl_shipment_type SET
+        <if test="content == 0 and bound == 0 and isPerWeight == 0">
+            carrier_document_rate = #{sheetId},
+        </if>
+        <if test="content == 0 and bound == 1 and isPerWeight == 0">
+            carrier_document_inbound_rate = #{sheetId},
+        </if>
+        <if test="content == 1 and bound == 0 and isPerWeight == 0">
+            carrier_package_rate = #{sheetId},
+        </if>
+        <if test="content == 1 and bound == 0 and isPerWeight == 1">
+            carrier_package_perweight_rate = #{sheetId},
+        </if>
+        <if test="content == 1 and bound == 1 and isPerWeight == 0">
+            carrier_package_inbound_rate = #{sheetId},
+        </if>
+        <if test="content == 1 and bound == 1 and isPerWeight == 1">
+            carrier_package_inbound_perweight_rate = #{sheetId},
+        </if>
+        <if test="content == 2 and bound == 0 and isPerWeight == 0">
+            carrier_pak_rate = #{sheetId},
+        </if>
+        <if test="content == 2 and bound == 0 and isPerWeight == 1">
+            carrier_pak_perweight_rate = #{sheetId},
+        </if>
+        <if test="content == 2 and bound == 1 and isPerWeight == 0">
+            carrier_pak_inbound_rate = #{sheetId},
+        </if>
+        <if test="content == 2 and bound == 1 and isPerWeight == 1">
+            carrier_pak_inbound_perweight_rate = #{sheetId},
+        </if>
+        modified_date = NOW()
+        WHERE shipment_type_id = #{shipmentTypeId}
+    </update>
+
+    <select id="setCostBasis_SelectForLog" parameterType="RateSheetVo" resultMap="SetCostBasisTableMap">
+        select * from xms_tbl_shipment_type
+        WHERE shipment_type_id = #{shipmentTypeId}
+    </select>
+</mapper>

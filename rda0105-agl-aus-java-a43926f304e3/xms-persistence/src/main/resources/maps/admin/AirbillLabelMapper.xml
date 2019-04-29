@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="AirbillLabel">
+    <resultMap id="AirbillLabelMap" type="com.gms.xms.txndb.vo.admin.AirbillLabelVo">
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="service_name" property="serviceName"/>
+        <result column="voided_status" property="voidedStatus"/>
+        <result column="create_date" property="createDate"/>
+        <result column="shipment_date" property="shipmentDate"/>
+        <result column="no_of_pieces" property="noOfPieces"/>
+        <result column="weight" property="weight"/>
+        <result column="weight_unit" property="weightUnit"/>
+        <result column="schedule_collection_id" property="scheduleCollectionId"/>
+        <result column="collection_type_name" property="collectionTypeName"/>
+        <result column="confirmation_no" property="confirmationNo"/>
+    </resultMap>
+    <select id="getAirbillLabels" parameterType="com.gms.xms.filter.admin.AirbillLabelFilter"
+            resultMap="AirbillLabelMap">
+        select
+        sm.shipmentid,
+        sm.customer_code,
+        ca.customer_name,
+        sm.airbill_number,
+        sv.service_name,
+        if(sm.status=0,'No','Yes') as voided_status,
+        sm.create_date,
+        sm.shipment_date,
+        sm.no_of_pieces,
+        sw.weight,
+        sm.weight_unit,
+        ifnull(sdc.schedule_collection_id,0) as schedule_collection_id,
+        case ifnull(sdc.schedule_collection_id,0)
+        when 0 then
+        case sm.collection_type_id
+        when 2 then 'Already booked'
+        when 3 then 'Book later'
+        when 4 then 'Daily'
+        when 5 then 'Drop off'
+        when 6 then 'Manual Booking'
+        else 'Book later'
+        end
+        else 'Yes'
+        end as collection_type_name,
+        case ifnull(sdc.schedule_collection_id,0)
+        when 0 then sm.dhl_note
+        else sdc.confirmation_no
+        end as confirmation_no
+        from xms_tbl_shipment as sm
+        left join xms_tbl_customer_address as ca on ca.customer_code = sm.customer_code
+        left join xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+        left join xms_tbl_service as sv on sv.service_id = st.serviceid
+        left join
+        (select shipmentid, max(schedule_collection_id) as final_schedule_collection_id from xms_tbl_schedule_collection
+        where status=1
+        group by shipmentid
+        ) as sdc_id on sdc_id.shipmentid = sm.shipmentid
+        left join xms_tbl_schedule_collection as sdc on sdc.schedule_collection_id = sdc_id.final_schedule_collection_id
+        left join
+        (select shipmentid, sum(weight) as weight from xms_tbl_piece
+        group by shipmentid
+        ) as sw on sw.shipmentid = sm.shipmentid
+        where (sm.status=0)
+        <if test="franchiseList!=null and franchiseList!=''">
+            and left(sm.customer_code,3) in (${franchiseList})
+        </if>
+        <if test="periodType==1">
+            <![CDATA[ and sm.webshipid<>0 and sm.create_date>=str_to_date(#{searchDate},'%d/%m/%Y %H:%i:%s') and sm.create_date<date_add(str_to_date(#{searchDate},'%d/%m/%Y %H:%i:%s'),interval 1 hour) ]]>
+        </if>
+        <if test="periodType==2">
+            <![CDATA[ and sm.webshipid<>0 and sm.create_date>=str_to_date(#{searchDate},'%d/%m/%Y') and sm.create_date<date_add(str_to_date(#{searchDate},'%d/%m/%Y'),interval 1 day) ]]>
+        </if>
+        <if test="periodType==3">
+            <![CDATA[ and sm.shipment_date>=str_to_date(#{searchDate},'%d/%m/%Y') and sm.shipment_date<date_add(str_to_date(#{searchDate},'%d/%m/%Y'),interval 1 month) ]]>
+        </if>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+    <select id="countAirbillLabels" parameterType="com.gms.xms.filter.admin.AirbillLabelFilter" resultType="long">
+        select
+        count(sm.shipmentid)
+        from xms_tbl_shipment as sm
+        left join xms_tbl_customer_address as ca on ca.customer_code = sm.customer_code
+        left join xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+        left join xms_tbl_service as sv on sv.service_id = st.serviceid
+        left join
+        (select shipmentid, max(schedule_collection_id) as final_schedule_collection_id from xms_tbl_schedule_collection
+        where status=1
+        group by shipmentid
+        ) as sdc_id on sdc_id.shipmentid = sm.shipmentid
+        left join xms_tbl_schedule_collection as sdc on sdc.schedule_collection_id = sdc_id.final_schedule_collection_id
+        left join
+        (select shipmentid, sum(weight) as weight from xms_tbl_piece
+        group by shipmentid
+        ) as sw on sw.shipmentid = sm.shipmentid
+        where (sm.status=0)
+        <if test="franchiseList!=null and franchiseList!=''">
+            and left(sm.customer_code,3) in (${franchiseList})
+        </if>
+        <if test="periodType==1">
+            <![CDATA[ and sm.webshipid<>0 and sm.create_date>=str_to_date(#{searchDate},'%d/%m/%Y %H:%i:%s') and sm.create_date<date_add(str_to_date(#{searchDate},'%d/%m/%Y %H:%i:%s'),interval 1 hour) ]]>
+        </if>
+        <if test="periodType==2">
+            <![CDATA[ and sm.webshipid<>0 and sm.create_date>=str_to_date(#{searchDate},'%d/%m/%Y') and sm.create_date<date_add(str_to_date(#{searchDate},'%d/%m/%Y'),interval 1 day) ]]>
+        </if>
+        <if test="periodType==3">
+            <![CDATA[ and sm.shipment_date>=str_to_date(#{searchDate},'%d/%m/%Y') and sm.shipment_date<date_add(str_to_date(#{searchDate},'%d/%m/%Y'),interval 1 month) ]]>
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="InvoiceNumbering">
+    <resultMap id="InvoiceNumberingMap" type="com.gms.xms.dto.InvoiceNumberingVo">
+        <result column="month" property="month"/>
+        <result column="year" property="year"/>
+        <result column="franchise_code" property="franchiseCode"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="current_unique_number" property="currentUniqueNumber"/>
+    </resultMap>
+    <select id="selectByFilter" parameterType="com.gms.xms.dto.InvoiceNumberingVo" resultMap="InvoiceNumberingMap">
+        select * from xms_tbl_invoice_numbering
+        where `month` = #{month}
+        and `year` = #{year}
+        and `franchise_code` = #{franchiseCode}
+        order by `current_unique_number` desc
+        limit 1
+    </select>
+    <select id="selectCounter" parameterType="com.gms.xms.dto.InvoiceNumberingVo" resultMap="InvoiceNumberingMap">
+        select * from xms_tbl_invoice_numbering
+        where `month` = #{month}
+        and `year` = #{year}
+        and `franchise_code` = #{franchiseCode}
+        and `invoice_code` = #{invoiceCode}
+        limit 1
+    </select>
+    <select id="selectMaxByFilter" parameterType="com.gms.xms.dto.InvoiceNumberingVo" resultType="int">
+        select max(current_unique_number) from xms_tbl_invoice_numbering
+        where `month` = #{month}
+        and `year` = #{year}
+        and `franchise_code` = #{franchiseCode}
+    </select>
+    <insert id="insert" parameterType="com.gms.xms.dto.InvoiceNumberingVo">
+        insert into xms_tbl_invoice_numbering (`month`, `year`, `franchise_code`, `current_unique_number`,
+        `invoice_code`)
+        values (#{month}, #{year}, #{franchiseCode}, #{currentUniqueNumber}, #{invoiceCode})
+    </insert>
+    <update id="update" parameterType="com.gms.xms.dto.InvoiceNumberingVo">
+        update xms_tbl_invoice_numbering
+        set `current_unique_number` = #{currentUniqueNumber}
+        where `month` = #{month}
+        and `year` = #{year}
+        and `franchise_code` = #{franchiseCode}
+    </update>
+    <select id="update_SelectForLog" parameterType="com.gms.xms.dto.InvoiceNumberingVo" resultMap="InvoiceNumberingMap">
+        select * from xms_tbl_invoice_numbering
+        where `month` = #{month}
+        and `year` = #{year}
+        and `franchise_code` = #{franchiseCode}
+    </select>
+    <select id="getByInvoiceCode" parameterType="string" resultMap="InvoiceNumberingMap">
+        select * from xms_tbl_invoice_numbering
+        where `invoice_code` = #{invoiceCode}
+        limit 1
+    </select>
+</mapper>

@@ -1,0 +1,80 @@
+package com.gms.delivery.ups.service.rest.transit.response.transiteTimeResponse;
+
+import java.util.List;
+
+public class TNTTRANSITRESPONSE {
+
+	
+	 private List<TNTSHIPFROM> TNTSHIPFROM;
+
+	    private List<TNTSHIPTO> TNTSHIPTO;
+
+	    private List<TNTPICKUPDATE> TNTPICKUPDATE;
+
+	    private List<TNTSHIPMENTWEIGHT> TNTSHIPMENTWEIGHT;
+
+	    private List<TNTINVOICELINETOTAL> TNTINVOICELINETOTAL;
+
+	    private List<TNTMAXIMUMLISTSIZE> TNTMAXIMUMLISTSIZE;
+
+	    private List<TNTSERVICESUMMARY> TNTSERVICESUMMARY;
+
+	    private List<TNTAUTODUTYCODE> TNTAUTODUTYCODE;
+
+	    private List<TNTDISCLAIMER> TNTDISCLAIMER;
+
+	    public void setTNTSHIPFROM(List<TNTSHIPFROM> TNTSHIPFROM){
+	        this.TNTSHIPFROM = TNTSHIPFROM;
+	    }
+	    public List<TNTSHIPFROM> getTNTSHIPFROM(){
+	        return this.TNTSHIPFROM;
+	    }
+	    public void setTNTSHIPTO(List<TNTSHIPTO> TNTSHIPTO){
+	        this.TNTSHIPTO = TNTSHIPTO;
+	    }
+	    public List<TNTSHIPTO> getTNTSHIPTO(){
+	        return this.TNTSHIPTO;
+	    }
+	    public void setTNTPICKUPDATE(List<TNTPICKUPDATE> TNTPICKUPDATE){
+	        this.TNTPICKUPDATE = TNTPICKUPDATE;
+	    }
+	    public List<TNTPICKUPDATE> getTNTPICKUPDATE(){
+	        return this.TNTPICKUPDATE;
+	    }
+	    public void setTNTSHIPMENTWEIGHT(List<TNTSHIPMENTWEIGHT> TNTSHIPMENTWEIGHT){
+	        this.TNTSHIPMENTWEIGHT = TNTSHIPMENTWEIGHT;
+	    }
+	    public List<TNTSHIPMENTWEIGHT> getTNTSHIPMENTWEIGHT(){
+	        return this.TNTSHIPMENTWEIGHT;
+	    }
+	    public void setTNTINVOICELINETOTAL(List<TNTINVOICELINETOTAL> TNTINVOICELINETOTAL){
+	        this.TNTINVOICELINETOTAL = TNTINVOICELINETOTAL;
+	    }
+	    public List<TNTINVOICELINETOTAL> getTNTINVOICELINETOTAL(){
+	        return this.TNTINVOICELINETOTAL;
+	    }
+	    public void setTNTMAXIMUMLISTSIZE(List<TNTMAXIMUMLISTSIZE> TNTMAXIMUMLISTSIZE){
+	        this.TNTMAXIMUMLISTSIZE = TNTMAXIMUMLISTSIZE;
+	    }
+	    public List<TNTMAXIMUMLISTSIZE> getTNTMAXIMUMLISTSIZE(){
+	        return this.TNTMAXIMUMLISTSIZE;
+	    }
+	    public void setTNTSERVICESUMMARY(List<TNTSERVICESUMMARY> TNTSERVICESUMMARY){
+	        this.TNTSERVICESUMMARY = TNTSERVICESUMMARY;
+	    }
+	    public List<TNTSERVICESUMMARY> getTNTSERVICESUMMARY(){
+	        return this.TNTSERVICESUMMARY;
+	    }
+	    public void setTNTAUTODUTYCODE(List<TNTAUTODUTYCODE> TNTAUTODUTYCODE){
+	        this.TNTAUTODUTYCODE = TNTAUTODUTYCODE;
+	    }
+	    public List<TNTAUTODUTYCODE> getTNTAUTODUTYCODE(){
+	        return this.TNTAUTODUTYCODE;
+	    }
+	    public void setTNTDISCLAIMER(List<TNTDISCLAIMER> TNTDISCLAIMER){
+	        this.TNTDISCLAIMER = TNTDISCLAIMER;
+	    }
+	    public List<TNTDISCLAIMER> getTNTDISCLAIMER(){
+	        return this.TNTDISCLAIMER;
+	    }
+}

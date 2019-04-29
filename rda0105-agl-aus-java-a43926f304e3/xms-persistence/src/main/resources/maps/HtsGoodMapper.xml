@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="HtsGood">
+    <resultMap id="HtsGoodMap" type="HtsGoodVo">
+        <result column="hts_good_id" property="htsGoodId"/>
+        <result column="code" property="code"/>
+        <result column="description" property="description"/>
+    </resultMap>
+
+    <select id="selectHtsGoodByDescription" parameterType="string" resultMap="HtsGoodMap">
+        select *, char_length(`code`) as code_length
+        from xms_tbl_hts_good
+        where description like concat('%', #{description}, '%')
+        order by code_length , `code`
+    </select>
+
+    <select id="selectHtsGoodById" parameterType="int" resultMap="HtsGoodMap">
+        SELECT
+        *
+        FROM
+        xms_tbl_hts_good
+        WHERE
+        hts_good_id = #{htsGoodId}
+    </select>
+
+    <select id="selectHtsGoodByIdOrCode" parameterType="string" resultMap="HtsGoodMap">
+        SELECT
+        *, CHAR_LENGTH(`code`) AS code_length
+        FROM
+        xms_tbl_hts_good
+        WHERE
+        `code` LIKE CONCAT('%',#{codeBinded},'%')
+        or hts_good_id LIKE CONCAT('%',#{codeBinded},'%')
+        ORDER BY code_length , `code`
+    </select>
+</mapper>

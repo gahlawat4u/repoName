@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="WebshipLog">
+    <resultMap id="WebshipLogMap" type="WebshipLogVo">
+        <result column="user_code" property="userCode"/>
+        <result column="user_name" property="userName"/>
+        <result column="action_date" property="actionDate"/>
+        <result column="action_type" property="actionType"/>
+        <result column="action_table" property="actionTable"/>
+        <result column="filter" property="filter"/>
+        <result column="email" property="email"/>
+        <result column="changes_mode" property="changesMode"/>
+        <result column="ip_address" property="ipAddress"/>
+        <result column="userid" property="userId"/>
+        <result column="usertype" property="userType"/>
+    </resultMap>
+    <select id="getWebshipLogs" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsWebshipLogFilter"
+            resultMap="WebshipLogMap">
+        select * from xms_tbl_webship_log
+        <where>
+            <if test="franchiseList!=null and franchiseList!=''">
+                and left(user_code,3) in (${franchiseList})
+            </if>
+            <if test="startDate!=null and startDate!=''">
+                and action_date>=#{startDate}
+            </if>
+            <if test="endDate!=null and endDate!=''">
+                <![CDATA[ and action_date<date_add(#{endDate},interval 1 day) ]]>
+            </if>
+            <if test="action!=null and action!=''">
+                and action_type = #{action}
+            </if>
+            <if test="filterCollections!=null and filterCollections!=''">
+                and filter in (${filterCollections})
+            </if>
+        </where>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="pageSize!=null and page!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+    <select id="countWebshipLogs" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsWebshipLogFilter"
+            resultType="long">
+        select count(*) from xms_tbl_webship_log
+        <where>
+            <if test="franchiseList!=null and franchiseList!=''">
+                and left(user_code,3) in (${franchiseList})
+            </if>
+            <if test="startDate!=null and startDate!=''">
+                and action_date>=#{startDate}
+            </if>
+            <if test="endDate!=null and endDate!=''">
+                <![CDATA[ and action_date<date_add(#{endDate},interval 1 day) ]]>
+            </if>
+            <if test="action!=null and action!=''">
+                and action_type = #{action}
+            </if>
+            <if test="filterCollections!=null and filterCollections!=''">
+                and filter in (${filterCollections})
+            </if>
+        </where>
+    </select>
+    <select id="selectWebshipLogByFilter" parameterType="com.gms.xms.filter.admin.SystemStatsListFilter"
+            resultMap="WebshipLogMap">
+        select * FROM
+        (SELECT
+        *
+        FROM
+        xms_tbl_webship_log
+        WHERE
+        1 = 1
+        <if test="fromDate != null and toDate != null">
+            AND action_date >= #{fromDate} AND action_date &lt; DATE_ADD(#{toDate},INTERVAL 1 DAY)
+        </if>
+        <if test="actionType != null">
+            AND action_type LIKE CONCAT('',#{actionType},'%')
+        </if>
+        ) as webshipLogTmp
+        <if test="airbillNumber != null">
+            INNER JOIN
+            (
+            SELECT
+            CONCAT("shipmentid = '",sm.shipmentid,"'") as filter
+            FROM xms_tbl_shipment as sm
+            WHERE sm.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            GROUP BY sm.shipmentid
+
+            UNION SELECT
+            CONCAT("addressid = '",sender.addressid,"'") as filter
+            FROM xms_tbl_address as sender
+            INNER JOIN xms_tbl_shipment AS sm ON sender.addressid = sm.receiveraddressid
+            AND sm.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            GROUP BY sender.addressid
+
+            UNION SELECT
+            CONCAT("addressid = '",reciver.addressid,"'") as filter
+            FROM xms_tbl_shipment as sm
+            INNER JOIN xms_tbl_address AS reciver ON reciver.addressid = sm.senderaddressid
+            WHERE sm.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            GROUP BY reciver.addressid
+
+            UNION SELECT
+            CONCAT("schedule_collection_id = '",sc.schedule_collection_id,"'") as filter
+            FROM xms_tbl_shipment as sm
+            INNER JOIN xms_tbl_schedule_collection AS sc ON sc.shipmentid = sm.shipmentid
+            WHERE sm.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            GROUP BY sc.schedule_collection_id
+
+            UNION SELECT
+            CONCAT("addressid = '",sc.addressid,"'") as filter
+            FROM xms_tbl_shipment as sm
+            INNER JOIN xms_tbl_schedule_collection AS sc ON sc.shipmentid = sm.shipmentid
+            WHERE sm.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            GROUP BY sc.addressid
+
+            UNION SELECT
+            CONCAT("piece_id = '",pic.piece_id,"'") as filter
+            FROM xms_tbl_shipment as sm
+            INNER JOIN xms_tbl_piece AS pic ON pic.shipmentid = sm.shipmentid
+            WHERE sm.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            GROUP BY pic.piece_id
+
+            UNION SELECT
+            CONCAT("webshipid = '",sm.webshipid,"'") as filter
+            FROM xms_tbl_shipment as sm
+            WHERE sm.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            GROUP BY sm.webshipid
+
+            ) as filter_tmp
+            ON webshipLogTmp.filter = filter_tmp.filter
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectWebshipLogCountByFilter" parameterType="com.gms.xms.filter.admin.SystemStatsListFilter"
+            resultType="long">
+        select count(*) FROM
+        (SELECT
+        *
+        FROM
+        xms_tbl_webship_log
+        WHERE
+        1 = 1
+        <if test="fromDate != null and toDate != null">
+            AND action_date >= #{fromDate} AND action_date &lt; DATE_ADD(#{toDate},INTERVAL 1 DAY)
+        </if>
+        <if test="actionType != null">
+            AND action_type LIKE CONCAT('',#{actionType},'%')
+        </if>
+
+        ) as webshipLogTmp
+        <if test="airbillNumber != null">
+            INNER JOIN
+            (
+            SELECT
+            CONCAT("shipmentid = '",sm.shipmentid,"'") as filter
+            FROM xms_tbl_shipment as sm
+            WHERE sm.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            GROUP BY sm.shipmentid
+
+            UNION SELECT
+            CONCAT("addressid = '",sender.addressid,"'") as filter
+            FROM xms_tbl_address as sender
+            INNER JOIN xms_tbl_shipment AS sm ON sender.addressid = sm.receiveraddressid
+            AND sm.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            GROUP BY sender.addressid
+
+            UNION SELECT
+            CONCAT("addressid = '",reciver.addressid,"'") as filter
+            FROM xms_tbl_shipment as sm
+            INNER JOIN xms_tbl_address AS reciver ON reciver.addressid = sm.senderaddressid
+            WHERE sm.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            GROUP BY reciver.addressid
+
+            UNION SELECT
+            CONCAT("schedule_collection_id = '",sc.schedule_collection_id,"'") as filter
+            FROM xms_tbl_shipment as sm
+            INNER JOIN xms_tbl_schedule_collection AS sc ON sc.shipmentid = sm.shipmentid
+            WHERE sm.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            GROUP BY sc.schedule_collection_id
+
+            UNION SELECT
+            CONCAT("addressid = '",sc.addressid,"'") as filter
+            FROM xms_tbl_shipment as sm
+            INNER JOIN xms_tbl_schedule_collection AS sc ON sc.shipmentid = sm.shipmentid
+            WHERE sm.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            GROUP BY sc.addressid
+
+            UNION SELECT
+            CONCAT("piece_id = '",pic.piece_id,"'") as filter
+            FROM xms_tbl_shipment as sm
+            INNER JOIN xms_tbl_piece AS pic ON pic.shipmentid = sm.shipmentid
+            WHERE sm.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            GROUP BY pic.piece_id
+
+            UNION SELECT
+            CONCAT("webshipid = '",sm.webshipid,"'") as filter
+            FROM xms_tbl_shipment as sm
+            WHERE sm.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            GROUP BY sm.webshipid
+            ) as filter_tmp
+            ON webshipLogTmp.filter = filter_tmp.filter
+        </if>
+    </select>
+    <insert id="insert" parameterType="WebshipLogVo">
+        insert into xms_tbl_webship_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userCode != null">
+                user_code,
+            </if>
+            <if test="userName != null">
+                user_name,
+            </if>
+            <if test="actionDate != null">
+                action_date,
+            </if>
+            <if test="actionType != null">
+                action_type,
+            </if>
+            <if test="actionTable != null">
+                action_table,
+            </if>
+            <if test="filter != null">
+                filter,
+            </if>
+            <if test="changesMode != null">
+                changes_mode,
+            </if>
+            <if test="ipAddress != null">
+                ip_address,
+            </if>
+            <if test="userId != null">
+                userid,
+            </if>
+            <if test="userType != null">
+                usertype,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userCode != null">
+                #{userCode},
+            </if>
+            <if test="userName != null">
+                #{userName},
+            </if>
+            <if test="actionDate != null">
+                #{actionDate},
+            </if>
+            <if test="actionType != null">
+                #{actionType},
+            </if>
+            <if test="actionTable != null">
+                #{actionTable},
+            </if>
+            <if test="filter != null">
+                #{filter},
+            </if>
+            <if test="changesMode != null">
+                #{changesMode},
+            </if>
+            <if test="ipAddress != null">
+                #{ipAddress},
+            </if>
+            <if test="userId != null">
+                #{userId},
+            </if>
+            <if test="userType != null">
+                #{userType},
+            </if>
+        </trim>
+    </insert>
+</mapper>

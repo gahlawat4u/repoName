@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Prospect">
+    <resultMap id="ProspectMap" type="com.gms.xms.txndb.vo.ProspectVo">
+        <id column="prospectid" property="prospectId"/>
+        <result column="company_name" property="companyName"/>
+        <result column="contact_name" property="contactName"/>
+        <result column="address1" property="address1"/>
+        <result column="address2" property="address2"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="postal_code" property="postalCode"/>
+        <result column="active" property="active"/>
+        <result column="status" property="status"/>
+        <result column="create_date" property="createDate"/>
+        <result column="qualified_status" property="qualifiedStatus"/>
+        <result column="sales_person_id" property="salesPersonId"/>
+        <result column="sales_rep_territory" property="salesRepTerritory"/>
+        <result column="opportunity_start_date" property="opportunityStartDate"/>
+        <result column="first_visit_date" property="firstVisitDate"/>
+        <result column="days_of_close" property="daysOfClose"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="minimun_base_charge" property="minimunBaseCharge"/>
+        <result column="country" property="country"/>
+        <result column="city" property="city"/>
+        <result column="territory_name" property="territoryName"/>
+        <result column="dhl_international_account" property="dhlInternationalAccount"/>
+        <result column="dhl_inbound_account" property="dhlInboundAccount"/>
+        <result column="comment" property="comment"/>
+    </resultMap>
+    <select id="getProspectByUser" parameterType="com.gms.xms.txndb.vo.UserVo" resultType="string">
+        <bind name="level" value="_parameter.getUserLevelId()"/>
+        <choose>
+            <when test="level==1 or level==2">
+                select prospectid from xms_tbl_prospect
+                where active=1
+            </when>
+            <when test="level==8">
+                select distinct p.prospectid from xms_tbl_prospect as p
+                where p.active=1 and sales_person_id in (select userid from xms_tbl_user where parent_user_id =
+                #{userId})
+                union
+                select distinct h.prospectid from xms_tbl_prospect_history as h
+                where userid in (select userid from xms_tbl_user where parent_user_id = #{userId})
+            </when>
+            <when test="level==9">
+                select distinct p.prospectid from xms_tbl_prospect as p
+                left join xms_tbl_prospect_history as h on p.prospectid = h.prospectid
+                where p.active=1 and userid=#{userId}
+            </when>
+            <when test="level==11">
+                select distinct p.prospectid from xms_tbl_prospect as p
+                where p.active=1 and sales_person_id=#{userId}
+                union
+                select distinct h.prospectid from xms_tbl_prospect_history as h
+                where userid=#{userId}
+            </when>
+            <otherwise>
+                <choose>
+                    <when test="level>8">
+                    </when>
+                    <otherwise>
+                        select distinct p.prospectid from xms_tbl_prospect as p
+                        where p.active=1
+                        and sales_person_id in (select userid from xms_tbl_user where left(user_code,3) = #{userCode})
+                        union
+                        select distinct h.prospectid from xms_tbl_prospect_history as h
+                        where userid in (select userid from xms_tbl_user where left(user_code,3) = #{userCode})
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

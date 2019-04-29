@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="OverpaymentInfo">
+    <resultMap id="OverpaymentInfoMap" type="OverpaymentInfoVo">
+        <result column="franchise_code" property="franchiseCode"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="total_overpayment" property="totalOverpayment"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <select id="selectByFilter" parameterType="OverpaymentInfoFilter" resultMap="OverpaymentInfoMap">
+        SELECT
+        franchise_code,
+        customer_code,
+        customer_name,
+        sum(over_amount) as total_overpayment
+        FROM
+        (SELECT
+        IF(ISNULL(c.franchise_code), LEFT(cp.customer_code, 3), c.franchise_code) AS franchise_code,
+        cp.customer_code AS customer_code,
+        ca.customer_name AS customer_name,
+        op.over_amount AS over_amount,
+        CASE
+        (SELECT credit_type FROM xms_tbl_credit_note_detail AS cnd
+        INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+        WHERE cnd.cus_paymentid = op.cus_paymentid)
+        WHEN 0 THEN 'Credit Note'
+        WHEN 1 THEN 'Carrier Credit Note'
+        ELSE 'Customer Payment'
+        END AS source,
+        0 AS status
+        FROM xms_tbl_overpayment AS op
+        INNER JOIN xms_tbl_customer_payment AS cp ON cp.cus_paymentid = op.cus_paymentid
+        LEFT JOIN xms_tbl_customer AS c ON c.customer_code = cp.customer_code
+        LEFT JOIN xms_tbl_customer_address AS ca ON ca.customer_code = cp.customer_code) AS o
+        <where>
+            <if test="customerCode!=null and customerCode!=''">
+                AND customer_code = #{customerCode}
+            </if>
+            <if test="franchiseList!=null">
+                AND franchise_code IN
+                <foreach item="franchiseCode" collection="franchiseList" open="(" close=")" separator=",">
+                    #{franchiseCode}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY franchise_code, customer_code
+        <if test="orderBy!=null">
+            ORDER BY #{orderBy}
+        </if>
+        <if test="startRecord!=null and recordSize!=null">
+            LIMIT #{startRecord}, #{recordSize}
+        </if>
+    </select>
+
+    <select id="countByFilter" parameterType="OverpaymentInfoFilter" resultType="long">
+        SELECT COUNT(*) FROM
+        (SELECT
+        franchise_code,
+        customer_code,
+        customer_name,
+        sum(over_amount) as total_overpayment
+        FROM
+        (SELECT
+        IF(ISNULL(c.franchise_code), LEFT(cp.customer_code, 3), c.franchise_code) AS franchise_code,
+        cp.customer_code AS customer_code,
+        ca.customer_name AS customer_name,
+        op.over_amount AS over_amount,
+        CASE
+        (SELECT credit_type FROM xms_tbl_credit_note_detail AS cnd
+        INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+        WHERE cnd.cus_paymentid = op.cus_paymentid)
+        WHEN 0 THEN 'Credit Note'
+        WHEN 1 THEN 'Carrier Credit Note'
+        ELSE 'Customer Payment'
+        END AS source,
+        0 AS status
+        FROM xms_tbl_overpayment AS op
+        INNER JOIN xms_tbl_customer_payment AS cp ON cp.cus_paymentid = op.cus_paymentid
+        LEFT JOIN xms_tbl_customer AS c ON c.customer_code = cp.customer_code
+        LEFT JOIN xms_tbl_customer_address AS ca ON ca.customer_code = cp.customer_code) AS o
+        <where>
+            <if test="customerCode!=null and customerCode!=''">
+                AND customer_code = #{customerCode}
+            </if>
+            <if test="franchiseList!=null">
+                AND franchise_code IN
+                <foreach item="franchiseCode" collection="franchiseList" open="(" close=")" separator=",">
+                    #{franchiseCode}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY franchise_code, customer_code) AS r
+    </select>
+
+    <select id="sumByFilter" parameterType="OverpaymentInfoFilter" resultType="decimal">
+        SELECT SUM(total_overpayment) FROM
+        (SELECT
+        franchise_code,
+        customer_code,
+        customer_name,
+        sum(over_amount) as total_overpayment
+        FROM
+        (SELECT
+        IF(ISNULL(c.franchise_code), LEFT(cp.customer_code, 3), c.franchise_code) AS franchise_code,
+        cp.customer_code AS customer_code,
+        ca.customer_name AS customer_name,
+        op.over_amount AS over_amount,
+        CASE
+        (SELECT credit_type FROM xms_tbl_credit_note_detail AS cnd
+        INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+        WHERE cnd.cus_paymentid = op.cus_paymentid)
+        WHEN 0 THEN 'Credit Note'
+        WHEN 1 THEN 'Carrier Credit Note'
+        ELSE 'Customer Payment'
+        END AS source,
+        0 AS status
+        FROM xms_tbl_overpayment AS op
+        INNER JOIN xms_tbl_customer_payment AS cp ON cp.cus_paymentid = op.cus_paymentid
+        LEFT JOIN xms_tbl_customer AS c ON c.customer_code = cp.customer_code
+        LEFT JOIN xms_tbl_customer_address AS ca ON ca.customer_code = cp.customer_code) AS o
+        <where>
+            <if test="customerCode!=null and customerCode!=''">
+                AND customer_code = #{customerCode}
+            </if>
+            <if test="franchiseList!=null">
+                AND franchise_code IN
+                <foreach item="franchiseCode" collection="franchiseList" open="(" close=")" separator=",">
+                    #{franchiseCode}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY franchise_code, customer_code) AS r
+    </select>
+</mapper>

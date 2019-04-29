@@ -1,0 +1,26 @@
+.sel-box {
+    height: 25px !important;
+    padding-top: 2px !important;
+}
+
+.selected-row {
+    background-color: #F7F9FF;
+    color: #b5121b;
+}
+
+.table-hover td {
+    cursor: pointer;
+}
+
+.dt-add-checkboxes {
+    margin-top: 15px;
+}
+
+.sss1 li:hover {
+    background-color: #5D6AA0 !important;
+    cursor: pointer;
+}
+
+.sss1 li:hover div {
+    color: #fff !important;
+}

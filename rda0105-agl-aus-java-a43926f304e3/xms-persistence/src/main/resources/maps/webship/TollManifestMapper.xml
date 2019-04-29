@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="TollManifest">
+    <resultMap id="TollManifestMap" type="TollManifestVo">
+        <id column="manifest_id" property="manifestId"/>
+        <result column="manifest_identifier" property="manifestIdentifier"/>
+        <result column="create_date" property="createDate"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="upload_file" property="uploadFile"/>
+        <result column="status" property="status"/>
+        <result column="voidid" property="voidId"/>
+    </resultMap>
+
+    <select id="updateTollManifestStatus_SelectForLog" parameterType="TollManifestVo" resultMap="TollManifestMap">
+        select * from xms_tbl_toll_manifest
+        where manifest_id = #{manifestId}
+    </select>
+
+    <select id="getManifestByMainShipment" parameterType="TollManifestVo" resultMap="TollManifestMap">
+        SELECT SQL_CALC_FOUND_ROWS *  FROM xms_tbl_toll_manifest where
+        shipmentid = #{shipmentId} or shipmentid like concat('%',#{shipmentId},'%')
+    </select>
+
+    <update id="updateTollManifestStatus" parameterType="TollManifestVo">
+        update xms_tbl_toll_manifest
+        set
+        status = #{status}
+        where
+        manifest_id = #{manifestId}
+    </update>
+
+    <insert id="insertTollManifestIdentifier" parameterType="TollManifestVo" useGeneratedKeys="true"
+            keyProperty="manifestId">
+        insert into xms_tbl_toll_manifest (manifest_identifier , create_date, shipmentid, upload_file)
+        select
+        if(manifest_identifier >= 999999999,
+        1,
+        manifest_identifier + 1) as manifest_identifier,
+        now(),
+        #{shipmentId},
+        #{uploadFile}
+        from
+        (select
+        ifnull(manifest_identifier, 999999999) as manifest_identifier
+        from
+        (select
+        manifest_identifier
+        from
+        xms_tbl_toll_manifest
+        order by manifest_id desc
+        limit 1) as maxconn union select 999999999) as conn
+        limit 1
+    </insert>
+</mapper>

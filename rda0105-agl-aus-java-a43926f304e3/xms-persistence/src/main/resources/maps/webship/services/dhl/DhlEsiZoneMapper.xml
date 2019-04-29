@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="DhlEsiZone">
+    <resultMap id="DhlEsiZone" type="com.gms.xms.txndb.vo.dhl.DhlEsiZoneVo">
+        <id column="id" property="id"/>
+        <result column="countryname" property="countryName"/>
+        <result column="countrycode" property="countryCode"/>
+        <result column="city_name" property="cityName"/>
+        <result column="from_postcode" property="fromPostcode"/>
+        <result column="to_postcode" property="toPostcode"/>
+        <result column="station_code" property="stationCode"/>
+    </resultMap>
+</mapper>

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="RepairAirbillError">
+    <resultMap id="RepairAirbillErrorMap" type="AirbillErrorVo">
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="reference" property="reference"/>
+        <result column="import_date" property="importDate"/>
+        <result column="service" property="service"/>
+        <result column="ship_date" property="shipDate"/>
+        <result column="sender_company_name" property="senderCompanyName"/>
+        <result column="sender_contact_name" property="senderContactName"/>
+        <result column="sender_address1" property="senderAddress1"/>
+        <result column="sender_address2" property="senderAddress2"/>
+        <result column="sender_city" property="senderCity"/>
+        <result column="sender_state" property="senderState"/>
+        <result column="sender_postal_code" property="senderPostalCode"/>
+        <result column="receiver_company_name" property="receiverCompanyName"/>
+        <result column="receiver_contact_name" property="receiverContactName"/>
+        <result column="receiver_address1" property="receiverAddress1"/>
+        <result column="receiver_address2" property="receiverAddress2"/>
+        <result column="receiver_city" property="receiverCity"/>
+        <result column="receiver_state" property="receiverState"/>
+        <result column="receiver_postal_code" property="receiverPostalCode"/>
+        <result column="carrier_cost" property="carrierCost"/>
+        <result column="sender_account" property="senderAccount"/>
+        <result column="receiver_account" property="receiverAccount"/>
+        <result column="_3p_account" property="p3Account"/>
+        <result column="billing_account" property="billingAccount"/>
+        <result column="billing_to_account" property="billingToAccount"/>
+    </resultMap>
+
+    <select id="getAirbillErrorByFilter" parameterType="com.gms.xms.filter.invoicing.RepairAirbillErrorFilter"
+            resultMap="RepairAirbillErrorMap">
+        select
+        sb.airbill_number,
+        sb.invoice_date,
+        ifnull(sm.customer_code,-1) as customer_code,
+        sb.shipper_reference as reference,
+        sb.import_date,
+        if(sb.display_description='',sb.description,sb.display_description) as service,
+        sb.ship_date,
+        sdr.companyname as sender_company_name,
+        sdr.contact_name as sender_contact_name,
+        sdr.address as sender_address1,
+        sdr.address2 as sender_address2,
+        sdr.city as sender_city,
+        sdr.state as sender_state,
+        sdr.postal_code as sender_postal_code,
+        rc.companyname as receiver_company_name,
+        rc.contact_name as receiver_contact_name,
+        rc.address as receiver_address1,
+        rc.address2 as receiver_address2,
+        rc.city as receiver_city,
+        rc.state as receiver_state,
+        rc.postal_code as receiver_postal_code,
+        sb.carrier_cost,
+        if(sb.billing_type=1,sb.billing_account,0) as sender_account,
+        if(sb.billing_type=2,sb.billing_account,0) as receiver_account,
+        if(sb.billing_type=3,sb.billing_account,0) as _3p_account,
+        sb.billing_account,
+        sb.billto_account as billing_to_account
+        from xms_tbl_shipment_billing as sb
+        left join xms_tbl_shipment as sm on sm.shipmentid = sb.shipmentid and sm.airbill_number = sb.airbill_number
+        left join xms_tbl_address as sdr on sdr.addressid = sb.senderaddressid
+        left join xms_tbl_address as rc on rc.addressid = sb.receiveraddressid
+        left join xms_tbl_shipment_type as st on st.shipment_type_name = sb.description and st.serviceid = sb.carrier
+        where (sb.shipmentid=0 and sb.airbill_number!='')
+        <if test="fromDate!=null and toDate!=null">
+            <![CDATA[ and sb.import_date >= date(#{fromDate}) and sb.import_date < date(date_add(#{toDate},interval 1 day)) ]]>
+        </if>
+        <if test="carrier!=null">
+            and sb.carrier = #{carrier}
+        </if>
+        group by airbill_number
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countAirbillErrorByFilter" parameterType="com.gms.xms.filter.invoicing.RepairAirbillErrorFilter"
+            resultType="long">
+        select
+        count(*)
+        from
+        (select
+        sb.airbill_number,
+        sb.invoice_date,
+        ifnull(sm.customer_code,-1) as customer_code,
+        sb.shipper_reference as reference,
+        sb.import_date,
+        if(sb.display_description='',sb.description,sb.display_description) as service,
+        sb.ship_date,
+        sdr.companyname as sender_company_name,
+        sdr.contact_name as sender_contact_name,
+        sdr.address as sender_address1,
+        sdr.address2 as sender_address2,
+        sdr.city as sender_city,
+        sdr.state as sender_state,
+        sdr.postal_code as sender_postal_code,
+        rc.companyname as receiver_company_name,
+        rc.contact_name as receiver_contact_name,
+        rc.address as receiver_address1,
+        rc.address2 as receiver_address2,
+        rc.city as receiver_city,
+        rc.state as receiver_state,
+        rc.postal_code as receiver_postal_code,
+        sb.carrier_cost,
+        if(sb.billing_type=1,sb.billing_account,0) as sender_account,
+        if(sb.billing_type=2,sb.billing_account,0) as receiver_account,
+        if(sb.billing_type=3,sb.billing_account,0) as _3p_account,
+        sb.billing_account,
+        sb.billto_account as billing_to_account
+        from xms_tbl_shipment_billing as sb
+        left join xms_tbl_shipment as sm on sm.shipmentid = sb.shipmentid and sm.airbill_number = sb.airbill_number
+        left join xms_tbl_address as sdr on sdr.addressid = sb.senderaddressid
+        left join xms_tbl_address as rc on rc.addressid = sb.receiveraddressid
+        left join xms_tbl_shipment_type as st on st.shipment_type_name = sb.description and st.serviceid = sb.carrier
+        where (sb.shipmentid=0 and sb.airbill_number!='')
+        <if test="fromDate!=null and toDate!=null">
+            <![CDATA[ and sb.import_date >= date(#{fromDate}) and sb.import_date < date(date_add(#{toDate},interval 1 day)) ]]>
+        </if>
+        <if test="carrier!=null">
+            and sb.carrier = #{carrier}
+        </if>
+        group by airbill_number
+        ) as r
+    </select>
+
+    <update id="moveInvoiceDate" parameterType="com.gms.xms.filter.invoicing.MoveInvoiceDateFilter">
+        update xms_tbl_shipment_billing
+        set invoice_date = #{invoiceDate}
+        where shipmentid=0 and airbill_number in (${airbillList})
+    </update>
+
+    <select id="moveInvoiceDate_SelectForLog" parameterType="com.gms.xms.filter.invoicing.MoveInvoiceDateFilter"
+            resultMap="ShipmentBilling.ShipmentBillingMap">
+        select * from xms_tbl_shipment_billing
+        where shipmentid=0 and airbill_number in (${airbillList})
+    </select>
+</mapper>

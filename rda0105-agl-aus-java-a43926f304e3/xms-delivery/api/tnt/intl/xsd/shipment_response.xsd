@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="document">
+        <xs:complexType>
+            <xs:choice>
+                <xs:sequence>
+                    <xs:element name="GROUPCODE" type="xs:string"/>
+                    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                        <xs:element name="CREATE" type="Create"/>
+                    </xs:sequence>
+                    <xs:sequence minOccurs="0">
+                        <xs:element name="RATE" type="Rate"/>
+                    </xs:sequence>
+                    <xs:sequence minOccurs="0">
+                        <xs:element name="BOOK" type="Book"/>
+                    </xs:sequence>
+                    <xs:element name="PRINT" type="Print"/>
+                </xs:sequence>
+                <xs:sequence>
+                    <xs:element name="ERROR" type="Error" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="Create">
+        <xs:sequence>
+            <xs:element name="CONREF" type="xs:string"/>
+            <xs:element name="CONNUMBER" type="xs:string"/>
+            <xs:element name="SUCCESS" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Rate">
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="PRICE" type="Price"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Book">
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="CONSIGNMENT" type="Consignment"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Print">
+        <xs:sequence>
+            <xs:element name="CONNOTE" type="xs:string"/>
+            <xs:element name="LABEL" type="xs:string"/>
+            <xs:element name="MANIFEST" type="xs:string"/>
+            <xs:element name="INVOICE" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Price">
+        <xs:sequence>
+            <xs:element name="RATEID" type="xs:string"/>
+            <xs:element name="SERVICE" type="xs:string"/>
+            <xs:element name="SERVICEDESC" type="xs:string"/>
+            <xs:element name="OPTION" type="xs:string"/>
+            <xs:element name="OPTIONDESC" type="xs:string"/>
+            <xs:element name="CURRENCY" type="xs:string"/>
+            <xs:element name="RATE" type="xs:decimal"/>
+            <xs:element name="RESULT" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Consignment">
+        <xs:sequence>
+            <xs:element name="CONREF" type="xs:string"/>
+            <xs:element name="CONNUMBER" type="xs:string"/>
+            <xs:element name="SUCCESS" type="xs:string"/>
+            <xs:element name="FIRSTTIMETRADER" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Error">
+        <xs:sequence>
+            <xs:element name="CODE" type="xs:string"/>
+            <xs:element name="DESCRIPTION" type="xs:string"/>
+            <xs:element name="SOURCE" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="WebshipQuoteHistory">
+    <resultMap id="WebshipQuoteHistoryMap" type="WebshipQuoteHistoryVo">
+        <result column="quoteid" property="quoteId"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="quote_date" property="quoteDate"/>
+        <result column="sender_company_name" property="senderCompanyName"/>
+        <result column="sender_contact_name" property="senderContactName"/>
+        <result column="sender_address1" property="senderAddress1"/>
+        <result column="sender_address2" property="senderAddress2"/>
+        <result column="sender_city" property="senderCity"/>
+        <result column="sender_postal_code" property="senderPostalCode"/>
+        <result column="sender_state" property="senderState"/>
+        <result column="sender_country" property="senderCountry"/>
+        <result column="sender_phone" property="senderPhone"/>
+        <result column="receiver_company_name" property="receiverCompanyName"/>
+        <result column="receiver_contact_name" property="receiverContactName"/>
+        <result column="receiver_address1" property="receiverAddress1"/>
+        <result column="receiver_address2" property="receiverAddress2"/>
+        <result column="receiver_city" property="receiverCity"/>
+        <result column="receiver_postal_code" property="receiverPostalCode"/>
+        <result column="receiver_state" property="receiverState"/>
+        <result column="receiver_country" property="receiverCountry"/>
+        <result column="receiver_phone" property="receiverPhone"/>
+        <result column="shipment_type_name" property="shipmentTypeName"/>
+        <result column="package_name" property="packageName"/>
+        <result column="no_of_pieces" property="noOfPieces"/>
+        <result column="weight" property="weight"/>
+        <result column="weight_line" property="weightLine"/>
+        <result column="dimension_l" property="dimensionL"/>
+        <result column="dimension_w" property="dimensionW"/>
+        <result column="dimension_h" property="dimensionH"/>
+        <result column="dimension_line" property="dimensionLine"/>
+        <result column="weight_unit" property="weightUnit"/>
+        <result column="dimension_unit" property="dimensionUnit"/>
+        <result column="contents" property="content"/>
+        <result column="ip_address" property="ipAddress"/>
+    </resultMap>
+
+    <select id="getWebshipQuoteHistoryReport"
+            parameterType="com.gms.xms.filter.reports.webship.WebshipQuoteHistoryFilter"
+            resultMap="WebshipQuoteHistoryMap">
+        select
+        q.quoteid,
+        q.customer_code,
+        ca.customer_name,
+        q.quote_date,
+        sender.companyname as sender_company_name,
+        sender.contact_name as sender_contact_name,
+        sender.address as sender_address1,
+        sender.address2 as sender_address2,
+        sender.city as sender_city,
+        sender.postal_code as sender_postal_code,
+        sender.state as sender_state,
+        sc.countryname as sender_country,
+        sender.phone as sender_phone,
+        receiver.companyname as receiver_company_name,
+        receiver.contact_name as receiver_contact_name,
+        receiver.address as receiver_address1,
+        receiver.address2 as receiver_address2,
+        receiver.city as receiver_city,
+        receiver.postal_code as receiver_postal_code,
+        receiver.state as receiver_state,
+        rc.countryname as receiver_country,
+        receiver.phone as receiver_phone,
+        st.shipment_type_name,
+        pak.packagename as package_name,
+        count(qp.quote_piece_id) as no_of_pieces,
+        sum(qp.weight) as weight,
+        group_concat(qp.weight separator ',') as weight_line,
+        sum(qp.dimension_l) as dimension_l,
+        sum(qp.dimension_w) as dimension_w,
+        sum(qp.dimension_h) as dimension_h,
+        group_concat((concat(qp.dimension_l,'x',qp.dimension_w,'x',qp.dimension_h)) separator ',') as dimension_line,
+        q.weight_unit,
+        q.dimension_unit,
+        q.contents as content,
+        q.ip_address
+        from xms_tbl_webship_quote_log as q
+        left join xms_tbl_customer_address as ca on ca.customer_code = q.customer_code
+        left join xms_tbl_address as sender on sender.addressid = q.senderaddressid
+        left join xms_tbl_address as receiver on receiver.addressid = q.receiveraddressid
+        left join xms_tbl_shipment_type as st on st.shipment_type_id = q.shipment_type_id
+        left join xms_tbl_package as pak on pak.packageid = q.packageid
+        left join xms_tbl_quote_piece as qp on qp.quoteid = q.quoteid
+        left join xms_tbl_country as sc on sc.countryid = sender.country
+        left join xms_tbl_country as rc on rc.countryid = receiver.country
+        where left(q.customer_code,3) in (${franchiseList})
+        <![CDATA[
+			and q.quote_date >= #{startDate,jdbcType=DATE} and q.quote_date < date_add(#{endDate,jdbcType=DATE},interval 1 day)
+		]]>
+        <if test="customerCode!=null and customerCode!=''">
+            and q.customer_code = #{customerCode}
+        </if>
+        group by quoteid
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countWebshipQuoteHistoryReport"
+            parameterType="com.gms.xms.filter.reports.webship.WebshipQuoteHistoryFilter" resultType="long">
+        select
+        count(*)
+        from
+        (select
+        q.quoteid,
+        q.customer_code,
+        ca.customer_name,
+        q.quote_date,
+        sender.companyname as sender_company_name,
+        sender.contact_name as sender_contact_name,
+        sender.address as sender_address1,
+        sender.address2 as sender_address2,
+        sender.city as sender_city,
+        sender.postal_code as sender_postal_code,
+        sender.state as sender_state,
+        sc.countryname as sender_country,
+        sender.phone as sender_phone,
+        receiver.companyname as receiver_company_name,
+        receiver.contact_name as receiver_contact_name,
+        receiver.address as receiver_address1,
+        receiver.address2 as receiver_address2,
+        receiver.city as receiver_city,
+        receiver.postal_code as receiver_postal_code,
+        receiver.state as receiver_state,
+        rc.countryname as receiver_country,
+        receiver.phone as receiver_phone,
+        st.shipment_type_name,
+        pak.packagename as package_name,
+        count(qp.quote_piece_id) as no_of_pieces,
+        sum(qp.weight) as weight,
+        group_concat(qp.weight separator ',') as weight_line,
+        sum(qp.dimension_l) as dimension_l,
+        sum(qp.dimension_w) as dimension_w,
+        sum(qp.dimension_h) as dimension_h,
+        group_concat((concat(qp.dimension_l,'x',qp.dimension_w,'x',qp.dimension_h)) separator ',') as dimension_line,
+        q.weight_unit,
+        q.dimension_unit,
+        q.contents as content,
+        q.ip_address
+        from xms_tbl_webship_quote_log as q
+        left join xms_tbl_customer_address as ca on ca.customer_code = q.customer_code
+        left join xms_tbl_address as sender on sender.addressid = q.senderaddressid
+        left join xms_tbl_address as receiver on receiver.addressid = q.receiveraddressid
+        left join xms_tbl_shipment_type as st on st.shipment_type_id = q.shipment_type_id
+        left join xms_tbl_package as pak on pak.packageid = q.packageid
+        left join xms_tbl_quote_piece as qp on qp.quoteid = q.quoteid
+        left join xms_tbl_country as sc on sc.countryid = sender.country
+        left join xms_tbl_country as rc on rc.countryid = receiver.country
+        where left(q.customer_code,3) in (${franchiseList})
+        <![CDATA[
+				and q.quote_date >= #{startDate,jdbcType=DATE} and q.quote_date < date_add(#{endDate,jdbcType=DATE},interval 1 day)
+			]]>
+        <if test="customerCode!=null and customerCode!=''">
+            and q.customer_code = #{customerCode}
+        </if>
+        group by quoteid
+        ) as r
+    </select>
+</mapper>

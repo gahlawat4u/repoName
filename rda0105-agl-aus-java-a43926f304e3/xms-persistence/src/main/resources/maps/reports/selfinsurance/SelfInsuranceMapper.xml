@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="SelfInsurance">
+    <resultMap id="WebshipLabelMap" type="WebshipLabelVo">
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="carrier" property="carrier"/>
+        <result column="service" property="service"/>
+        <result column="voided" property="voided"/>
+        <result column="shipment_value" property="shipmentValue"/>
+        <result column="customer_insured_amount" property="customerInsuredAmount"/>
+        <result column="create_date" property="createDate"/>
+        <result column="shipment_date" property="shipDate"/>
+        <result column="pickup_date" property="pickupDate"/>
+        <result column="no_of_pieces" property="noOfPieces"/>
+        <result column="weight_unit" property="weightUnit"/>
+        <result column="dimension_unit" property="dimensionUnit"/>
+        <result column="sender_company_name" property="senderCompanyName"/>
+        <result column="sender_phone" property="senderPhone"/>
+        <result column="sender_contact_name" property="senderContactName"/>
+        <result column="sender_country_name" property="senderCountryName"/>
+        <result column="sender_email" property="senderEmail"/>
+        <result column="sender_address1" property="senderAddress1"/>
+        <result column="sender_address2" property="senderAddress2"/>
+        <result column="sender_city" property="senderCity"/>
+        <result column="sender_postal_code" property="senderPostalCode"/>
+        <result column="sender_state" property="senderState"/>
+        <result column="receiver_company_name" property="receiverCompanyName"/>
+        <result column="receiver_phone" property="receiverPhone"/>
+        <result column="receiver_contact_name" property="receiverContactName"/>
+        <result column="receiver_country_name" property="receiverCountryName"/>
+        <result column="receiver_email" property="receiverEmail"/>
+        <result column="receiver_address1" property="receiverAddress1"/>
+        <result column="receiver_address2" property="receiverAddress2"/>
+        <result column="receiver_city" property="receiverCity"/>
+        <result column="receiver_postal_code" property="receiverPostalCode"/>
+        <result column="receiver_state" property="receiverState"/>
+        <result column="weight" property="weight"/>
+        <result column="dead_weight" property="deadWeight"/>
+        <result column="dimension" property="dimension"/>
+        <result column="quoted" property="quoted"/>
+    </resultMap>
+
+    <resultMap id="InvoicedAirbillMap" type="InvoicedAirbillVo">
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="carrier" property="carrier"/>
+        <result column="service" property="service"/>
+        <result column="shipment_value" property="shipmentValue"/>
+        <result column="insured_amount" property="insuredAmount"/>
+        <result column="insured_gst" property="insuredGst"/>
+        <result column="insured_total" property="insuredTotal"/>
+        <result column="ship_date" property="shipDate"/>
+        <result column="import_date" property="importDate"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="no_of_pieces" property="noOfPieces"/>
+        <result column="weight_unit" property="weightUnit"/>
+        <result column="dimension_unit" property="dimensionUnit"/>
+        <result column="dead_weight" property="deadWeight"/>
+        <result column="dimension" property="dimension"/>
+        <result column="quoted" property="quoted"/>
+        <result column="charges" property="charges"/>
+        <result column="total" property="total"/>
+        <result column="sender_company_name" property="senderCompanyName"/>
+        <result column="sender_phone" property="senderPhone"/>
+        <result column="sender_contact_name" property="senderContactName"/>
+        <result column="sender_country_name" property="senderCountryName"/>
+        <result column="sender_email" property="senderEmail"/>
+        <result column="sender_address1" property="senderAddress1"/>
+        <result column="sender_address2" property="senderAddress2"/>
+        <result column="sender_city" property="senderCity"/>
+        <result column="sender_postal_code" property="senderPostalCode"/>
+        <result column="sender_state" property="senderState"/>
+        <result column="receiver_company_name" property="receiverCompanyName"/>
+        <result column="receiver_phone" property="receiverPhone"/>
+        <result column="receiver_contact_name" property="receiverContactName"/>
+        <result column="receiver_country_name" property="receiverCountryName"/>
+        <result column="receiver_email" property="receiverEmail"/>
+        <result column="receiver_address1" property="receiverAddress1"/>
+        <result column="receiver_address2" property="receiverAddress2"/>
+        <result column="receiver_city" property="receiverCity"/>
+        <result column="receiver_postal_code" property="receiverPostalCode"/>
+        <result column="receiver_state" property="receiverState"/>
+        <result column="bound" property="bound"/>
+        <result column="dom_warranty_gst" property="domWarrantyGst"/>
+    </resultMap>
+
+    <resultMap id="SummaryInvoicedAirbillMap" type="SummaryInvoicedAirbillVo">
+        <result column="intl_shipment_count" property="intlShipmentCount"/>
+        <result column="dom_shipment_count" property="domShipmentCount"/>
+        <result column="intl_total_revenue" property="intlTotalRevenue"/>
+        <result column="dom_total_revenue" property="domTotalRevenue"/>
+        <result column="dom_gst" property="domGst"/>
+        <result column="total_revenue_inc_gst" property="totalRevenueIncGst"/>
+    </resultMap>
+
+    <select id="getWebshipLabelReport" parameterType="com.gms.xms.filter.reports.selfinsurance.WebshipLabelFilter"
+            resultMap="WebshipLabelMap">
+        <![CDATA[
+		select 
+			r.*,
+		    sum(pic.weight) as weight,
+		    sum(pic.dead_weight) as dead_weight,
+		    concat(pic.dimension_l,'x',pic.dimension_w,'x',pic.dimension_h) as dimension,
+		    insurance+base_charge+non_standard_charge+total_amount as quoted
+		from
+			(select 
+				i.invoice_code,
+				sm.customer_code,
+				sm.shipmentid,
+				sm.airbill_number,
+				sv.service_name as carrier,
+				st.shipment_type_name as service,
+				smi.voided,
+				sm.total_custom_value as shipment_value,
+				smi.customer_insured_amount,
+				sm.create_date,
+				sm.shipment_date,
+				smi.pickup_date,
+				sm.no_of_pieces,
+				sm.weight_unit,
+				sm.dimension_unit,
+				sd.companyname as sender_company_name,
+		        sd.phone as sender_phone,
+		        sd.contact_name as sender_contact_name,
+		        sdc.countryname as sender_country_name,
+		        sd.email as sender_email,
+		        sd.address as sender_address1,
+		        sd.address2 as sender_address2,
+		        sd.city as sender_city,
+		        sd.postal_code as sender_postal_code,
+		        sd.state as sender_state,
+		        rv.companyname as receiver_company_name,
+		        rv.phone as receiver_phone,
+		        rv.contact_name as receiver_contact_name,
+		        rvc.countryname as receiver_country_name,
+		        rv.email as receiver_email,
+		        rv.address as receiver_address1,
+		        rv.address2 as receiver_address2,
+		        rv.city as receiver_city,
+		        rv.postal_code as receiver_postal_code,
+		        rv.state as receiver_state,
+		        ifnull(sm.withinsurance,0) as insurance,
+		        ifnull(sm.base_charge,0) as base_charge,
+		        ifnull(sm.non_standard_charge,0) as non_standard_charge,
+		        ifnull(sum(smd.amount),0) as total_amount
+			from 
+				(select 
+					sm.shipmentid, 
+					sin.customer_insured_amount, 
+					sc.pickup_date,
+					case sm.status 					
+						when 0 then  						
+							case  							
+								when date(sm.shipment_date)<date(now()) then 'Yes' 							
+			                    else  								
+									case 									
+										when ifnull(sc.schedule_collection_id,0)=0 then 'No' 									
+											else 										
+			                                case  											
+												when date(sc.pickup_date)<date(now()) then 'Yes' 											
+			                                    else 'No' 										
+											end 							
+										end 						
+									end 					
+							else 'Yes' 				
+					end as voided
+				from xms_tbl_shipment as sm
+				inner join 
+					(select smd.shipmentid, smd.amount as customer_insured_amount from xms_tbl_shipment_detail as smd
+					inner join xms_tbl_accessorial as acc on acc.accessorialId = smd.accessorialId
+					where acc.code like '%Agl Warranty%'
+					) as sin on sin.shipmentid = sm.shipmentid
+				left join xms_tbl_schedule_collection as sc on sc.shipmentid = sm.shipmentid and sc.status = 1
+        		where sm.shipmentid!=0 and sin.customer_insured_amount>0
+        			and left(sm.customer_code,3) in (${franchiseList})
+		        	/* and (case sm.status 					
+							when 0 then  						
+								case  							
+									when date(sm.shipment_date)<date(now()) then 'Yes' 							
+				                    else  								
+										case 									
+											when ifnull(sc.schedule_collection_id,0)=0 then 'No' 									
+												else 										
+				                                case  											
+													when date(sc.pickup_date)<date(now()) then 'Yes' 											
+				                                    else 'No' 										
+												end 							
+											end 						
+										end 					
+								else 'Yes' 				
+						end)='No' 
+					*/	
+		    ]]>
+        <choose>
+            <when test="searchType==1">
+                <![CDATA[ and sm.create_date>=date(#{startDate}) and sm.create_date<date_add(date(#{endDate}),interval 1 day) ]]>
+            </when>
+            <when test="searchType==2">
+                <![CDATA[ and sm.shipment_date>=date(#{startDate}) and sm.shipment_date<date_add(date(#{endDate}),interval 1 day) ]]>
+            </when>
+            <when test="searchType==3">
+                <![CDATA[ and sc.pickup_date>=date(#{startDate}) and sc.pickup_date<date_add(date(#{endDate}),interval 1 day) ]]>
+            </when>
+        </choose>
+        ) as smi
+        inner join xms_tbl_shipment as sm on sm.shipmentid = smi.shipmentid
+        left join xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+        left join xms_tbl_service as sv on sv.service_id = st.serviceid
+        left join xms_tbl_shipment_invoice as si on si.shipmentid = sm.shipmentid and si.airbill_number =
+        sm.airbill_number
+        left join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        left join xms_tbl_shipment_detail as smd on smd.shipmentid = sm.shipmentid
+        left join xms_tbl_address as sd on sd.addressid = sm.senderaddressid
+        left join xms_tbl_country as sdc on sdc.countryid = sd.country
+        left join xms_tbl_address as rv on rv.addressid = sm.receiveraddressid
+        left join xms_tbl_country as rvc on rvc.countryid = rv.country
+        group by sm.shipmentid
+        ) as r
+        left join xms_tbl_piece as pic on pic.shipmentid = r.shipmentid
+        group by r.shipmentid
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countWebshipLabelReport" parameterType="com.gms.xms.filter.reports.selfinsurance.WebshipLabelFilter"
+            resultType="long">
+        select count(*) from xms_tbl_shipment as sm
+        inner join
+        (select smd.shipmentid, smd.amount as customer_insured_amount from xms_tbl_shipment_detail as smd
+        inner join xms_tbl_accessorial as acc on acc.accessorialId = smd.accessorialId
+        where acc.code like '%Agl Warranty%'
+        ) as sin on sin.shipmentid = sm.shipmentid
+        left join xms_tbl_schedule_collection as sc on sc.shipmentid = sm.shipmentid and sc.status = 1
+        where sm.shipmentid!=0 and sin.customer_insured_amount>0
+        and left(sm.customer_code,3) in (${franchiseList})
+        <![CDATA[
+        	/*
+        	and (case sm.status 					
+					when 0 then  						
+						case  							
+							when date(sm.shipment_date)<date(now()) then 'Yes' 							
+		                    else  								
+								case 									
+									when ifnull(sc.schedule_collection_id,0)=0 then 'No' 									
+										else 										
+		                                case  											
+											when date(sc.pickup_date)<date(now()) then 'Yes' 											
+		                                    else 'No' 										
+										end 							
+									end 						
+								end 					
+						else 'Yes' 				
+				end)='No' 
+			*/	
+			]]>
+        <choose>
+            <when test="searchType==1">
+                <![CDATA[ and sm.create_date>=date(#{startDate}) and sm.create_date<date_add(date(#{endDate}),interval 1 day) ]]>
+            </when>
+            <when test="searchType==2">
+                <![CDATA[ and sm.shipment_date>=date(#{startDate}) and sm.shipment_date<date_add(date(#{endDate}),interval 1 day) ]]>
+            </when>
+            <when test="searchType==3">
+                <![CDATA[ and sc.pickup_date>=date(#{startDate}) and sc.pickup_date<date_add(date(#{endDate}),interval 1 day) ]]>
+            </when>
+        </choose>
+    </select>
+
+    <insert id="prepareInvoicedAirbillReport"
+            parameterType="com.gms.xms.filter.reports.selfinsurance.InvoicedAirbillFilter">
+        <![CDATA[
+		insert into tmp_tbl_agl_warranty_report (
+			rpt_txn_id,
+			invoice_code,
+			invoice_date,
+			customer_code,
+			shipmentid,
+			airbill_number,
+			carrier,
+			service,
+			shipment_value,
+			insured_amount,
+			insured_gst,
+			insured_total,
+			ship_date,
+			import_date,
+			no_of_pieces,
+			weight_unit,
+			dimension_unit,
+			sender_company_name,
+			sender_phone,
+			sender_contact_name,
+			sender_country_name,
+			sender_email,
+			sender_address1,
+			sender_address2,
+			sender_city,
+			sender_postal_code,
+			sender_state,
+			receiver_company_name,
+			receiver_phone,
+			receiver_contact_name,
+			receiver_country_name,
+			receiver_email,
+			receiver_address1,
+			receiver_address2,
+			receiver_city,
+			receiver_postal_code,
+			receiver_state,
+			dead_weight,
+			dimension,
+			quoted,
+			bound
+		)
+		select	
+			#{rptTxnId},
+			sbt.invoice_code,
+			sbt.invoice_date,
+			sm.customer_code,
+			sm.shipmentid,
+			sm.airbill_number,
+			sv.service_name as carrier,
+			st.shipment_type_name as service,
+			sm.total_custom_value as shipment_value,
+			sin.insured_amount,
+			sin.insured_gst,
+			sin.insured_total,
+			sbt.ship_date,
+			sbt.import_date,
+			sm.no_of_pieces,
+			sm.weight_unit,
+			sm.dimension_unit,
+			sd.companyname as sender_company_name,
+			sd.phone as sender_phone,
+			sd.contact_name as sender_contact_name,
+			sdc.countryname as sender_country_name,
+			sd.email as sender_email,
+			sd.address as sender_address1,
+			sd.address2 as sender_address2,
+			sd.city as sender_city,
+			sd.postal_code as sender_postal_code,
+			sd.state as sender_state,
+			rv.companyname as receiver_company_name,
+			rv.phone as receiver_phone,
+			rv.contact_name as receiver_contact_name,
+			rvc.countryname as receiver_country_name,
+			rv.email as receiver_email,
+			rv.address as receiver_address1,
+			rv.address2 as receiver_address2,
+			rv.city as receiver_city,
+			rv.postal_code as receiver_postal_code,
+			rv.state as receiver_state,
+			pic.dead_weight,
+			pic.dimension,
+			ifnull(sm.withinsurance,0)+ifnull(sm.base_charge,0)+ifnull(sm.non_standard_charge,0)+ifnull(sum(smd.amount),0) as quoted,
+			case
+				when ifnull(sdc.countryid,0)=ifnull(ds.default_country,0) then
+					case
+						when ifnull(sdc.countryid,0)=ifnull(rvc.countryid,0) then 0 -- Domestic
+						else 1 -- International
+					end
+				else 1 -- 2: Third party is considered as International
+		    end as bound
+		from xms_tbl_shipment as sm
+		inner join
+			(select shipmentid, airbill_number, sum(customer_cost) as insured_amount, sum(customer_tax_amount) as insured_gst, sum(customer_cost+customer_tax_amount) as insured_total from xms_tbl_shipment_billing
+		    where description like 'Agl Warranty%'
+		    group by shipmentid, airbill_number
+		    ) as sin on sin.shipmentid = sm.shipmentid and sin.airbill_number = sm.airbill_number
+		inner join
+			(select 
+				distinct
+				sb.shipmentid,
+				sb.airbill_number,
+				i.invoice_code,
+				i.invoice_date,
+				sb.ship_date,
+				sb.import_date,
+				sb.customer_tax_percent
+			from xms_tbl_shipment_billing as sb
+			inner join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and si.airbill_number = sb.airbill_number
+			inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+			where sb.shipmentid!=0 and sb.accessorial_count = 0
+		]]>
+        <choose>
+            <when test="searchType==1">
+                <![CDATA[ and sb.ship_date>=date(#{startDate}) and sb.ship_date<date_add(date(#{endDate}),interval 1 day) ]]>
+            </when>
+            <when test="searchType==2">
+                <![CDATA[ and sb.import_date>=date(#{startDate}) and sb.import_date<date_add(date(#{endDate}),interval 1 day) ]]>
+            </when>
+            <when test="searchType==3">
+                <![CDATA[ and i.invoice_date>=date(#{startDate}) and i.invoice_date<date_add(date(#{endDate}),interval 1 day) ]]>
+            </when>
+        </choose>
+        ) as sbt on sbt.shipmentid = sm.shipmentid and sbt.airbill_number = sm.airbill_number
+        left join xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+        left join xms_tbl_service as sv on sv.service_id = st.serviceid
+        left join xms_tbl_address as sd on sd.addressid = sm.senderaddressid
+        left join xms_tbl_country as sdc on sdc.countryid = sd.country
+        left join xms_tbl_address as rv on rv.addressid = sm.receiveraddressid
+        left join xms_tbl_country as rvc on rvc.countryid = rv.country
+        left join
+        (select setting_value as default_country from xms_tbl_system_setting
+        where setting_name = 'Default Origin Country'
+        ) as ds on (1=1)
+        left join
+        (select
+        shipmentid,
+        ifnull(sum(dead_weight),0) as dead_weight,
+        ifnull(concat(dimension_l,'x',dimension_w,'x',dimension_h),'') as dimension
+        from xms_tbl_piece
+        group by shipmentid
+        ) as pic on pic.shipmentid = sm.shipmentid
+        left join xms_tbl_shipment_detail as smd on smd.shipmentid = sm.shipmentid
+        where (sin.insured_amount+sin.insured_gst)>0
+        group by sm.shipmentid
+    </insert>
+
+    <select id="getInvoicedAirbillReport" parameterType="com.gms.xms.filter.reports.selfinsurance.InvoicedAirbillFilter"
+            resultMap="InvoicedAirbillMap">
+        <![CDATA[
+		select
+			r.*,
+		    sum(sb.customer_cost+sb.customer_tax_amount) as total,
+		    group_concat(concat(sb.description,': ',#{currencySymbol},customer_cost+customer_tax_amount) order by accessorial_count separator '<br/>') as charges,
+			if(r.bound=0,r.insured_gst,0) as dom_warranty_gst
+		from tmp_tbl_agl_warranty_report as r
+		inner join xms_tbl_shipment_billing as sb on sb.shipmentid = r.shipmentid and sb.airbill_number = r.airbill_number
+		where rpt_txn_id = #{rptTxnId}
+		group by r.shipmentid
+		]]>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="getSummaryInvoicedAirbillReport"
+            parameterType="com.gms.xms.filter.reports.selfinsurance.InvoicedAirbillFilter"
+            resultMap="SummaryInvoicedAirbillMap">
+        select
+        sum(if(bound=1,1,0)) as intl_shipment_count,
+        sum(if(bound=0,1,0)) as dom_shipment_count,
+        sum(if(bound=1,insured_amount+insured_gst,0)) as intl_total_revenue,
+        sum(if(bound=0,insured_amount+insured_gst,0)) as dom_total_revenue,
+        sum(if(bound=0,insured_gst,0)) as dom_gst,
+        sum(insured_total) as total_revenue_inc_gst
+        from tmp_tbl_agl_warranty_report
+        where rpt_txn_id = #{rptTxnId}
+    </select>
+
+    <select id="countInvoicedAirbillReport"
+            parameterType="com.gms.xms.filter.reports.selfinsurance.InvoicedAirbillFilter" resultType="long">
+        select count(*) from tmp_tbl_agl_warranty_report
+        where rpt_txn_id = #{rptTxnId}
+    </select>
+</mapper>

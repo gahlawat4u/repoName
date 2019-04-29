@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="SalesRep">
+    <resultMap id="SalesRepMap" type="SalesRepVo">
+        <id column="sales_rep_id" property="salesRepId"/>
+        <result column="hire_date" property="hireDate"/>
+        <result column="terminate_date" property="terminateDate"/>
+        <result column="userid" property="userId"/>
+        <result column="sales_manager" property="salesManager"/>
+        <result column="percent_payout" property="percentPayout"/>
+        <result column="address1" property="address1"/>
+        <result column="address2" property="address2"/>
+        <result column="city" property="city"/>
+        <result column="state" property="state"/>
+        <result column="zip" property="zip"/>
+        <result column="phone" property="phone"/>
+        <result column="fax" property="fax"/>
+        <result column="email" property="email"/>
+        <result column="use_webship_contact_information" property="useWebshipContactInformation"/>
+        <result column="salary" property="salary"/>
+        <result column="vehicle_allowance" property="vehicleAllowance"/>
+        <result column="phone_allowance" property="phoneAllowance"/>
+        <result column="health_allowance" property="healthAllowance"/>
+        <result column="allowance1_description" property="allowance1Description"/>
+        <result column="allowance1_amount" property="allowance1Amount"/>
+        <result column="allowance2_description" property="allowance2Description"/>
+        <result column="allowance2_amount" property="allowance2Amount"/>
+        <result column="allowance3_description" property="allowance3Description"/>
+        <result column="allowance3_amount" property="allowance3Amount"/>
+        <result column="deduction1_description" property="deduction1Description"/>
+        <result column="deduction1_amount" property="deduction1Amount"/>
+        <result column="deduction2_description" property="deduction2Description"/>
+        <result column="deduction2_amount" property="deduction2Amount"/>
+        <result column="deduction3_description" property="deduction3Description"/>
+        <result column="deduction3_amount" property="deduction3Amount"/>
+        <result column="setups" property="setups"/>
+        <result column="activation" property="activation"/>
+        <result column="day_of_activate" property="dayOfActivate"/>
+        <result column="exclude_ranking" property="excludeRanking"/>
+    </resultMap>
+
+    <select id="getSaleRepIdByCustomerCode" parameterType="string" resultType="long">
+        select
+        sales_rep_id
+        from
+        (select sales_rep_id from xms_tbl_franchise
+        where franchise_code = #{customerCode}
+        union
+        select sales_rep_id from xms_tbl_customer
+        where customer_code = #{customerCode}
+        ) as r
+        limit 1
+    </select>
+
+    <insert id="insertSalesRep" parameterType="SalesRepVo" useGeneratedKeys="true" keyProperty="salesRepId">
+        insert into xms_tbl_sales_rep (
+        userid,
+        hire_date,
+        terminate_date,
+        sales_manager,
+        percent_payout,
+        address1,
+        address2,
+        city,
+        state,
+        zip,
+        phone,
+        fax,
+        email,
+        use_webship_contact_information,
+        salary,
+        vehicle_allowance,
+        phone_allowance,
+        health_allowance,
+        allowance1_description,
+        allowance1_amount,
+        allowance2_description,
+        allowance2_amount,
+        allowance3_description,
+        allowance3_amount,
+        deduction1_description,
+        deduction1_amount,
+        deduction2_description,
+        deduction2_amount,
+        deduction3_description,
+        deduction3_amount,
+        setups,
+        activation,
+        day_of_activate,
+        exclude_ranking
+        )
+        values (
+        #{userId},
+        #{hireDate},
+        #{terminateDate},
+        #{salesManager},
+        #{percentPayout},
+        #{address1},
+        #{address2},
+        #{city},
+        #{state},
+        #{zip},
+        #{phone},
+        #{fax},
+        #{email},
+        #{useWebshipContactInformation},
+        #{salary},
+        #{vehicleAllowance},
+        #{phoneAllowance},
+        #{healthAllowance},
+        #{allowance1Description},
+        #{allowance1Amount},
+        #{allowance2Description},
+        #{allowance2Amount},
+        #{allowance3Description},
+        #{allowance3Amount},
+        #{deduction1Description},
+        #{deduction1Amount},
+        #{deduction2Description},
+        #{deduction2Amount},
+        #{deduction3Description},
+        #{deduction3Amount},
+        #{setups},
+        #{activation},
+        #{dayOfActivate},
+        #{excludeRanking}
+        )
+    </insert>
+
+    <update id="updateSalesRep" parameterType="SalesRepVo">
+        update xms_tbl_sales_rep
+        <set>
+            <if test="userId!=null">
+                userid = #{userId},
+            </if>
+            <if test="hireDate!=null">
+                hire_date = #{hireDate},
+            </if>
+            <if test="terminateDate!=null">
+                terminate_date = #{terminateDate},
+            </if>
+            <if test="salesManager!=null">
+                sales_manager = #{salesManager},
+            </if>
+            <if test="percentPayout!=null">
+                percent_payout = #{percentPayout},
+            </if>
+            <if test="address1!=null">
+                address1 = #{address1},
+            </if>
+            <if test="address2!=null">
+                address2 = #{address2},
+            </if>
+            <if test="city!=null">
+                city = #{city},
+            </if>
+            <if test="state!=null">
+                state = #{state},
+            </if>
+            <if test="zip!=null">
+                zip = #{zip},
+            </if>
+            <if test="phone!=null">
+                phone = #{phone},
+            </if>
+            <if test="fax!=null">
+                fax = #{fax},
+            </if>
+            <if test="email!=null">
+                email = #{email},
+            </if>
+            <if test="useWebshipContactInformation!=null">
+                use_webship_contact_information = #{useWebshipContactInformation},
+            </if>
+            <if test="salary!=null">
+                salary = #{salary},
+            </if>
+            <if test="vehicleAllowance!=null">
+                vehicle_allowance = #{vehicleAllowance},
+            </if>
+            <if test="phoneAllowance!=null">
+                phone_allowance = #{phoneAllowance},
+            </if>
+            <if test="healthAllowance!=null">
+                health_allowance = #{healthAllowance},
+            </if>
+            <if test="allowance1Description!=null">
+                allowance1_description = #{allowance1Description},
+            </if>
+            <if test="allowance1Amount!=null">
+                allowance1_amount = #{allowance1Amount},
+            </if>
+            <if test="allowance2Description!=null">
+                allowance2_description = #{allowance2Description},
+            </if>
+            <if test="allowance2Amount!=null">
+                allowance2_amount = #{allowance2Amount},
+            </if>
+            <if test="allowance3Description!=null">
+                allowance3_description = #{allowance3Description},
+            </if>
+            <if test="allowance3Amount!=null">
+                allowance3_amount = #{allowance3Amount},
+            </if>
+            <if test="deduction1Description!=null">
+                deduction1_description = #{deduction1Description},
+            </if>
+            <if test="deduction1Amount!=null">
+                deduction1_amount = #{deduction1Amount},
+            </if>
+            <if test="deduction2Description!=null">
+                deduction2_description = #{deduction2Description},
+            </if>
+            <if test="deduction2Amount!=null">
+                deduction2_amount = #{deduction2Amount},
+            </if>
+            <if test="deduction3Description!=null">
+                deduction3_description = #{deduction3Description},
+            </if>
+            <if test="deduction3Amount!=null">
+                deduction3_amount = #{deduction3Amount},
+            </if>
+            <if test="setups!=null">
+                setups = #{setups},
+            </if>
+            <if test="activation!=null">
+                activation = #{activation},
+            </if>
+            <if test="dayOfActivate!=null">
+                day_of_activate = #{dayOfActivate},
+            </if>
+            <if test="dayOfActivate!=null">
+                exclude_ranking = #{excludeRanking},
+            </if>
+        </set>
+        where sales_rep_id = #{salesRepId}
+    </update>
+
+    <select id="updateSalesRep_SelectForLog" parameterType="SalesRepVo" resultMap="SalesRepMap">
+        select * from xms_tbl_sales_rep
+        where sales_rep_id = #{salesRepId}
+    </select>
+</mapper>

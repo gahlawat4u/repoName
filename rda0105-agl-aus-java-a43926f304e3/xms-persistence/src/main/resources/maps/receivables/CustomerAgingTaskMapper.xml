@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerAgingTask">
+    <!-- Prepare data for customer aging report -->
+    <insert id="prepareDataForCustomerAgingInvoice" parameterType="CustomerAgingFilter">
+        insert into tmp_customer_aging_invoice (
+        rpt_txn_id,
+        customer_code,
+        sales_rep_id,
+        collectorid,
+        term,
+        invoiceid,
+        invoice_code,
+        invoice_date,
+        due_date,
+        invoice_age,
+        days_overdue,
+        last_payment_date,
+        total_cost,
+        total_paid,
+        total_due,
+        days_to_pay
+        )
+        select
+        #{rptTxnId},
+        r.customer_code,
+        r.sales_rep_id,
+        r.collectorid,
+        r.term,
+        r.invoiceid,
+        r.invoice_code,
+        r.invoice_date,
+        r.due_date,
+        r.invoice_age,
+        r.days_overdue,
+        r.last_payment_date,
+        r.total_cost,
+        r.total_paid,
+        <![CDATA[
+		    r.total_cost-r.total_paid as total_due,
+		    if(r.total_cost>r.total_paid,null,datediff(r.last_payment_date,r.invoice_date)) as days_to_pay 
+		]]>
+        from
+        (select
+        c.customer_code,
+        c.sales_rep_id,
+        c.collectorid,
+        ifnull(it.days,0) as term,
+        i.invoiceid,
+        i.invoice_code,
+        i.invoice_date,
+        date_add(i.invoice_date,interval ifnull(it.days,0) day) as due_date,
+        datediff(date(now()), i.invoice_date) as invoice_age,
+        (datediff(date(now()), i.invoice_date) - ifnull(it.days,0)) as days_overdue,
+        lpd.last_payment_date,
+        ifnull(tc.total_cost,0) as total_cost,
+        ifnull(tp.total_paid,0) as total_paid
+        from
+        (select customer_code, franchise_code, invoice_terms, sales_rep_id, collectorid from xms_tbl_customer
+        where franchise_code in (${franchiseCodeList})
+        <if test="salesRepId!=null and salesRepId!=0">
+            and sales_rep_id = #{salesRepId}
+        </if>
+        <if test="collectorId!=null and collectorId!=0">
+            and collectorid = #{collectorId}
+        </if>
+        union
+        select franchise_code, left(franchise_code,3), invoice_terms, sales_rep_id, 0 as collectorid from
+        xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseCodeList})
+        <if test="salesRepId!=null and salesRepId!=0">
+            and sales_rep_id = #{salesRepId}
+        </if>
+        <if test="collectorId!=null and collectorId!=0">
+            having collectorid = #{collectorId}
+        </if>
+        ) as c
+        left join xms_tbl_invoice_terms as it on it.invoice_terms_id = c.invoice_terms
+        left join xms_tbl_invoice as i on i.customer_code = c.customer_code and i.invoice_date!='0000-00-00' and
+        i.status!=0
+        left join
+        (select invoiceid, max(apply_date) as last_payment_date from xms_tbl_invoice_payment
+        group by invoiceid
+        ) as lpd on lpd.invoiceid = i.invoiceid
+        left join
+        (select si.invoiceid, sum(sb.customer_cost + sb.customer_tax_amount) as total_cost from xms_tbl_shipment_invoice
+        as si
+        inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number =
+        si.airbill_number
+        group by si.invoiceid
+        ) as tc on tc.invoiceid = i.invoiceid
+        left join
+        (select invoiceid, sum(amount) AS total_paid from xms_tbl_invoice_payment
+        group by invoiceid
+        ) as tp on tp.invoiceid = i.invoiceid
+        ) as r
+    </insert>
+
+    <insert id="prepareDataForCustomerAging" parameterType="CustomerAgingFilter">
+        insert into tmp_customer_aging (
+        rpt_txn_id,
+        customer_code,
+        customer_name,
+        sales_rep_name,
+        terms,
+        total_due,
+        total_overdue,
+        range_0,
+        range_1_15,
+        range_16_30,
+        range_31_45,
+        range_46_60,
+        range_61_90,
+        range_91_120,
+        range_120,
+        avg_invoice_age,
+        max_invoice_age,
+        avg_days_overdue,
+        max_days_overdue,
+        avg_days_to_pay,
+        total_overpaid
+        )
+        select * from(
+        select
+        cai1.rpt_txn_id,
+        cai1.customer_code,
+        ca.customer_name,
+        u.display_name as sales_rep_name,
+        cai1.term,
+        sum(total_due) as total_due,
+        <if test="agingType==0">
+            <![CDATA[
+			sum(if(days_overdue>0,total_due,0)) as total_overdue,
+			sum(if(days_overdue<=0,total_due,0)) as range_0,
+			sum(if(days_overdue between 1 and 15,total_due,0)) as range_1_15,
+			sum(if(days_overdue between 16 and 30,total_due,0)) as range_16_30,
+			sum(if(days_overdue between 31 and 45,total_due,0)) as range_31_45,
+			sum(if(days_overdue between 46 and 60,total_due,0)) as range_46_60,
+			sum(if(days_overdue between 61 and 90,total_due,0)) as range_61_90,
+			sum(if(days_overdue between 91 and 120,total_due,0)) as range_91_120,
+			sum(if(days_overdue>120,total_due,0)) as range_120,
+		]]>
+        </if>
+        <if test="agingType==1">
+            <![CDATA[
+			sum(if(days_overdue>0,total_due,0)) as total_overdue,
+			sum(if(invoice_age<=0,total_due,0)) as range_0,
+			sum(if(invoice_age between 1 and 15,total_due,0)) as range_1_15,
+			sum(if(invoice_age between 16 and 30,total_due,0)) as range_16_30,
+			sum(if(invoice_age between 31 and 45,total_due,0)) as range_31_45,
+			sum(if(invoice_age between 46 and 60,total_due,0)) as range_46_60,
+			sum(if(invoice_age between 61 and 90,total_due,0)) as range_61_90,
+			sum(if(invoice_age between 91 and 120,total_due,0)) as range_91_120,
+			sum(if(invoice_age>120,total_due,0)) as range_120,
+		]]>
+        </if>
+        cai2.avg_invoice_age,
+        cai3.max_invoice_age,
+        cai2.avg_days_overdue,
+        cai2.max_days_overdue,
+        cai2.avg_days_to_pay,
+        ifnull(opa.total_overpaid,0) as total_overpaid
+        from tmp_customer_aging_invoice as cai1
+        inner join
+        (select
+        rpt_txn_id,
+        customer_code,
+        avg(invoice_age) as avg_invoice_age,
+        avg(days_overdue) as avg_days_overdue,
+        max(days_overdue) as max_days_overdue,
+        avg(days_to_pay) as avg_days_to_pay
+        from tmp_customer_aging_invoice
+        where rpt_txn_id = #{rptTxnId}
+        group by customer_code
+        ) as cai2 on cai2.customer_code = cai1.customer_code and cai2.rpt_txn_id = cai1.rpt_txn_id
+        inner join
+        (select
+        rpt_txn_id,
+        customer_code,
+        max(invoice_age) as max_invoice_age
+        from tmp_customer_aging_invoice
+        where rpt_txn_id = #{rptTxnId} and total_due > 0
+        group by customer_code
+        ) as cai3 on cai3.customer_code = cai1.customer_code and cai3.rpt_txn_id = cai1.rpt_txn_id
+        left join xms_tbl_customer_address as ca on ca.customer_code = cai1.customer_code
+        left join xms_tbl_user as u on u.userid = cai1.sales_rep_id
+        left join
+        (select cp.customer_code, sum(op.over_amount) as total_overpaid from xms_tbl_overpayment as op
+        inner join xms_tbl_customer_payment as cp on cp.cus_paymentid = op.cus_paymentid
+        group by cp.customer_code
+        ) as opa on opa.customer_code = cai1.customer_code
+        where cai2.rpt_txn_id = #{rptTxnId}
+        <if test="minAvgDaysToPay!=null">
+            and cai2.avg_days_to_pay>=#{minAvgDaysToPay}
+        </if>
+        <if test="maxAvgDaysToPay!=null">
+            and cai2.avg_days_to_pay&lt;=#{maxAvgDaysToPay}
+        </if>
+        <if test="minDaysOverdue!=null">
+            and cai1.days_overdue>=#{minDaysOverdue}
+        </if>
+        <if test="maxDaysOverdue!=null">
+            and cai1.days_overdue&lt;=#{maxDaysOverdue}
+        </if>
+        group by cai1.customer_code
+        <if test="withBalanceOnly!=null and withBalanceOnly">
+            having total_due>0 or total_overdue>0
+        </if>
+        ) temp where ${filterDateInvoiceAgeRange}
+    </insert>
+</mapper>

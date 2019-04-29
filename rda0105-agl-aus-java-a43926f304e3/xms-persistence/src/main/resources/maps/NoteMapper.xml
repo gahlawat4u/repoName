@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Note">
+    <resultMap id="NoteMap" type="NoteVo">
+        <id column="noteid" property="noteId"/>
+        <result column="userid" property="userId"/>
+        <result column="account_no" property="accountNo"/>
+        <result column="notetype" property="noteType"/>
+        <result column="note" property="note"/>
+        <result column="follow_up_date" property="followUpDate"/>
+        <result column="modify_date" property="modifyDate"/>
+        <result column="check" property="check"/>
+        <result column="current" property="current"/>
+        <result column="invoicecode" property="invoiceCode"/>
+        <result column="paymentid" property="paymentId"/>
+    </resultMap>
+
+    <resultMap id="NoteAndFollowUpMap" type="NoteAndFollowUpVo" extends="NoteMap">
+        <result column="category" property="category"/>
+    </resultMap>
+
+    <resultMap id="NoteDetailMap" type="NoteVo" extends="NoteMap">
+        <association property="user" javaType="UserVo">
+            <result column="user_code" property="userCode"/>
+            <result column="display_name" property="displayName"/>
+        </association>
+    </resultMap>
+
+    <select id="selectById" parameterType="long" resultMap="NoteMap">
+        select * from xms_tbl_note
+        where noteid = #{noteId}
+    </select>
+
+    <select id="selectByFilter" parameterType="com.gms.xms.filter.note.NoteFilter" resultMap="NoteDetailMap">
+        select
+        n.noteid,
+        n.modify_date,
+        n.note,
+        n.account_no,
+        u.user_code,
+        u.display_name
+        from xms_tbl_note as n
+        inner join xms_tbl_user as u on u.userid = n.userid
+        where
+        <if test="customerCode == null or customerCode == 0">
+            n.account_no = null
+        </if>
+        <if test="customerCode != null and customerCode != 0">
+            n.account_no = #{customerCode}
+        </if>
+        and n.paymentid = 0 and n.invoicecode = ''
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countByFilter" parameterType="com.gms.xms.filter.note.NoteFilter" resultType="long">
+        select count(*) from xms_tbl_note as n
+        inner join xms_tbl_user as u on u.userid = n.userid
+        where
+        <if test="customerCode == null or customerCode == 0">
+            n.account_no = null
+        </if>
+        <if test="customerCode != null and customerCode != 0">
+            n.account_no = #{customerCode}
+        </if>
+        and n.paymentid = 0 and n.invoicecode = ''
+    </select>
+
+    <select id="getNotesAndFollowUp" parameterType="com.gms.xms.filter.admin.note.NoteAndFollowUpFilter"
+            resultMap="NoteAndFollowUpMap">
+        select n.*, if(n.paymentid is not null and n.paymentid!=0,1,0) as category from xms_tbl_note as n
+        where n.invoicecode = #{invoiceCode}
+        <if test="catType==1">
+            and n.paymentid!=0
+        </if>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countNotesAndFollowUp" parameterType="com.gms.xms.filter.admin.note.NoteAndFollowUpFilter"
+            resultType="long">
+        select count(*) from xms_tbl_note as n
+        where n.invoicecode = #{invoiceCode}
+        <if test="catType==1">
+            and n.paymentid!=0
+        </if>
+    </select>
+
+    <insert id="insert" parameterType="NoteVo" useGeneratedKeys="true" keyProperty="noteId">
+        insert into xms_tbl_note (userid, account_no, notetype, follow_up_date, modify_date,
+        `check`, `current`, invoicecode, paymentid, note)
+        values (#{userId}, #{accountNo}, #{noteType}, #{followUpDate}, #{modifyDate},
+        #{check}, #{current}, #{invoiceCode}, #{paymentId}, #{note})
+    </insert>
+
+    <update id="update" parameterType="NoteVo">
+        update xms_tbl_note
+        <set>
+            <if test="userId!=null">
+                userid = #{userId},
+            </if>
+            <if test="accountNo!=null">
+                account_no = #{accountNo},
+            </if>
+            <if test="noteType!=null">
+                notetype = #{noteType},
+            </if>
+            <if test="check!=null">
+                `check` = #{check},
+                <if test="check==1 and followUpDate!=null">
+                    follow_up_date = #{followUpDate},
+                </if>
+            </if>
+            <if test="modifyDate!=null">
+                modify_date = #{modifyDate},
+            </if>
+            <if test="current!=null">
+                `current` = #{current},
+            </if>
+            <if test="invoiceCode!=null">
+                invoicecode = #{invoiceCode},
+            </if>
+            <if test="paymentId!=null">
+                paymentid = #{paymentId},
+            </if>
+            <if test="note!=null">
+                note = #{note}
+            </if>
+        </set>
+        where noteid = #{noteId}
+    </update>
+
+
+    <select id="update_SelectForLog" parameterType="NoteVo" resultMap="NoteMap">
+        select * from xms_tbl_note
+        where noteid = #{noteId}
+    </select>
+
+    <delete id="delete" parameterType="long">
+        delete from xms_tbl_note
+        where noteid = #{noteId}
+    </delete>
+
+    <select id="delete_SelectForLog" parameterType="long" resultMap="NoteMap">
+        select * from xms_tbl_note
+        where noteid = #{noteId}
+    </select>
+</mapper>

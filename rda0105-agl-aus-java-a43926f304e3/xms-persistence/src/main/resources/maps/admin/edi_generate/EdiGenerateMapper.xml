@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="EdiGenerate">
+    <resultMap id="TntShipmentForEtMap" type="com.gms.xms.dto.edigenerate.TntShipmentForEtVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="billing_type" property="billingType"/>
+        <result column="billing_account" property="billingAccount"/>
+        <result column="count" property="count"/>
+        <result column="companyname" property="companyName"/>
+        <result column="contact_name" property="contactName"/>
+        <result column="phone" property="phone"/>
+        <result column="city" property="city"/>
+        <result column="postal_code" property="postalCode"/>
+        <result column="state" property="state"/>
+        <result column="address" property="address"/>
+        <result column="address2" property="address2"/>
+    </resultMap>
+    <resultMap id="TntShipmentDetailForEtMap" type="com.gms.xms.dto.edigenerate.TntShipmentDetailForEtVo"
+               extends="TntConnote.TntConnoteMap">
+        <result column="customer_code" property="customerCode"/>
+        <result column="billing_type" property="billingType"/>
+    </resultMap>
+    <select id="getTntShipmentForEt" resultMap="TntShipmentForEtMap">
+        select
+        customer_code,
+        billing_type,
+        billing_account,
+        count(billing_type) as count,
+        companyname,
+        contact_name,
+        phone,
+        city,
+        postal_code,
+        state,
+        address,
+        address2
+        from xms_tbl_tnt_connote as con
+        inner join xms_tbl_shipment as s on con.shipmentid=s.shipmentid
+        inner join xms_tbl_address as a on a.addressid=s.senderaddressid
+        where trans_id=0 and s.status=0
+        group by customer_code, billing_type, billing_account, companyname, contact_name, phone, city, postal_code,
+        state, address, address2
+        order by connote_id, customer_code
+    </select>
+    <select id="getTntShipmentDetailForEt" parameterType="com.gms.xms.dto.edigenerate.TntShipmentForEtVo"
+            resultMap="TntShipmentDetailForEtMap">
+        select
+        c.*,
+        sm.customer_code,
+        sm.billing_type
+        from xms_tbl_tnt_connote as c
+        inner join xms_tbl_shipment as sm on sm.shipmentid = c.shipmentid
+        inner join xms_tbl_address as a on a.addressid = sm.senderaddressid
+        where c.trans_id = 0
+        and sm.status = 0
+        and sm.customer_code = #{customerCode}
+        and sm.billing_type = #{billingType}
+        and sm.billing_account = #{billingAccount}
+        and a.companyname = #{companyName}
+        and a.contact_name = #{contactName}
+        and a.phone = #{phone}
+        and a.city = #{city}
+        and a.postal_code = #{postalCode}
+        and a.state = #{state}
+        and a.address = #{address}
+        and a.address2 = #{address2}
+        order by c.connote_id, sm.shipmentid
+    </select>
+    <select id="getShipmentInfoByShipmentIdForEtFile" parameterType="string" resultMap="ShipmentMapper.ShipmentMapper">
+        <bind name="shipmentId" value="_parameter"/>
+        select
+        sm.*
+        from xms_tbl_shipment as sm
+        inner join
+        (select customer_code from xms_tbl_customer
+        union
+        select franchise_code as customer_code from xms_tbl_franchise
+        ) as c on c.customer_code = sm.customer_code
+        where sm.shipmentid = #{shipmentId}
+    </select>
+</mapper>

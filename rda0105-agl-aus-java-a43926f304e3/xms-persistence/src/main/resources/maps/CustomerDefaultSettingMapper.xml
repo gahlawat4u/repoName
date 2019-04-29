@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerDefaultSetting">
+    <resultMap id="CustomerDefaultSettingMap" type="CustomerDefaultSettingVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="billing_party" property="billingParty"/>
+        <result column="billing_account" property="billingAccount"/>
+        <result column="duties_bill_to" property="dutiesBillTo"/>
+        <result column="duties_account" property="dutiesAccount"/>
+        <result column="default_service_type" property="defaultServiceType"/>
+        <result column="default_package_type" property="defaultPackageType"/>
+        <result column="notification_email" property="notificationEmail"/>
+        <result column="notification_message" property="notificationMessage"/>
+        <result column="default_from_address_id" property="defaultFromAddressId"/>
+        <result column="default_to_address_id" property="defaultToAddressId"/>
+        <result column="default_collection" property="defaultCollection"/>
+        <result column="disable_quote" property="disableQuote"/>
+        <result column="global_address_book" property="globalAddressBook"/>
+        <result column="individual_user_history" property="individualUserHistory"/>
+        <result column="default_terms_of_trade" property="defaultTermsOfTrade"/>
+        <result column="batch_processing" property="batchProcessing"/>
+        <result column="batch_processing" property="batchProcessing"/>
+        <result column="default_shipper_reference" property="defaultShipperReference"/>
+    </resultMap>
+
+    <resultMap id="CustomerDefaultSettingDetailMap" type="CustomerDefaultSettingDetailVo"
+               extends="CustomerDefaultSettingMap">
+        <result column="from_company_name" property="fromCompanyName"/>
+        <result column="from_phone" property="fromPhone"/>
+        <result column="from_contact_name" property="fromContactName"/>
+        <result column="from_email" property="fromEmail"/>
+        <result column="from_country" property="fromCountry"/>
+        <result column="from_address1" property="fromAddress1"/>
+        <result column="from_address2" property="fromAddress2"/>
+        <result column="from_city" property="fromCity"/>
+        <result column="from_postal_code" property="fromPostalCode"/>
+        <result column="from_state" property="fromState"/>
+        <result column="from_isresidential" property="fromIsresidential"/>
+        <result column="from_country_name" property="fromCountryName"/>
+        <result column="to_company_name" property="toCompanyName"/>
+        <result column="to_phone" property="toPhone"/>
+        <result column="to_contact_name" property="toContactName"/>
+        <result column="to_email" property="toEmail"/>
+        <result column="to_country" property="toCountry"/>
+        <result column="to_address1" property="toAddress1"/>
+        <result column="to_address2" property="toAddress2"/>
+        <result column="to_city" property="toCity"/>
+        <result column="to_postal_code" property="toPostalCode"/>
+        <result column="to_state" property="toState"/>
+        <result column="to_isresidential" property="toIsresidential"/>
+        <result column="to_country_name" property="toCountryName"/>
+    </resultMap>
+
+    <select id="selectByCustomerCode" parameterType="long" resultMap="CustomerDefaultSettingMap">
+        select * from xms_tbl_customer_default_setting
+        where customer_code = #{customerCode}
+    </select>
+
+    <select id="selectReferenceUserSetting" parameterType="long" resultType="String">
+        SELECT default_shipper_reference FROM xms_tbl_customer_default_setting where customer_code = #{customerCode}
+    </select>
+
+
+    <select id="selectDetailByCustomerCode" resultMap="CustomerDefaultSettingDetailMap" parameterType="long">
+        SELECT
+        ds.*,
+        IFNULL(cab1.company_name,ca.customer_name) AS from_company_name,
+        IFNULL(cab1.phone,ca.phone) AS from_phone,
+        IFNULL(cab1.contact_name,ca.contact_name) AS from_contact_name,
+        IFNULL(cab1.email,ca.email) AS from_email,
+        IFNULL(cab1.country,ca.country) AS from_country,
+        IFNULL(cab1.address1,ca.address1) AS from_address1,
+        IFNULL(cab1.address2,ca.address2) AS from_address2,
+        IFNULL(cab1.city,ca.city) AS from_city,
+        IFNULL(cab1.postal_code,ca.postal_code) AS from_postal_code,
+        IFNULL(cab1.state,ca.state_code) AS from_state,
+        IFNULL(cab1.isresidential,0) AS from_isresidential,
+        IFNULL(sc.countryname,dsc.countryname) AS from_country_name,
+        cab2.company_name AS to_company_name,
+        cab2.phone AS to_phone,
+        cab2.contact_name AS to_contact_name,
+        cab2.email AS to_email,
+        cab2.country AS to_country,
+        cab2.address1 AS to_address1,
+        cab2.address2 AS to_address2,
+        cab2.city AS to_city,
+        cab2.postal_code AS to_postal_code,
+        cab2.state AS to_state,
+        rc.countryname AS to_country_name,
+        IFNULL(cab2.isresidential,0) AS to_isresidential
+        FROM xms_tbl_customer_default_setting AS ds
+        LEFT JOIN xms_tbl_customer_address_book AS cab1 ON cab1.addressid = ds.default_from_address_id
+        LEFT JOIN xms_tbl_customer_address_book AS cab2 ON cab2.addressid = ds.default_to_address_id
+        LEFT JOIN xms_tbl_customer_address AS ca ON ca.customer_code = ds.customer_code
+        LEFT JOIN xms_tbl_country AS sc on sc.countryid = cab1.country
+        LEFT JOIN xms_tbl_country AS rc on rc.countryid = cab2.country
+        LEFT JOIN xms_tbl_country AS dsc on dsc.countryid = ca.country
+        WHERE ds.customer_code = #{customerCode}
+    </select>
+
+    <insert id="insert" parameterType="CustomerDefaultSettingVo">
+        INSERT INTO xms_tbl_customer_default_setting
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="customerCode != null">
+                customer_code,
+            </if>
+            <if test="billingParty != null">
+                billing_party,
+            </if>
+            <if test="billingAccount != null">
+                billing_account,
+            </if>
+            <if test="dutiesBillTo != null">
+                duties_bill_to,
+            </if>
+            <if test="dutiesAccount != null">
+                duties_account,
+            </if>
+            <if test="defaultServiceType != null">
+                default_service_type,
+            </if>
+            <if test="defaultPackageType != null">
+                default_package_type,
+            </if>
+            <if test="notificationEmail != null">
+                notification_email,
+            </if>
+            <if test="notificationMessage != null">
+                notification_message,
+            </if>
+            <if test="defaultFromAddressId != null">
+                default_from_address_id,
+            </if>
+            <if test="defaultToAddressId != null">
+                default_to_address_id,
+            </if>
+            <if test="defaultCollection != null">
+                default_collection,
+            </if>
+            <if test="disableQuote != null">
+                disable_quote,
+            </if>
+            <if test="globalAddressBook != null">
+                global_address_book,
+            </if>
+            <if test="individualUserHistory != null">
+                individual_user_history,
+            </if>
+            <if test="defaultTermsOfTrade != null">
+                default_terms_of_trade,
+            </if>
+            <if test="batchProcessing != null">
+                batch_processing,
+            </if>
+            <if test="defaultShipperReference != null">
+                default_shipper_reference,
+            </if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="customerCode != null">
+                #{customerCode},
+            </if>
+            <if test="billingParty != null">
+                #{billingParty},
+            </if>
+            <if test="billingAccount != null">
+                #{billingAccount},
+            </if>
+            <if test="dutiesBillTo != null">
+                #{dutiesBillTo},
+            </if>
+            <if test="dutiesAccount != null">
+                #{dutiesAccount},
+            </if>
+            <if test="defaultServiceType != null">
+                #{defaultServiceType},
+            </if>
+            <if test="defaultPackageType != null">
+                #{defaultPackageType},
+            </if>
+            <if test="notificationEmail != null">
+                #{notificationEmail},
+            </if>
+            <if test="notificationMessage != null">
+                #{notificationMessage},
+            </if>
+            <if test="defaultFromAddressId != null">
+                #{defaultFromAddressId},
+            </if>
+            <if test="defaultToAddressId != null">
+                #{defaultToAddressId},
+            </if>
+            <if test="defaultCollection != null">
+                #{defaultCollection},
+            </if>
+            <if test="disableQuote != null">
+                #{disableQuote},
+            </if>
+            <if test="globalAddressBook != null">
+                #{globalAddressBook},
+            </if>
+            <if test="individualUserHistory != null">
+                #{individualUserHistory},
+            </if>
+            <if test="defaultTermsOfTrade != null">
+                #{defaultTermsOfTrade},
+            </if>
+            <if test="batchProcessing != null">
+                #{batchProcessing},
+            </if>
+            <if test="defaultShipperReference != null">
+                #{defaultShipperReference},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="CustomerDefaultSettingVo">
+        UPDATE xms_tbl_customer_default_setting
+        <set>
+            <if test="billingParty != null">
+                billing_party = #{billingParty},
+            </if>
+            <if test="billingAccount != null">
+                billing_account = #{billingAccount},
+            </if>
+            <if test="dutiesBillTo != null">
+                duties_bill_to = #{dutiesBillTo},
+            </if>
+            <if test="dutiesAccount != null">
+                duties_account = #{dutiesAccount},
+            </if>
+            <if test="defaultServiceType != null">
+                default_service_type = #{defaultServiceType},
+            </if>
+            <if test="defaultPackageType != null">
+                default_package_type = #{defaultPackageType},
+            </if>
+            <if test="notificationEmail != null">
+                notification_email = #{notificationEmail},
+            </if>
+            <if test="notificationMessage != null">
+                notification_message = #{notificationMessage},
+            </if>
+            <if test="defaultFromAddressId != null">
+                default_from_address_id = #{defaultFromAddressId},
+            </if>
+            <if test="defaultToAddressId != null">
+                default_to_address_id = #{defaultToAddressId},
+            </if>
+            <if test="defaultCollection != null">
+                default_collection = #{defaultCollection},
+            </if>
+            <if test="disableQuote != null">
+                disable_quote = #{disableQuote},
+            </if>
+            <if test="globalAddressBook != null">
+                global_address_book = #{globalAddressBook},
+            </if>
+            <if test="individualUserHistory != null">
+                individual_user_history = #{individualUserHistory},
+            </if>
+            <if test="defaultTermsOfTrade != null">
+                default_terms_of_trade = #{defaultTermsOfTrade},
+            </if>
+            <if test="batchProcessing != null">
+                batch_processing = #{batchProcessing},
+            </if>
+            <if test="defaultShipperReference != null">
+                default_shipper_reference = #{defaultShipperReference},
+            </if>
+        </set>
+        WHERE customer_code = #{customerCode}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="CustomerDefaultSettingVo" resultMap="CustomerDefaultSettingMap">
+        select * from xms_tbl_customer_default_setting
+        WHERE customer_code = #{customerCode}
+    </select>
+</mapper>

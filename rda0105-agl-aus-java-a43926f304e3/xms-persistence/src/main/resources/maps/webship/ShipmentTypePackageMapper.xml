@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ShipmentTypePackage">
+    <resultMap id="ShipmentTypePackageMap" type="ShipmentTypePackageVo">
+        <id column="sp_id" property="spId"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="packageid" property="packageId"/>
+        <result column="default_content_type" property="defaultContentType"/>
+        <result column="allow_dox_addpiece" property="allowDoxAddpiece"/>
+        <result column="allow_wpx_addpiece" property="allowWpxAddpiece"/>
+        <result column="allow_dox" property="allowDox"/>
+        <result column="allow_wpx" property="allowWpx"/>
+        <result column="allow_custom_value" property="allowCustomValue"/>
+    </resultMap>
+    <select id="selectShipmentTypePackageByVo" resultMap="ShipmentTypePackageMap" parameterType="ShipmentTypePackageVo">
+        select
+        *
+        from
+        xms_tbl_shipment_type_package
+        where
+        packageid = #{packageId}
+        and shipment_type_id = #{shipmentTypeId}
+    </select>
+</mapper>

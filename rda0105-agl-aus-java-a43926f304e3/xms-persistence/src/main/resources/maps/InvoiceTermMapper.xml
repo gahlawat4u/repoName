@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="InvoiceTerm">
+    <resultMap id="InvoiceTermMap" type="InvoiceTermVo">
+        <id column="invoice_terms_id" property="invoiceTermId"/>
+        <result column="days" property="days"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="InvoiceTermMap">
+        select * from xms_tbl_invoice_terms
+        order by invoice_terms_id
+    </select>
+</mapper>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="RateSheetRow">
+    <resultMap id="RateSheetRowMap" type="RateSheetRowVo">
+        <id column="row_id" property="rowId"/>
+        <result column="sheet_id" property="sheetId"/>
+        <result column="row_name" property="rowName"/>
+        <result column="char_row_name" property="charRowName"/>
+        <result column="ischar" property="isChar"/>
+    </resultMap>
+
+    <select id="selectBaseRateRow" resultMap="RateSheetRowMap" parameterType="long">
+        select * from xms_tbl_rate_sheet_row
+        where sheet_id = #{sheetId}
+        order by row_id
+    </select>
+
+    <select id="selectBaseRateRowWithZone" resultMap="RateSheetRowMap" parameterType="RateSheetFilter">
+        select
+        row_id,
+        sheet_id,
+        if(zone_name != null, char_row_name, concat(char_row_name,' - ',zone_name)) as char_row_name
+        from xms_tbl_rate_sheet_row r
+        left join xms_tbl_carrier_zone cz on r.char_row_name = cz.zone_code
+        where sheet_id = #{sheetId}
+        and carrier = #{serviceId}
+        order by char_row_name
+    </select>
+
+    <select id="selectBySheetId" parameterType="long" resultMap="RateSheetRowMap">
+        select
+        row_id,
+        sheet_id,
+        row_name,
+        char_row_name,
+        ischar,
+        if(ischar=1,char_row_name,'') as order1,
+        if(ischar=0,row_name,'')+0 as order2
+        from xms_tbl_rate_sheet_row
+        where sheet_id = #{sheetId}
+        order by order1, order2
+    </select>
+
+    <delete id="deleteRateSheetRowsBySheetId" parameterType="long">
+        delete from xms_tbl_rate_sheet_row where sheet_id=#{sheetId}
+    </delete>
+
+    <select id="deleteRateSheetRowsBySheetId_SelectForLog" parameterType="long" resultMap="RateSheetRowMap">
+        select * from xms_tbl_rate_sheet_row where sheet_id=#{sheetId}
+    </select>
+    <select id="getRateSheetRow" parameterType="com.gms.xms.txndb.vo.RateSheetRowVo" resultMap="RateSheetRowMap">
+        select * from xms_tbl_rate_sheet_row
+        where sheet_id = #{sheetId}
+        and (row_name = #{rowName} or char_row_name = #{rowName})
+    </select>
+    <insert id="insertRateSheetRow" parameterType="com.gms.xms.txndb.vo.RateSheetRowVo" useGeneratedKeys="true"
+            keyProperty="rowId">
+        insert into xms_tbl_rate_sheet_row (sheet_id, row_name, char_row_name, ischar)
+        values (#{sheetId}, #{rowName}, #{charRowName}, #{isChar})
+    </insert>
+    <update id="updateRateSheetRows" parameterType="com.gms.xms.txndb.parameter.RateSheetParam">
+        update xms_tbl_rate_sheet_row
+        set char_row_name = #{zoneCode},
+        row_name = '0',
+        ischar = 1
+        where row_name = #{zoneNo}
+        and row_name!=0
+        and ischar = 0
+        and sheet_id in (${sheetIdList})
+    </update>
+</mapper>

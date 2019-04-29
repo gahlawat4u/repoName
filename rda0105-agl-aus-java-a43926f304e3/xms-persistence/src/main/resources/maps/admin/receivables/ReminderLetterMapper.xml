@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ReminderLetter">
+    <resultMap id="ReminderLetterMap" type="ReminderLetterVo">
+        <result column="invoiceid" property="invoiceId"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="customer_code" property="customerCode"/>
+    </resultMap>
+
+    <resultMap id="ReminderInvoiceDetailMap" type="ReminderInvoiceDetailVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="email" property="email"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="invoice_terms" property="invoiceTerms"/>
+        <result column="due_date" property="dueDate"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="total_paid" property="totalPaid"/>
+        <result column="invoice_age" property="invoiceAge"/>
+        <result column="late_fee" property="lateFee"/>
+        <result column="amount_due" property="amountDue"/>
+    </resultMap>
+
+    <select id="getEmailInvoices"
+            parameterType="com.gms.xms.filter.admin.receivables.reminderletter.ReminderLetterFilter"
+            resultMap="ReminderLetterMap">
+        select
+        i.invoiceid,
+        i.invoice_code,
+        i.invoice_date,
+        i.customer_code,
+        c.email_customer_code
+        from xms_tbl_invoice as i
+        inner join
+        (select id, customer_code, if(invoice_to_customerid=0,customer_code,invoice_to_customerid) as
+        email_customer_code, 1 as usertype from xms_tbl_customer
+        union
+        select id, franchise_code as customer_code, if(invoice_to_customerid=0,franchise_code,invoice_to_customerid) as
+        email_customer_code, 2 as usertype from xms_tbl_franchise
+        ) as c on c.customer_code = i.customer_code
+        inner join xms_tbl_customer_collection as co on co.userid = c.id and co.usertype = c.usertype
+        left join
+        (select setting_value as start_day from xms_tbl_system_setting
+        where setting_name = 'ReminderStart'
+        limit 1
+        ) as st1 on (1=1)
+        left join
+        (select setting_value as end_day from xms_tbl_system_setting
+        where setting_name = 'ReminderEnd'
+        limit 1
+        ) as st2 on (1=1)
+        where i.paid=0
+        and left(i.customer_code,3) in (${franchiseList})
+        <![CDATA[
+		    and i.invoice_date <= date_sub(curdate(),interval ifnull(st1.start_day,0) day)
+		    and i.invoice_date >= date_sub(curdate(),interval ifnull(st2.end_day,0) day)
+		]]>
+        and co.reminder = 1
+        and co.reminder_email = 1
+        and i.status>0
+        GROUP BY i.invoiceid
+        order by i.customer_code, i.invoice_code
+    </select>
+
+    <select id="getPrintInvoices"
+            parameterType="com.gms.xms.filter.admin.receivables.reminderletter.ReminderLetterFilter"
+            resultMap="ReminderLetterMap">
+        select
+        i.invoiceid,
+        i.invoice_code,
+        i.invoice_date,
+        i.customer_code,
+        c.email_customer_code
+        from xms_tbl_invoice as i
+        inner join
+        (select id, customer_code, if(invoice_to_customerid=0,customer_code,invoice_to_customerid) as
+        email_customer_code, 1 as usertype from xms_tbl_customer
+        union
+        select id, franchise_code as customer_code, if(invoice_to_customerid=0,franchise_code,invoice_to_customerid) as
+        email_customer_code, 2 as usertype from xms_tbl_franchise
+        ) as c on c.customer_code = i.customer_code
+        inner join xms_tbl_customer_collection as co on co.userid = c.id and co.usertype = c.usertype
+        left join
+        (select setting_value as start_day from xms_tbl_system_setting
+        where setting_name = 'ReminderStart'
+        limit 1
+        ) as st1 on (1=1)
+        left join
+        (select setting_value as end_day from xms_tbl_system_setting
+        where setting_name = 'ReminderEnd'
+        limit 1
+        ) as st2 on (1=1)
+        where i.paid=0
+        and left(i.customer_code,3) in (${franchiseList})
+        <![CDATA[
+		    and i.invoice_date <= date_sub(curdate(),interval ifnull(st1.start_day,0) day)
+		    and i.invoice_date >= date_sub(curdate(),interval ifnull(st2.end_day,0) day)
+		]]>
+        and co.reminder = 1
+        and co.reminder_print = 1
+        and i.status>0
+        order by i.customer_code, i.invoice_code
+    </select>
+
+    <select id="getInvoiceDetailById" parameterType="long" resultMap="ReminderInvoiceDetailMap">
+        <![CDATA[
+		select 
+			i.customer_code,
+			cba.billing_customer_name as customer_name,
+    		if(co.reminder_use_email_invoice=0,co.reminder_email_address,cba.billing_email) as email,
+		    i.invoice_date,
+		    ifnull(it.days,0) as invoice_terms,
+		    date_add(i.invoice_date,interval ifnull(it.days,0) day) as due_date,
+		    i.invoice_code,
+		    ifnull(a.total_amount,0) as total_amount,
+		    ifnull(p.total_paid,0) as total_paid,
+		    datediff(curdate(),i.invoice_date) as invoice_age,
+		    i.late_fee,
+		    if(ifnull(a.total_amount,0)+i.late_fee>ifnull(p.total_paid,0),ifnull(a.total_amount,0)+i.late_fee-ifnull(p.total_paid,0),0) as amount_due
+		from xms_tbl_invoice as i
+		inner join 
+			(select id, customer_code, if(invoice_to_customerid=0,customer_code,invoice_to_customerid) as email_customer_code, invoice_terms, 1 as usertype from xms_tbl_customer
+				union
+			select id, franchise_code, if(invoice_to_customerid=0,franchise_code,invoice_to_customerid) as email_customer_code, invoice_terms, 2 as usertype from xms_tbl_franchise
+		    ) as c on c.customer_code = i.customer_code
+		left join xms_tbl_customer_billing_address as cba on cba.customer_code = c.email_customer_code
+		left join xms_tbl_customer_collection as co on co.userid = c.id and co.usertype = c.usertype
+		left join xms_tbl_invoice_terms as it on it.invoice_terms_id = c.invoice_terms
+		left join
+			(select si.invoiceid, sum(sb.customer_cost+sb.customer_tax_amount) as total_amount from xms_tbl_shipment_invoice as si
+		    inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+		    where si.invoiceid = #{invoiceId}
+		    ) as a on a.invoiceid = i.invoiceid
+		left join
+			(select invoiceid, sum(amount) as total_paid from xms_tbl_invoice_payment
+		    where invoiceid = #{invoiceId}
+		    ) as p on p.invoiceid = i.invoiceid 
+		where i.invoiceid = #{invoiceId}
+		GROUP BY i.customer_code
+		order by i.customer_code
+		]]>
+    </select>
+</mapper>

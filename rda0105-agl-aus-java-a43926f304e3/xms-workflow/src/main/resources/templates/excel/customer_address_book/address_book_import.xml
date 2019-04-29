@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<workbook>
+    <worksheet name="Sheet1">
+        <loop startRow="0" endRow="0" items="fields" var="field"
+              varType="com.gms.xms.model.importfield.CustomerAddressBookImportFieldModel">
+            <section startRow="0" endRow="0">
+                <mapping row="0" col="0">field.field1</mapping>
+                <mapping row="0" col="1">field.field2</mapping>
+                <mapping row="0" col="2">field.field3</mapping>
+                <mapping row="0" col="3">field.field4</mapping>
+                <mapping row="0" col="4">field.field5</mapping>
+                <mapping row="0" col="5">field.field6</mapping>
+                <mapping row="0" col="6">field.field7</mapping>
+                <mapping row="0" col="7">field.field8</mapping>
+                <mapping row="0" col="8">field.field9</mapping>
+            </section>
+            <loopbreakcondition>
+                <rowcheck offset="0">
+                    <cellcheck offset="0"></cellcheck>
+                </rowcheck>
+            </loopbreakcondition>
+        </loop>
+    </worksheet>
+</workbook>

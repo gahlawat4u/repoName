@@ -1,0 +1,608 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="AirbillAdjustment">
+    <resultMap id="AirbillAdjustmentMap" type="AirbillAdjustmentVo">
+        <id column="adjustmentid" property="adjustmentId"/>
+        <result column="adjustment_type" property="adjustmentType"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="create_date" property="createDate"/>
+        <result column="carrier_amount" property="carrierAmount"/>
+        <result column="gst_carrier_amount" property="gstCarrierAmount"/>
+        <result column="customer_amount" property="customerAmount"/>
+        <result column="gst_customer_amount" property="gstCustomerAmount"/>
+        <result column="carrier_credit" property="carrierCredit"/>
+        <result column="gst_carrier_credit" property="gstCarrierCredit"/>
+        <result column="request_carrier" property="requestCarrier"/>
+        <result column="credit_type" property="creditType"/>
+        <result column="apply_gst_type" property="applyGstType"/>
+        <result column="status" property="status"/>
+        <result column="actual_delivery_date" property="actualDeliveryDate"/>
+        <result column="franchise_amount" property="franchiseAmount"/>
+        <result column="gst_franchise_amount" property="gstFranchiseAmount"/>
+        <result column="reason_for_deleting" property="reasonForDeleting"/>
+        <result column="franchise_comments_to_fsc" property="franchiseCommentsToFsc"/>
+        <result column="fsc_credit_note" property="fscCreditNote"/>
+        <result column="sub_status" property="subStatus"/>
+        <result column="start_pausing_date" property="startPausingDate"/>
+    </resultMap>
+
+    <resultMap id="AirbillAdjustmentDetailMap" type="AirbillAdjustmentDetailVo" extends="AirbillAdjustmentMap">
+        <result column="customer_code" property="customerCode"/>
+        <result column="request_date" property="requestDate"/>
+        <result column="service_id" property="serviceId"/>
+        <result column="franchise_code" property="franchiseCode"/>
+        <result column="credit_note_status" property="creditNoteStatus"/>
+        <result column="response_date" property="responseDate"/>
+    </resultMap>
+
+    <select id="selectById" parameterType="long" resultMap="AirbillAdjustmentMap">
+        select * from xms_tbl_airbill_adjustment
+        where adjustmentid = #{adjustmentId}
+    </select>
+
+    <select id="selectTotalAdjustAmountOfAWB" parameterType="AdjustmentRequestFilterVo"
+            resultMap="AirbillAdjustmentMap">
+        select
+        shipmentid,
+        airbill_number,
+        SUM(carrier_amount) as carrier_amount,
+        SUM(gst_carrier_amount) as gst_carrier_amount,
+        SUM(franchise_amount) as franchise_amount,
+        SUM(gst_franchise_amount) as gst_franchise_amount,
+        SUM(customer_amount) as customer_amount,
+        SUM(gst_customer_amount) as gst_customer_amount
+        from xms_tbl_airbill_adjustment
+        where airbill_number = #{airbillNumber} and shipmentid = #{shipmentId} and status!=6 and credit_type!=2
+    </select>
+
+    <select id="getAglWarrantyAdjustedAmount" parameterType="AirbillAdjustmentVo" resultType="double">
+        select ifnull(sum(customer_amount),0) as total from xms_tbl_airbill_adjustment
+        where shipmentid = #{shipmentId} and airbill_number = #{airbillNumber} and status!=6 and credit_type=2
+    </select>
+
+    <select id="selectTotalPayableOfAWB" parameterType="AdjustmentRequestFilterVo" resultMap="AirbillAdjustmentMap">
+        select
+        shipmentid,
+        airbill_number,
+        SUM(carrier_cost) as carrier_amount,
+        SUM(tax_amount) as gst_carrier_amount,
+        SUM(franchise_cost) as franchise_amount,
+        SUM(franchise_tax_amount) as gst_franchise_amount,
+        SUM(customer_cost) as customer_amount,
+        SUM(customer_tax_amount) as gst_customer_amount
+        from xms_tbl_shipment_billing
+        where airbill_number = #{airbillNumber} and shipmentid = #{shipmentId}
+    </select>
+
+    <select id="SelectCarrierAdjustmentDetail" parameterType="long" resultType="CarrierAdjustmentVo">
+        SELECT
+        adj.adjustmentid as adjustmentId,
+        adj.adjustment_type as adjustmentType,
+        adj.airbill_number as airbillNumber,
+        DATE(adj.create_date) AS createDate,
+        (
+        adj.customer_amount + adj.gst_customer_amount
+        ) AS customerAmount,
+        adj.customer_amount as customerAmountNonGst,
+        adj.gst_customer_amount as customerAmountGst,
+        adj.note as note,
+        DATE(s.shipment_date) AS shipmentDate,
+        DATE(adj.actual_delivery_date) AS deliveryDate,
+        DATE(sb.import_date) AS importDate,
+        sv.service_name as serviceName,
+        adj.shipmentid as shipmentId,
+        adj.gst_carrier_amount AS carrierTaxAmount,
+        adj.carrier_amount AS carrierAmt,
+        (
+        adj.carrier_amount + adj.gst_carrier_amount
+        ) AS carrierTotalAmount,
+        inv.invoice_code as invoiceCode,
+        inv.customer_code as customerCode,
+        inv.invoiceid as invoiceId
+
+        FROM
+        xms_tbl_airbill_adjustment AS adj
+        LEFT JOIN xms_tbl_shipment AS s ON s.shipmentid = adj.shipmentid
+        AND s.airbill_number = adj.airbill_number
+        LEFT JOIN xms_tbl_shipment_billing AS sb ON adj.shipmentid = sb.shipmentid
+        AND adj.airbill_number = sb.airbill_number and sb.accessorial_count = 0
+        LEFT JOIN xms_tbl_shipment_type AS st ON s.shipment_type_id = st.shipment_type_id
+        LEFT JOIN xms_tbl_service AS sv ON st.serviceid = sv.service_id
+        LEFT JOIN xms_tbl_shipment_invoice shinv ON adj.shipmentid = shinv.shipmentid
+        AND adj.airbill_number = shinv.airbill_number
+        LEFT JOIN xms_tbl_invoice inv ON inv.invoiceid = shinv.invoiceid
+        WHERE adj.adjustmentid = #{adjustmentId}
+        GROUP BY adj.adjustmentid
+    </select>
+
+    <select id="AirbillAdjustment_SelectCarrierAdjustment" parameterType="CarrierAdjustmentFilter"
+            resultType="CarrierAdjustmentVo">
+        SELECT
+        adj.status as status,
+        adj.adjustmentid as adjustmentId,
+        adj.adjustment_type as adjustmentType,
+        adj.airbill_number as airbillNumber,
+        DATE(adj.create_date) AS createDate,
+        (
+        adj.customer_amount + adj.gst_customer_amount
+        ) AS customerAmount,
+        adj.note as note,
+        DATE(s.shipment_date) AS shipmentDate,
+        DATE(adj.actual_delivery_date) AS deliveryDate,
+        DATE(sb.import_date) AS importDate,
+        sv.service_name as serviceName
+        FROM
+        xms_tbl_airbill_adjustment AS adj
+        LEFT JOIN xms_tbl_shipment AS s ON s.shipmentid = adj.shipmentid
+        AND s.airbill_number = adj.airbill_number
+        LEFT JOIN xms_tbl_shipment_billing AS sb ON adj.shipmentid = sb.shipmentid
+        AND adj.airbill_number = sb.airbill_number and sb.accessorial_count = 0
+        LEFT JOIN xms_tbl_shipment_type AS st ON s.shipment_type_id = st.shipment_type_id
+        LEFT JOIN xms_tbl_service AS sv ON st.serviceid = sv.service_id
+        <if test="status != null">
+            WHERE adj.status = #{status}
+        </if>
+        GROUP BY adj.adjustmentid
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and recordSize != null and recordSize != 0 ">
+            LIMIT #{startRecord},#{recordSize}
+        </if>
+
+    </select>
+
+    <select id="AirbillAdjustment_SelectCountCarrierAdjustment" parameterType="CarrierAdjustmentFilter"
+            resultType="int">
+        SELECT
+        count(*)
+        FROM
+        (
+        SELECT
+        adj.adjustmentid AS adjustmentId
+        FROM
+        xms_tbl_airbill_adjustment AS adj
+        <if test="status != null">
+            WHERE adj.status = #{status}
+        </if>
+        GROUP BY
+        adj.adjustmentid
+        ) AS tbl_tmp
+    </select>
+
+    <select id="SelectCountCarrierAdjustmentByStatus" resultType="CarrierAdjustmentCountStaticVo">
+        SELECT
+        (
+        SELECT
+        count(*)
+        FROM
+        (
+        SELECT
+        adj.adjustmentid AS adjustmentId
+        FROM
+        xms_tbl_airbill_adjustment AS adj
+        WHERE
+        adj. STATUS = 1
+        GROUP BY
+        adj.adjustmentid
+        ) AS tbl_tmpSubmitted
+        ) AS countSubmitted,
+        (
+        SELECT
+        count(*)
+        FROM
+        (
+        SELECT
+        adj.adjustmentid AS adjustmentId
+        FROM
+        xms_tbl_airbill_adjustment AS adj
+        WHERE
+        adj. STATUS = 2
+        GROUP BY
+        adj.adjustmentid
+        ) AS tbl_tmpPending
+        ) AS countPending,
+        (
+        SELECT
+        count(*)
+        FROM
+        (
+        SELECT
+        adj.adjustmentid AS adjustmentId
+        FROM
+        xms_tbl_airbill_adjustment AS adj
+        WHERE
+        adj. STATUS = 3
+        GROUP BY
+        adj.adjustmentid
+        ) AS tbl_tmpDisputed
+        ) AS countDisputed,
+        (
+        SELECT
+        count(*)
+        FROM
+        (
+        SELECT
+        adj.adjustmentid AS adjustmentId
+        FROM
+        xms_tbl_airbill_adjustment AS adj
+        WHERE
+        adj. STATUS = 4
+        GROUP BY
+        adj.adjustmentid
+        ) AS tbl_tmpApproved
+        ) AS countApproved,
+        (
+        SELECT
+        count(*)
+        FROM
+        (
+        SELECT
+        adj.adjustmentid AS adjustmentId
+        FROM
+        xms_tbl_airbill_adjustment AS adj
+        WHERE
+        adj. STATUS = 5
+        GROUP BY
+        adj.adjustmentid
+        ) AS tbl_tmpDisputedDenied
+        ) AS countDisputedDenied
+        FROM xms_tbl_airbill_adjustment adj
+        Limit 1
+    </select>
+
+    <select id="selectTotalPayableOfAdjustType" parameterType="AdjustmentRequestFilterVo"
+            resultMap="AirbillAdjustmentMap">
+        select
+        shipmentid,
+        airbill_number,
+        SUM(carrier_cost) as carrier_amount,
+        SUM(tax_amount) as gst_carrier_amount,
+        SUM(franchise_cost) as franchise_amount,
+        SUM(franchise_tax_amount) as gst_franchise_amount,
+        SUM(customer_cost) as customer_amount,
+        SUM(customer_tax_amount) as gst_customer_amount
+        from xms_tbl_shipment_billing
+        where airbill_number = #{airbillNumber} and shipmentid = #{shipmentId}
+        <choose>
+            <when test="adjustType==1">
+                and accessorial_count != 0 and description like #{adjustmentType}
+                group by shipmentid, airbill_number, description
+            </when>
+            <when test="adjustType==5">
+                group by shipmentid, airbill_number
+            </when>
+            <when test="adjustType==7">
+                and description like 'Agl Warranty%'
+                group by shipmentid, airbill_number
+            </when>
+            <otherwise>
+                and accessorial_count = 0
+                group by shipmentid, airbill_number
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="selectDetailByFilter" parameterType="AirbillAdjustmentDetailFilter"
+            resultMap="AirbillAdjustmentDetailMap">
+        select
+        adj.adjustmentid,
+        adj.adjustment_type,
+        adj.airbill_number,
+        i.customer_code,
+        CAST(adj.create_date as DATE) AS request_date,
+        adj.carrier_amount,
+        adj.gst_carrier_amount,
+        adj.customer_amount,
+        adj.gst_customer_amount,
+        adj.franchise_amount,
+        adj.gst_franchise_amount,
+        adj.status,
+        adj.sub_status,
+        adj.credit_type,
+        adj.note,
+        adj.request_carrier,
+        adj.reason_for_deleting,
+        adj.franchise_comments_to_fsc,
+        adj.fsc_credit_note,
+        sv.service_id,
+        left(i.customer_code,3) as franchise_code,
+        ifnull(cn.status,0) as credit_note_status,
+        (select actiondate from xms_tbl_adjustment_history
+        where adjustmentid = adj.adjustmentid
+        order by actiondate desc
+        limit 1) as response_date
+        from xms_tbl_airbill_adjustment as adj
+        left join xms_tbl_credit_note_detail as cnd on cnd.adjustmentid = adj.adjustmentid
+        left join xms_tbl_credit_note as cn on cn.credit_note_id = cnd.credit_note_id
+        left join xms_tbl_shipment_invoice as si on (si.airbill_number = adj.airbill_number and si.shipmentid =
+        adj.shipmentid)
+        inner join xms_tbl_invoice as i on si.invoiceid = i.invoiceid
+        left join xms_tbl_shipment as s on s.shipmentid = adj.shipmentid
+        left join xms_tbl_shipment_type as smt on smt.shipment_type_id = s.shipment_type_id
+        left join xms_tbl_service as sv on sv.service_id = smt.serviceid
+        where left(i.customer_code,3) in
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        <if test="adjustmentType!=null and adjustmentType!=''">
+            and adj.adjustment_type LIKE concat('%',#{adjustmentType},'%')
+        </if>
+        <if test="status!=null">
+            and adj.status = #{status}
+        </if>
+        <if test="subStatus!=null">
+            and adj.sub_status = #{subStatus}
+        </if>
+        <if test="serviceId!=null">
+            and sv.service_id = #{serviceId}
+        </if>
+        <if test="airbillNumber!=null and airbillNumber!=''">
+            and adj.airbill_number = #{airbillNumber}
+        </if>
+        <if test="customerCode!=null and customerCode!=''">
+            and i.customer_code = #{customerCode}
+        </if>
+        <if test="note!=null and note!=''">
+            and adj.note LIKE concat('%',#{note},'%')
+        </if>
+        <if test="requestDateFrom!=null and requestDateTo!=null">
+            <![CDATA[
+			and CAST(adj.create_date AS DATE) >= #{requestDateFrom}
+			and CAST(adj.create_date AS DATE) <= #{requestDateTo}
+			]]>
+        </if>
+        <if test="responseDateFrom!=null and responseDateTo!=null">
+            <![CDATA[
+			and adj.adjustmentid in (select adjustmentid from xms_tbl_adjustment_history
+									where CAST(actiondate AS DATE) >= #{responseDateFrom} and CAST(actiondate AS DATE) <= #{responseDateTo})
+			]]>
+        </if>
+        <if test="creditCode!=null and creditCode!=''">
+            and cn.credit_code LIKE concat('%',#{creditCode},'%')
+        </if>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="pageSize!=null and page!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countDetailByFilter" parameterType="AirbillAdjustmentDetailFilter" resultType="long">
+        select
+        count(*)
+        from xms_tbl_airbill_adjustment as adj
+        left join xms_tbl_credit_note_detail as cnd on cnd.adjustmentid = adj.adjustmentid
+        left join xms_tbl_credit_note as cn on cn.credit_note_id = cnd.credit_note_id
+        left join xms_tbl_shipment_invoice as si on (si.airbill_number = adj.airbill_number and si.shipmentid =
+        adj.shipmentid)
+        inner join xms_tbl_invoice as i on si.invoiceid = i.invoiceid
+        left join xms_tbl_shipment as s on s.shipmentid = adj.shipmentid
+        left join xms_tbl_shipment_type as smt on smt.shipment_type_id = s.shipment_type_id
+        left join xms_tbl_service as sv on sv.service_id = smt.serviceid
+        where left(i.customer_code,3) in
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        <if test="adjustmentType!=null and adjustmentType!=''">
+            and adj.adjustment_type LIKE concat('%',#{adjustmentType},'%')
+        </if>
+        <if test="status!=null">
+            and adj.status = #{status}
+        </if>
+        <if test="subStatus!=null">
+            and adj.sub_status = #{subStatus}
+        </if>
+        <if test="serviceId!=null">
+            and sv.service_id = #{serviceId}
+        </if>
+        <if test="airbillNumber!=null and airbillNumber!=''">
+            and adj.airbill_number = #{airbillNumber}
+        </if>
+        <if test="customerCode!=null and customerCode!=''">
+            and i.customer_code = #{customerCode}
+        </if>
+        <if test="note!=null and note!=''">
+            and adj.note LIKE concat('%',#{note},'%')
+        </if>
+        <if test="requestDateFrom!=null and requestDateTo!=null">
+            <![CDATA[
+			and CAST(adj.create_date AS DATE) >= #{requestDateFrom}
+			and CAST(adj.create_date AS DATE) <= #{requestDateTo}
+			]]>
+        </if>
+        <if test="responseDateFrom!=null and responseDateTo!=null">
+            <![CDATA[
+			and adj.adjustmentid in (select adjustmentid from xms_tbl_adjustment_history
+									where CAST(actiondate AS DATE) >= #{responseDateFrom} and CAST(actiondate AS DATE) <= #{responseDateTo})
+			]]>
+        </if>
+        <if test="creditCode!=null and creditCode!=''">
+            and cn.credit_code LIKE concat('%',#{creditCode},'%')
+        </if>
+    </select>
+
+    <select id="totalDetailByFilter" parameterType="AirbillAdjustmentDetailFilter"
+            resultType="AirbillAdjustmentTotalVo">
+        select
+        COUNT(adj.adjustmentid) as recordCount,
+        IFNULL(SUM(IFNULL(franchise_amount,0) + IFNULL(gst_franchise_amount,0)),0) as carrierAmount,
+        IFNULL(SUM(adj.customer_amount+adj.gst_customer_amount),0) as customerAmount,
+        IFNULL(SUM(approved_carrier),0) as approvedCarrierAmount,
+        IFNULL(SUM(approved_customer),0) as approvedCustomerAmount
+        from xms_tbl_airbill_adjustment as adj
+        left join xms_tbl_credit_note_detail as cnd on cnd.adjustmentid = adj.adjustmentid
+        left join xms_tbl_credit_note as cn on cn.credit_note_id = cnd.credit_note_id
+        left join (select
+        adjustmentid,
+        (IFNULL(franchise_amount,0) + IFNULL(gst_franchise_amount,0)) AS approved_carrier,
+        (customer_amount + gst_customer_amount) AS approved_customer
+        from xms_tbl_airbill_adjustment) as apv on apv.adjustmentid = adj.adjustmentid
+        left join xms_tbl_shipment_invoice as si on (si.airbill_number = adj.airbill_number and si.shipmentid =
+        adj.shipmentid)
+        inner join xms_tbl_invoice as i on si.invoiceid = i.invoiceid
+        left join xms_tbl_shipment as s on s.shipmentid = adj.shipmentid
+        left join xms_tbl_shipment_type as smt on smt.shipment_type_id = s.shipment_type_id
+        left join xms_tbl_service as sv on sv.service_id = smt.serviceid
+        where left(i.customer_code,3) in
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        <if test="adjustmentType!=null and adjustmentType!=''">
+            and adj.adjustment_type LIKE concat('%',#{adjustmentType},'%')
+        </if>
+        <if test="status!=null">
+            and adj.status = #{status}
+        </if>
+        <if test="subStatus!=null">
+            and adj.sub_status = #{subStatus}
+        </if>
+        <if test="serviceId!=null">
+            and sv.service_id = #{serviceId}
+        </if>
+        <if test="airbillNumber!=null and airbillNumber!=''">
+            and adj.airbill_number = #{airbillNumber}
+        </if>
+        <if test="customerCode!=null and customerCode!=''">
+            and i.customer_code = #{customerCode}
+        </if>
+        <if test="note!=null and note!=''">
+            and adj.note LIKE concat('%',#{note},'%')
+        </if>
+        <if test="requestDateFrom!=null and requestDateTo!=null">
+            <![CDATA[
+			and CAST(adj.create_date AS DATE) >= #{requestDateFrom}
+			and CAST(adj.create_date AS DATE) <= #{requestDateTo}
+			]]>
+        </if>
+        <if test="responseDateFrom!=null and responseDateTo!=null">
+            <![CDATA[
+			and adj.adjustmentid in (select adjustmentid from xms_tbl_adjustment_history
+									where CAST(actiondate AS DATE) >= #{responseDateFrom} and CAST(actiondate AS DATE) <= #{responseDateTo})
+			]]>
+        </if>
+        <if test="creditCode!=null and creditCode!=''">
+            and cn.credit_code LIKE concat('%',#{creditCode},'%')
+        </if>
+    </select>
+
+    <select id="selectAdjustmentTypes" resultMap="AirbillAdjustmentMap">
+        select distinct adjustment_type from xms_tbl_airbill_adjustment
+    </select>
+
+    <select id="selectAdjustmentId" parameterType="ShipmentBillingVo" resultType="long">
+        select adjustmentid
+        from xms_tbl_airbill_adjustment
+        where shipmentid = #{shipmentId}
+        and airbill_number = #{airbillNumber}
+    </select>
+
+    <insert id="insert" parameterType="AirbillAdjustmentVo" useGeneratedKeys="true" keyProperty="adjustmentId">
+        insert into xms_tbl_airbill_adjustment (adjustment_type, shipmentid, airbill_number, create_date,
+        carrier_amount, gst_carrier_amount, customer_amount, gst_customer_amount, carrier_credit, gst_carrier_credit,
+        request_carrier, note, credit_type, apply_gst_type, status, franchise_amount,
+        gst_franchise_amount,start_pausing_date)
+        values (#{adjustmentType}, #{shipmentId}, #{airbillNumber}, #{createDate},
+        #{carrierAmount}, #{gstCarrierAmount}, #{customerAmount}, #{gstCustomerAmount}, #{carrierCredit},
+        #{gstCarrierCredit},
+        #{requestCarrier}, #{note}, #{creditType}, #{applyGstType}, #{status}, #{franchiseAmount},
+        #{gstFranchiseAmount},#{startPausingDate})
+    </insert>
+
+    <update id="update" parameterType="AirbillAdjustmentVo">
+        update xms_tbl_airbill_adjustment
+        <set>
+            <if test="adjustmentType!=null">
+                adjustment_type = #{adjustmentType},
+            </if>
+            <if test="shipmentId!=null">
+                shipmentid = #{shipmentId},
+            </if>
+            <if test="airbillNumber!=null">
+                airbill_number = #{airbillNumber},
+            </if>
+            <if test="createDate!=null">
+                create_date = #{createDate},
+            </if>
+            <if test="carrierAmount!=null">
+                carrier_amount = #{carrierAmount},
+            </if>
+            <if test="gstCarrierAmount!=null">
+                gst_carrier_amount = #{gstCarrierAmount},
+            </if>
+            <if test="customerAmount!=null">
+                customer_amount = #{customerAmount},
+            </if>
+            <if test="gstCustomerAmount!=null">
+                gst_customer_amount = #{gstCustomerAmount},
+            </if>
+            <if test="carrierCredit!=null">
+                carrier_credit = #{carrierCredit},
+            </if>
+            <if test="gstCarrierCredit!=null">
+                gst_carrier_credit = #{gstCarrierCredit},
+            </if>
+            <if test="requestCarrier!=null">
+                request_carrier = #{requestCarrier},
+            </if>
+            <if test="note!=null">
+                note = #{note},
+            </if>
+            <if test="creditType!=null">
+                credit_type = #{creditType},
+            </if>
+            <if test="applyGstType!=null">
+                apply_gst_type = #{applyGstType},
+            </if>
+            <if test="status!=null">
+                status = #{status},
+            </if>
+            <if test="actualDeliveryDate!=null">
+                actual_delivery_date = #{actualDeliveryDate},
+            </if>
+            <if test="franchiseAmount!=null">
+                franchise_amount = #{franchiseAmount},
+            </if>
+            <if test="gstFranchiseAmount!=null">
+                gst_franchise_amount = #{gstFranchiseAmount},
+            </if>
+            <if test="reasonForDeleting!=null">
+                reason_for_deleting = #{reasonForDeleting},
+            </if>
+            <if test="franchiseCommentsToFsc!=null">
+                franchise_comments_to_fsc = #{franchiseCommentsToFsc},
+            </if>
+            <if test="fscCreditNote!=null">
+                fsc_credit_note = #{fscCreditNote},
+            </if>
+            <if test="subStatus!=null">
+                sub_status = #{subStatus},
+            </if>
+            <if test="startPausingDate!=null">
+                start_pausing_date = #{startPausingDate},
+            </if>
+        </set>
+        where adjustmentid = #{adjustmentId}
+    </update>
+
+
+    <select id="update_SelectForLog" parameterType="AirbillAdjustmentVo" resultMap="AirbillAdjustmentMap">
+        select * from xms_tbl_airbill_adjustment
+        where adjustmentid = #{adjustmentId}
+    </select>
+
+    <delete id="deleteById" parameterType="long">
+        delete from xms_tbl_airbill_adjustment
+        where adjustmentid = #{adjustmentId}
+    </delete>
+
+    <select id="deleteById_SelectForLog" parameterType="long" resultMap="AirbillAdjustmentMap">
+        select * from xms_tbl_airbill_adjustment
+        where adjustmentid = #{adjustmentId}
+    </select>
+    <select id="getRequestTypes" resultType="string">
+        select distinct adjustment_type from xms_tbl_airbill_adjustment
+    </select>
+</mapper>

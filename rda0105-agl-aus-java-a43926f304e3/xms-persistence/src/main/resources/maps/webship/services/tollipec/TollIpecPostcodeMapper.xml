@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="TollIpecPostcode">
+    <resultMap id="TollIpecPostcodeMap" type="TollIpecPostcodeVo">
+        <result column="postcode" property="postalCode"/>
+        <result column="town" property="town"/>
+        <result column="amount" property="amount"/>
+        <result column="zone" property="zone"/>
+        <result column="state" property="state"/>
+    </resultMap>
+    <select id="selectForRemoteArea" resultMap="TollIpecPostcodeMap" parameterType="TollIpecZoneFilter">
+        SELECT
+        *
+        FROM
+        xms_tbl_toll_ipec_postcode
+        WHERE
+        (
+        (
+        town = #{cityName}
+        OR town LIKE '%xxALL TOWNS%'
+        )
+        AND postcode = #{postalCode}
+        )
+        OR (
+        (
+        town = #{cityNameR}
+        OR town LIKE '%xxALL TOWNS%'
+        )
+        AND postcode = #{postalCodeR}
+        )
+    </select>
+</mapper>

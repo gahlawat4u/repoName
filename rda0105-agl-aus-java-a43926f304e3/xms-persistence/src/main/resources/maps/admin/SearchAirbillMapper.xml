@@ -1,0 +1,947 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="SearchAirbill">
+    <resultMap id="AirbilResultMap" type="com.gms.xms.txndb.vo.invoicing.searchairbill.SearchAirbillVo">
+        <result column="rateType" property="rateType"/>
+        <result column="senderCountryId" property="senderCountryId"/>
+        <result column="receiverCountryId" property="receiverCountryId"/>
+        <result column="contents" property="contents"/>
+        <result column="shipmentTypeId" property="shipmentTypeId"/>
+        <result column="shipmentTypeName" property="shipmentTypeName"/>
+        <result column="sbBound" property="sbBound"/>
+        <result column="packageFlag" property="packageFlag"/>
+        <result column="pal" property="pal"/>
+        <result column="carrierTaxPercent" property="carrierTaxPercent"/>
+        <result column="destinationCountryId" property="destinationCountryId"/>
+        <result column="originCountryId" property="originCountryId"/>
+        <result column="invoiceId" property="invoiceId"/>
+        <result column="invoiceCode" property="invoiceCode"/>
+        <result column="serviceName" property="serviceName"/>
+        <result column="airbillNumber" property="airbillNumber"/>
+        <result column="shipmentId" property="shipmentId"/>
+        <result column="senderCountryCode" property="senderCountryCode"/>
+        <result column="receiverCountryCode" property="receiverCountryCode"/>
+        <result column="shipmentDate" property="shipmentDate"/>
+        <result column="customerCode" property="customerCode"/>
+        <result column="shipperReference" property="shipperReference"/>
+        <result column="billingReference2" property="billingReference2"/>
+        <result column="paid" property="paid"/>
+        <result column="senderCompanyname" property="senderCompanyname"/>
+        <result column="senderContactName" property="senderContactName"/>
+        <result column="senderAddress" property="senderAddress"/>
+        <result column="senderAddress2" property="senderAddress2"/>
+        <result column="senderCity" property="senderCity"/>
+        <result column="senderPostalCode" property="senderPostalCode"/>
+        <result column="senderState" property="senderState"/>
+        <result column="senderCountry" property="senderCountry"/>
+        <result column="receiverCompanyName" property="receiverCompanyName"/>
+        <result column="receiverContactName" property="receiverContactName"/>
+        <result column="receiverAddress" property="receiverAddress"/>
+        <result column="receiverAddress2" property="receiverAddress2"/>
+        <result column="receiverCity" property="receiverCity"/>
+        <result column="receiverPostalCode" property="receiverPostalCode"/>
+        <result column="receiverState" property="receiverState"/>
+        <result column="receiverCountry" property="receiverCountry"/>
+        <result column="noOfPieces" property="noOfPieces"/>
+        <result column="dhlApZone" property="dhlApZone"/>
+        <result column="senderZone" property="senderZone"/>
+        <result column="receiverZone" property="receiverZone"/>
+        <result column="status" property="status"/>
+        <result column="carrier" property="carrier"/>
+        <result column="weight" property="weight"/>
+        <result column="serviceAreaCodeOrigin" property="serviceAreaCodeOrigin"/>
+        <result column="serviceAreaCodeDestination" property="serviceAreaCodeDestination"/>
+        <result column="senderAddressId" property="senderAddressId"/>
+        <result column="receiverAddressId" property="receiverAddressId"/>
+        <result column="zone" property="zone"/>
+        <result column="billActualDimension" property="billActualDimension"/>
+        <result column="billingContents" property="billingContents"/>
+        <result column="baseCharge" property="baseCharge"/>
+        <result column="withInSurance" property="withInSurance"/>
+        <result column="nonStandardCharge" property="nonStandardCharge"/>
+        <result column="manualHandlingSurcharge" property="manualHandlingSurcharge"/>
+        <result column="gstTaxAmount" property="gstTaxAmount"/>
+        <result column="franchiseTaxAmount" property="franchiseTaxAmount"/>
+        <result column="totalCarrierAmount" property="totalCarrierAmount"/>
+        <result column="totalCustomerAmount" property="totalCustomerAmount"/>
+        <result column="totalFranchiseAmount" property="totalFranchiseAmount"/>
+        <result column="totalMargin" property="totalMargin"/>
+        <result column="invoiceStatus" property="invoiceStatus"/>
+        <result column="invoiceDate" property="invoiceDate"/>
+        <collection property="listCharge" ofType="com.gms.xms.txndb.vo.invoicing.searchairbill.ChargeAirbillVo"
+                    javaType="ArrayList">
+            <result column="chargeDescription" property="chargeDescription"/>
+            <result column="customerCost" property="customerCost"/>
+            <result column="franchiseCost" property="franchiseCost"/>
+            <result column="carrierCost" property="carrierCost"/>
+            <result column="margin" property="margin"/>
+            <result column="customerCostWithTax" property="customerCostWithTax"/>
+            <result column="carrierCostWithTax" property="carrierCostWithTax"/>
+            <result column="magrinWithTax" property="magrinWithTax"/>
+            <result column="accessorialCount" property="accessorialCount"/>
+            <result column="customerTaxAmount" property="customerTaxAmount"/>
+            <result column="isBaseCharge" property="isBaseCharge"/>
+        </collection>
+        <collection property="listQuote" ofType="com.gms.xms.txndb.vo.invoicing.searchairbill.QuoteAirbillVo"
+                    javaType="ArrayList">
+            <result column="quoteShipmentId" property="quoteShipmentId"/>
+            <result column="accessorialId" property="accessorialId"/>
+            <result column="amount" property="amount"/>
+            <result column="defaultCharge" property="defaultCharge"/>
+            <result column="quoteDescription" property="quoteDescription"/>
+            <result column="code" property="code"/>
+            <result column="typeId" property="typeId"/>
+            <result column="carrierId" property="carrierId"/>
+            <result column="applyStartDate" property="applyStartDate"/>
+        </collection>
+        <collection property="listAdjustment" ofType="com.gms.xms.txndb.vo.invoicing.searchairbill.RefunAdjustmentVo"
+                    javaType="ArrayList">
+            <result column="adjustmentType" property="adjustmentType"/>
+            <result column="adjustmentId" property="adjustmentId"/>
+            <result column="carrierAmount" property="carrierAmount"/>
+            <result column="customerAmount" property="customerAmount"/>
+        </collection>
+    </resultMap>
+    <resultMap id="AirbilResultTotalMap" type="com.gms.xms.txndb.vo.invoicing.searchairbill.TotalSearchAirbillVo">
+        <result column="totalAirbills" property="totalAirbills"/>
+        <result column="totalCustomerAmount" property="totalCustomerAmount"/>
+        <result column="totalFranchiseAmount" property="totalFranchiseAmount"/>
+        <result column="totalMargin" property="totalMargin"/>
+    </resultMap>
+    <select id="getShipmentTypeListByServiceId" parameterType="int" resultType="SearchAirbillShipmentTypeVo">
+        select
+        concat(st.shipment_type_id,',',pac.content,',',pac.bound,',',sv.service_id) as shipmentTypeKey,
+        if(pac.package_type_name!='',concat(st.shipment_type_name,' - ',pac.package_type_name),st.shipment_type_name) as
+        shipmentTypeName
+        from xms_tbl_shipment_type as st
+        inner join xms_tbl_service as sv on sv.service_id = st.serviceid
+        inner join
+        (select 1 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Document' AS package_type_name,
+        1 AS package_type, 0 AS content, 0 AS bound
+        union
+        select 0 AS doc, 1 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Document (Inbound)' AS
+        package_type_name, 2 AS package_type, 0 AS content, 1 AS bound
+        union
+        select 0 AS doc, 0 AS doc_in, 1 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Package' AS package_type_name, 3
+        AS package_type, 1 AS content, 0 AS bound
+        union
+        select 0 AS doc, 0 AS doc_in, 0 AS pack, 1 AS pack_in, 0 AS pak, 0 AS pak_in, 'Package (Inbound)' AS
+        package_type_name, 4 AS package_type, 1 AS content, 1 AS bound
+        union
+        select 0 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 1 AS pak, 0 AS pak_in, 'Pak' AS package_type_name, 5 AS
+        package_type, 2 AS content, 0 AS bound
+        union
+        select 0 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 1 AS pak_in, 'Pak (Inbound)' AS
+        package_type_name, 6 AS package_type, 2 AS content, 1 AS bound
+        union
+        select 0 as doc, 0 as doc_in, 0 as pack, 0 as pack_in, 0 as pak, 0 as pak_in, '' as package_type_name, 7 as
+        package_type, -1 as content, 0 as bound
+        ) as pac on (pac.doc = st.document and st.document = 1)
+        or (pac.doc_in = st.document_inbound and st.document_inbound = 1)
+        or (pac.pack = st.package and st.package = 1)
+        or (pac.pack_in = st.package_inbound and st.package_inbound = 1)
+        or (pac.pak = st.pak and st.pak = 1)
+        or (pac.pak_in = st.pak_inbound and st.pak_inbound = 1)
+        or (st.document = 0 and st.document_inbound=0 and st.package = 0 and st.package_inbound = 0 and pac.content=-1)
+        <if test="_parameter != null and _parameter != ''">
+            where sv.service_id = #{_parameter}
+        </if>
+        order by shipmentTypeName;
+    </select>
+    <select id="selectInvoicesDateByFranchiseCodeList" parameterType="list" resultType="InvoiceVo">
+        SELECT
+        invoice_date as invoiceDate
+        FROM
+        (SELECT
+        customer_code AS code
+        FROM
+        xms_tbl_customer
+        where franchise_code in
+        <foreach item="franchiseCode" index="index" collection="list" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        UNION SELECT
+        franchise_code AS code
+        FROM
+        xms_tbl_franchise
+        where left(franchise_code,3) in
+        <foreach item="franchiseCode" index="index" collection="list" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        ) AS c
+        INNER JOIN
+        xms_tbl_invoice AS i ON i.customer_code = c.code
+        GROUP BY invoiceDate
+        ORDER BY invoiceDate DESC
+    </select>
+
+    <select id="selectAirbillList" parameterType="com.gms.xms.txndb.vo.invoicing.searchairbill.SearchAirbillFilter"
+            resultMap="AirbilResultMap">
+        SELECT
+        sb.contents,
+        sb.shipment_type_id AS shipmentTypeId,
+        sb.display_description as shipmentTypeName,
+        0 AS sbBound,
+        sb.package_flag AS packageFlag,
+        sb.pal,
+        sb.carrier_tax_percent AS carrierTaxPercent,
+        sb.destination_countryid AS destinationCountryId,
+        sb.origin_countryid AS originCountryId,
+        sb.invoiceid AS invoiceId,
+        sb.invoice_code AS invoiceCode,
+        sb.service_name AS serviceName,
+        sb.airbill_number AS airbillNumber,
+        sb.shipmentid AS shipmentId,
+        sb.ship_date AS shipmentDate,
+        sb.customer_code AS customerCode,
+        sb.shipper_reference AS shipperReference,
+        sb.billing_reference2 AS billingReference2,
+        sb.paid,
+        sb.billing_reference3 AS billingReference3,
+        ifnull(sb.pal, '') AS noOfPieces,
+        ifnull(sb. STATUS, '') AS STATUS,
+        ifnull(sb.carrier, '') AS carrier,
+        ROUND(ifnull(sb.weight, 0), 2) AS weight,
+        sb.service_area_code_origin AS serviceAreaCodeOrigin,
+        sb.service_area_code_destination AS serviceAreaCodeDestination,
+        sb.senderaddressid AS senderAddressId,
+        sb.receiveraddressid AS receiverAddressId,
+        sb.zone,
+        sb.bill_actual_dimension AS billActualDimension,
+        sb.billing_contents AS billingContents,
+        sb.base_charge AS baseCharge,
+        sb.withinsurance AS withInSurance,
+        sb.non_standard_charge AS nonStandardCharge,
+        sb.manual_handling_surcharge AS manualHandlingSurcharge,
+        gstTaxAmount,
+        franchiseTaxAmount,
+        sb.totalCustomerCostWithTax as totalCustomerAmount,
+        sb.totalFranchiseCostWithTax as totalFranchiseAmount,
+        sb.totalCarrierCostWithTax as totalCarrierAmount,
+        sb.totalMagrinWithTax as totalMargin,
+        sb.status as invoiceStatus,
+        sb.real_invoice_date as invoiceDate,
+        sb1.display_description AS chargeDescription,
+        sb1.franchise_cost AS franchiseCost,
+        sb1.customer_cost AS customerCost,
+        sb1.carrier_cost AS carrierCost,
+        (
+        (sb1.customer_cost) - (sb1.franchise_cost)
+        ) AS margin,
+        (
+        sb1.customer_cost + sb1.customer_tax_amount
+        ) AS customerCostWithTax,
+        (
+        sb1.franchise_cost + sb1.franchise_tax_amount
+        ) AS carrierCostWithTax,
+        (
+        (
+        sb1.customer_cost + sb1.customer_tax_amount
+        ) - (
+        sb1.franchise_cost + sb1.franchise_tax_amount
+        )
+        ) AS magrinWithTax,
+        sb1.accessorial_count AS accessorialCount,
+        sb1.customer_tax_amount AS customerTaxAmount,
+        sb1.is_base_charge AS isBaseCharge,
+        sm_d.shipmentid AS quoteShipmentId,
+        sm_d.accessorialid accessorialId,
+        sm_d.amount amount,
+        ac_d.default_charge AS defaultCharge,
+        ac.description AS quoteDescription,
+        ac.`code`,
+        ac.typeid AS typeId,
+        ac.carrier AS carrierId,
+        max(ac_d.apply_start_date) AS applyStartDate,
+        adj.adjustment_type AS adjustmentType,
+        adj.adjustmentid AS adjustmentId,
+        adj.carrier_amount AS carrierAmount,
+        adj.customer_amount AS customerAmount,
+        senderCountryId,
+        receiverCountryId,
+        senderCountryCode,
+        receiverCountryCode,
+        senderCompanyname,
+        senderContactName,
+        senderAddress,
+        senderAddress2,
+        senderCity,
+        senderPostalCode,
+        senderState,
+        senderCountry,
+        receiverCompanyName,
+        receiverContactName,
+        receiverAddress,
+        receiverAddress2,
+        receiverCity,
+        receiverPostalCode,
+        receiverState,
+        receiverCountry,
+        dhlApZone,
+        senderZone,
+        receiverZone
+        FROM
+        (
+        SELECT
+        SUM(customer_tax_amount) as gstTaxAmount,
+        SUM(franchise_tax_amount) as franchiseTaxAmount,
+        SUM(b.customerCostWithTaxTmp) as totalCustomerCostWithTax,
+        SUM(b.franchiseCostWithTaxTmp) as totalFranchiseCostWithTax,
+        SUM(b.carrierCostWithTaxTmp) as totalCarrierCostWithTax,
+        SUM(b.magrinWithTaxTmp) as totalMagrinWithTax, b.*
+        FROM (
+        SELECT
+        IFNULL( sh_tmp.shipment_type_id, sb_temp.billing_shipment_type_id ) AS shipment_type_id,
+        ( sb_temp.customer_cost + sb_temp.customer_tax_amount ) AS customerCostWithTaxTmp,
+        ( sb_temp.franchise_cost + sb_temp.franchise_tax_amount ) AS franchiseCostWithTaxTmp,
+        ( sb_temp.carrier_cost + sb_temp.tax_amount) AS carrierCostWithTaxTmp,
+        ( ( sb_temp.customer_cost + sb_temp.customer_tax_amount ) - ( sb_temp.franchise_cost +
+        sb_temp.franchise_tax_amount ) ) AS magrinWithTaxTmp,
+        IFNULL(sh_tmp.base_charge, 0) AS base_charge,
+        IFNULL( sh_tmp.non_standard_charge, 0 ) AS non_standard_charge,
+        IFNULL( sh_tmp.manual_handling_surcharge, 0 ) AS manual_handling_surcharge,
+        IFNULL(sh_tmp.withinsurance, 0) AS withinsurance,
+        s.service_name,
+        IFNULL( sh_tmp.bound_status, sb_temp.billing_bound ) AS bound_status,
+        s.service_id,
+        IFNULL( sh_tmp.contents, sb_temp.billing_contents ) AS contents,
+        sb_temp.*,si_tmp.cus_paymentid, si_tmp.invoice_paymentid, si_tmp.paid_carrier_cost, si_tmp.paid_customer_cost,
+        i_tmp.invoice_code, i_tmp.invoiceid,i_tmp.customer_code, i_tmp.late_fee,i_tmp.status ,i_tmp.paid as iPaid
+        ,i_tmp.inv_create_date, i_tmp.invoice_date as real_invoice_date,
+        IFNULL(sc.countryid, '0') AS senderCountryId,
+        IFNULL(rc.countryid, '0') AS receiverCountryId,
+        IFNULL(sc.countrycode, '') AS senderCountryCode,
+        IFNULL(rc.countrycode, '') AS receiverCountryCode,
+        IFNULL(sa.companyname, '') AS senderCompanyname,
+        IFNULL(sa.contact_name, '') AS senderContactName,
+        IFNULL(sa.address, '') AS senderAddress,
+        IFNULL(sa.address2, '') AS senderAddress2,
+        IFNULL(sa.city, '') AS senderCity,
+        IFNULL(sa.postal_code, '') AS senderPostalCode,
+        IFNULL(sa.state, '') AS senderState,
+        IFNULL(sc.display_name, '') AS senderCountry,
+        IFNULL(ra.companyname, '') AS receiverCompanyName,
+        IFNULL(ra.contact_name, '') AS receiverContactName,
+        IFNULL(ra.address, '') AS receiverAddress,
+        IFNULL(ra.address2, '') AS receiverAddress2,
+        IFNULL(ra.city, '') AS receiverCity,
+        IFNULL(ra.postal_code, '') AS receiverPostalCode,
+        IFNULL(ra.state, '') AS receiverState,
+        IFNULL(rc.display_name, '') AS receiverCountry,
+        IFNULL(dc.dhl_ap_zone, '') AS dhlApZone,
+        dc.dhl_ap_zone AS senderZone,
+        dr.dhl_ap_zone AS receiverZone
+        FROM xms_tbl_shipment_billing AS sb_temp
+        LEFT JOIN xms_tbl_shipment AS sh_tmp ON sb_temp.shipmentid = sh_tmp.shipmentid and sb_temp.airbill_number =
+        sh_tmp.airbill_number
+        INNER JOIN xms_tbl_service AS s ON (sb_temp.carrier = s.service_id)
+
+        INNER JOIN xms_tbl_shipment_invoice as si_tmp ON si_tmp.shipmentid = sb_temp.shipmentid AND
+        sb_temp.airbill_number = si_tmp.airbill_number
+        INNER JOIN xms_tbl_invoice as i_tmp ON si_tmp.invoiceid = i_tmp.invoiceid
+        INNER JOIN (
+        SELECT customer_code FROM xms_tbl_customer
+        <where>
+            <if test="saleRepId != null and saleRepId != ''">
+                <if test="!isCheckSaleRepId">
+                    and sales_rep_id=#{saleRepId}
+                </if>
+                <if test="isCheckSaleRepId">
+                    and sales_rep_id!=#{saleRepId}
+                </if>
+            </if>
+            <if test="franchiseList != null and franchiseList != ''">
+                and franchise_code IN (${franchiseList})
+            </if>
+        </where>
+        UNION
+        SELECT franchise_code AS customer_code FROM xms_tbl_franchise
+        <where>
+            <if test="saleRepId != null and saleRepId != ''">
+                <if test="!isCheckSaleRepId">
+                    and sales_rep_id=#{saleRepId}
+                </if>
+                <if test="isCheckSaleRepId">
+                    and sales_rep_id!=#{saleRepId}
+                </if>
+            </if>
+            <if test="franchiseList != null and franchiseList != ''">
+                and left(franchise_code,3) IN (${franchiseList})
+            </if>
+        </where>
+        ) AS c ON c.customer_code = i_tmp.customer_code
+        LEFT JOIN xms_tbl_address AS sa ON sb_temp.senderaddressid = sa.addressid
+        LEFT JOIN xms_tbl_country AS sc ON sa.country = sc.countryid
+        LEFT JOIN xms_tbl_address AS ra ON sb_temp.receiveraddressid = ra.addressid
+        LEFT JOIN xms_tbl_country AS rc ON ra.country = rc.countryid
+        LEFT JOIN xms_tbl_dhl_country AS dc ON rc.countryname = dc.dhl_countryname
+        LEFT JOIN xms_tbl_dhl_country AS dr ON sc.countryname = dr.dhl_countryname
+        <where>
+            <if test="startShipmentDate != null and startShipmentDate != '' and endShipmentDate != null and endShipmentDate != ''">
+                AND sb_temp.ship_date >= #{startShipmentDate}
+                <![CDATA[
+							AND sb_temp.ship_date < DATE_ADD(#{endShipmentDate}, INTERVAL 1 DAY)
+							]]>
+            </if>
+            <if test="importDate != null and importDate != ''">
+                <![CDATA[ AND sb_temp.import_date >= DATE(#{importDate}) and sb_temp.import_date < DATE_ADD(DATE(#{importDate}),interval 1 day) ]]>
+            </if>
+            <if test="zone != null and zone != '' and isNoZone == true">
+                AND (
+                sb_temp.zone = #{zone}
+                OR isnull(sb_temp.zone)
+                OR sb_temp.zone = ''
+                )
+            </if>
+            <if test="zone != null and zone != '' and isNoZone == false">
+                AND ( sb_temp.zone = #{zone} )
+            </if>
+            <if test="(zone == null or zone == '') and isNoZone == true">
+                AND (
+                isnull(sb_temp.zone)
+                OR sb_temp.zone = ''
+                )
+            </if>
+            <if test="minPieces != null and minPieces != '' and (maxPieces == null or maxPieces == '') and isCheckPieces == false">
+                AND (sb_temp.pal >= #{minPieces})
+            </if>
+            <if test="(minPieces == null or minPieces == '') and maxPieces != null and maxPieces != '' and isCheckPieces == false">
+                <![CDATA[
+								AND (sb_temp.pal <= #{maxPieces})
+							]]>
+            </if>
+            <if test="minPieces != null and minPieces != '' and maxPieces != null and maxPieces != '' and isCheckPieces == false">
+                AND sb_temp.pal BETWEEN #{minPieces} AND #{maxPieces}
+            </if>
+            <if test="minPieces != null and minPieces != '' and (maxPieces == null or maxPieces == '') and isCheckPieces == true">
+                AND NOT (sb_temp.pal >= #{minPieces})
+            </if>
+            <if test="(minPieces == null or minPieces == '') and maxPieces != null and maxPieces != '' and isCheckPieces == true">
+                <![CDATA[
+								AND NOT (sb_temp.pal <= #{maxPieces})
+							]]>
+            </if>
+            <if test="minPieces != null and minPieces != '' and maxPieces != null and maxPieces != '' and isCheckPieces == true">
+                AND sb_temp.pal NOT BETWEEN #{minPieces} AND #{maxPieces}
+            </if>
+            <if test="minWeight != null and minWeight != '' and (maxWeight == null or maxWeight == '') and isCheckWeight == false">
+                AND (sb_temp.weight >= #{minWeight})
+            </if>
+            <if test="(minWeight == null or minWeight == '') and maxWeight != null and maxWeight != '' and isCheckWeight == false">
+                <![CDATA[
+								AND (sb_temp.weight <= #{maxWeight})
+							]]>
+            </if>
+            <if test="minWeight != null and minWeight != '' and maxWeight != null and maxWeight != '' and isCheckWeight == false">
+                AND sb_temp.weight BETWEEN #{minWeight} AND #{maxWeight}
+            </if>
+
+            <if test="minWeight != null and minWeight != '' and (maxWeight == null or maxWeight == '') and isCheckWeight == true">
+                AND NOT (sb_temp.weight >= #{minWeight})
+            </if>
+            <if test="(minWeight == null or minWeight == '') and maxWeight != null and maxWeight != '' and isCheckWeight == true">
+                <![CDATA[
+								AND NOT (sb_temp.weight <= #{maxWeight})
+							]]>
+            </if>
+            <if test="minWeight != null and minWeight != '' and maxWeight != null and maxWeight != '' and isCheckWeight == true">
+                AND sb_temp.weight NOT BETWEEN #{minWeight} AND #{maxWeight}
+            </if>
+            <if test="accessorialName != null and accessorialName != '' and isCheckAccessorialName == false">
+                AND sb_temp.airbill_number IN (
+                SELECT
+                airbill_number
+                FROM
+                xms_tbl_shipment_billing
+                WHERE
+                description = #{accessorialName}
+                )
+            </if>
+            <if test="accessorialName != null and accessorialName != '' and isCheckAccessorialName == true">
+                <![CDATA[
+						AND sb_temp.airbill_number NOT IN (
+							SELECT
+								airbill_number
+							FROM
+								xms_tbl_shipment_billing
+							WHERE
+								description = #{accessorialName}
+						)
+						]]>
+            </if>
+            <if test="airbillNumber != null and airbillNumber != ''">
+                AND sb_temp.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            </if>
+            <if test="airbillNumberList != null and airbillNumberList != ''">
+                AND sb_temp.airbill_number IN (${airbillNumberList})
+            </if>
+            <if test="serviceId != null and serviceId !='' and isCheckServiceId == false">
+                AND sb_temp.carrier = #{serviceId}
+            </if>
+            <if test="serviceId != null and serviceId !='' and isCheckServiceId == true">
+                <![CDATA[
+							AND sb_temp.carrier != #{serviceId}
+						]]>
+            </if>
+            <if test="packageTypeId != null and packageTypeId != ''">
+                AND sh_tmp.packageid = #{packageTypeId}
+            </if>
+            <if test="startInvoiceDate != null and startInvoiceDate != '' and endInvoiceDate != null and endInvoiceDate != ''">
+                AND i_tmp.invoice_date >= #{startInvoiceDate}
+                <![CDATA[
+							AND i_tmp.invoice_date <DATE_ADD(#{endInvoiceDate}, INTERVAL 1 DAY)
+							]]>
+            </if>
+            <if test="customerCode != null and customerCode != ''">
+                AND i_tmp.customer_code LIKE CONCAT('',#{customerCode},'%')
+            </if>
+            <if test="invoiceDate != null and invoiceDate != ''">
+                AND i_tmp.invoice_date = #{invoiceDate}
+            </if>
+            <if test="invoiceStatus != null and invoiceStatus != ''">
+                <if test="invoiceStatus == 1">
+                    AND i_tmp.status >= 1
+                </if>
+                <if test="invoiceStatus != 1">
+                    <if test="invoiceStatus == 5">
+                        AND i_tmp.status = 0
+                    </if>
+                    <if test="invoiceStatus != 5">
+                        AND i_tmp.status = #{invoiceStatus}
+                    </if>
+                </if>
+            </if>
+            <if test="customerCode != null and customerCode != ''">
+                AND i_tmp.customer_code = #{customerCode}
+            </if>
+            <if test="invoiceCode != null and invoiceCode != ''">
+                AND i_tmp.invoice_code = #{invoiceCode}
+            </if>
+            <if test="senderCode != null and senderCode != '' and isCheckSenderCode == false">
+                AND sc.countrycode = #{senderCode}
+            </if>
+            <if test="senderCode != null and senderCode != '' and isCheckSenderCode == true">
+                <![CDATA[
+								AND sc.countrycode <> #{senderCode}
+							]]>
+            </if>
+            <if test="senderName != null and senderName != ''">
+                AND sa.companyname = #{senderName}
+            </if>
+            <if test="receiverCode != null and receiverCode != '' and isCheckReceiverCode == false">
+                AND rc.countrycode = #{receiverCode}
+            </if>
+            <if test="receiverCode != null and receiverCode != '' and isCheckReceiverCode == true">
+                <![CDATA[
+								AND rc.countrycode <> #{receiverCode}
+							]]>
+            </if>
+            <if test="franchiseCode != null and franchiseCode != '' and isCheckFranchiseCode == false">
+                AND left(c.customer_code,3) = #{franchiseCode}
+            </if>
+            <if test="franchiseCode != null and franchiseCode != '' and isCheckFranchiseCode == true">
+                <![CDATA[
+								AND left(c.customer_code,3)  <> #{franchiseCode}
+							]]>
+            </if>
+            AND sb_temp.shipmentid > 0
+            <if test="serviceLevel != null and serviceLevel != ''">
+                AND sb_temp.shipmentid in (SELECT sb_temp.shipmentid
+                FROM (select shipment_type_id, shipment_type_name, serviceid, content, bound,
+                case pac.package_type
+                when 1 then concat(st.shipment_type_name,' Doc')
+                when 2 then concat(st.shipment_type_name,' Doc (Inbound)')
+                when 3 then concat(st.shipment_type_name)
+                when 4 then concat(st.shipment_type_name,' (Inbound)')
+                when 5 then concat(st.shipment_type_name,' Pak')
+                when 6 then concat(st.shipment_type_name,' Pak (Inbound)')
+                when 7 then concat(st.shipment_type_name)
+                end as display_description
+                from xms_tbl_shipment_type as st
+                inner join
+                (select 1 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Document' AS
+                package_type_name, 1 AS package_type, 0 AS content, 0 AS bound
+                union
+                select 0 AS doc, 1 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Document (Inbound)' AS
+                package_type_name, 2 AS package_type, 0 AS content, 1 AS bound
+                union
+                select 0 AS doc, 0 AS doc_in, 1 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Package' AS
+                package_type_name, 3 AS package_type, 1 AS content, 0 AS bound
+                union
+                select 0 AS doc, 0 AS doc_in, 0 AS pack, 1 AS pack_in, 0 AS pak, 0 AS pak_in, 'Package (Inbound)' AS
+                package_type_name, 4 AS package_type, 1 AS content, 1 AS bound
+                union
+                select 0 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 1 AS pak, 0 AS pak_in, 'Pak' AS
+                package_type_name, 5
+                AS package_type, 2 AS content, 0 AS bound
+                union
+                select 0 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 1 AS pak_in, 'Pak (Inbound)' AS
+                package_type_name, 6 AS package_type, 2 AS content, 1 AS bound
+                union
+                select 0 as doc, 0 as doc_in, 0 as pack, 0 as pack_in, 0 as pak, 0 as pak_in, '' as package_type_name, 7
+                as
+                package_type, -1 as content, 0 as bound
+                ) as pac on (pac.doc = st.document and st.document = 1)
+                or (pac.doc_in = st.document_inbound and st.document_inbound = 1)
+                or (pac.pack = st.package and st.package = 1)
+                or (pac.pack_in = st.package_inbound and st.package_inbound = 1)
+                or (pac.pak = st.pak and st.pak = 1)
+                or (pac.pak_in = st.pak_inbound and st.pak_inbound = 1)
+                or (st.document = 0 and st.document_inbound=0 and st.package = 0 and st.package_inbound = 0 and
+                pac.content=-1)
+
+                <if test="serviceLevel != null and serviceLevel != '' and isCheckServiceLevel == false ">
+                    WHERE
+                    bound= #{billingBound}
+                    AND content = #{billingContents}
+                    AND shipment_type_id = #{shipmentTypeId}
+                </if>
+                <if test="serviceLevel != null and serviceLevel != '' and isCheckServiceLevel == true ">
+                    WHERE
+                    <![CDATA[
+							 bound !=  #{billingBound}
+							AND content != #{billingContents}
+							AND shipment_type_id != #{shipmentTypeId}
+						]]>
+                </if>
+
+                ) as st inner join xms_tbl_shipment_billing as sb_temp on st.shipment_type_name = sb_temp.description and st.serviceid = sb_temp.carrier AND
+                st.display_description = sb_temp.display_description)
+            </if>
+        </where>
+        ) as b
+        GROUP BY b.shipmentid, b.airbill_number
+        <if test="orderBy1!=null and orderBy1!=''">
+            order by ${orderBy1}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+        ) AS sb
+        LEFT JOIN xms_tbl_shipment_billing AS sb1 ON sb1.shipmentid = sb.shipmentid AND sb1.airbill_number =
+        sb.airbill_number
+        LEFT JOIN xms_tbl_airbill_adjustment as adj ON adj.shipmentid = sb.shipmentid AND adj.airbill_number =
+        sb.airbill_number AND adj.status = 4 AND adj.adjustmentid = adj.adjustmentid
+        LEFT JOIN xms_tbl_credit_note_detail cd on adj.adjustmentid = cd.adjustmentid
+        LEFT JOIN xms_tbl_credit_note cn on cn.credit_note_id = cd.credit_note_id AND cn.status > 0
+        LEFT JOIN xms_tbl_shipment_detail AS sm_d ON sm_d.shipmentid = sb.shipmentid
+        LEFT JOIN xms_tbl_accessorial AS ac ON sm_d.accessorialid = ac.accessorialid
+        LEFT JOIN (select accessorialid, default_charge, apply_start_date from xms_tbl_accessorial_detail ac_d1 where
+        apply_start_date = (select max(apply_start_date) from xms_tbl_accessorial_detail ac_d2 where
+        ac_d1.accessorialid=ac_d2.accessorialid)) AS ac_d ON ac_d.accessorialid = sm_d.accessorialid
+        /* LEFT JOIN xms_tbl_accessorial_detail AS ac_d ON ac_d.accessorialid = sm_d.accessorialid */
+        GROUP BY shipmentId, airbillNumber, ac_d.accessorialid, chargeDescription, adj.adjustmentid
+        <if test="orderBy2!=null and orderBy2!=''">
+            order by ${orderBy2}
+        </if>
+    </select>
+
+    <select id="selectCountAirbillList" parameterType="com.gms.xms.txndb.vo.invoicing.searchairbill.SearchAirbillFilter"
+            resultMap="AirbilResultTotalMap">
+        SELECT
+        COUNT(DISTINCT sb.shipmentid, sb.airbill_number) as totalAirbills,
+        IFNULL(SUM(sb.totalCustomerCostWithTax),0.00) as totalCustomerAmount,
+        IFNULL(SUM(sb.totalFranchiseCostWithTax),0.00) as totalFranchiseAmount,
+        IFNULL(SUM(sb.totalMagrinWithTax),0.00) as totalMargin
+        FROM
+        (
+        SELECT SUM(b.customerCostWithTaxTmp) as totalCustomerCostWithTax,
+        SUM(b.franchiseCostWithTaxTmp) as totalFranchiseCostWithTax,
+        SUM(b.magrinWithTaxTmp) as totalMagrinWithTax, b.*
+        FROM (
+        SELECT
+        IFNULL( sh_tmp.shipment_type_id, sb_temp.billing_shipment_type_id ) AS shipment_type_id,
+        ( sb_temp.customer_cost + sb_temp.customer_tax_amount ) AS customerCostWithTaxTmp,
+        ( sb_temp.franchise_cost + sb_temp.franchise_tax_amount ) AS franchiseCostWithTaxTmp,
+        ( ( sb_temp.customer_cost + sb_temp.customer_tax_amount ) - ( sb_temp.franchise_cost +
+        sb_temp.franchise_tax_amount ) ) AS magrinWithTaxTmp,
+        s.service_name,
+        IFNULL( sh_tmp.bound_status, sb_temp.billing_bound ) AS bound_status,
+        s.service_id,
+        IFNULL( sh_tmp.contents, sb_temp.billing_contents ) AS contents,
+        sb_temp.*
+        FROM xms_tbl_shipment_billing AS sb_temp
+        LEFT JOIN xms_tbl_shipment AS sh_tmp ON sb_temp.shipmentid = sh_tmp.shipmentid and sb_temp.airbill_number =
+        sh_tmp.airbill_number
+        INNER JOIN xms_tbl_service AS s ON (sb_temp.carrier = s.service_id)
+        <if test="serviceLevel != null and serviceLevel != ''">
+            INNER JOIN
+            (select shipment_type_id, shipment_type_name, serviceid, content, bound,
+            case pac.package_type
+            when 1 then concat(st.shipment_type_name,' Doc')
+            when 2 then concat(st.shipment_type_name,' Doc (Inbound)')
+            when 3 then concat(st.shipment_type_name)
+            when 4 then concat(st.shipment_type_name,' (Inbound)')
+            when 5 then concat(st.shipment_type_name,' Pak')
+            when 6 then concat(st.shipment_type_name,' Pak (Inbound)')
+            when 7 then concat(st.shipment_type_name)
+            end as display_description
+            from xms_tbl_shipment_type as st
+            inner join
+            (select 1 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Document' AS
+            package_type_name, 1 AS package_type, 0 AS content, 0 AS bound
+            union
+            select 0 AS doc, 1 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Document (Inbound)' AS
+            package_type_name, 2 AS package_type, 0 AS content, 1 AS bound
+            union
+            select 0 AS doc, 0 AS doc_in, 1 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Package' AS
+            package_type_name, 3 AS package_type, 1 AS content, 0 AS bound
+            union
+            select 0 AS doc, 0 AS doc_in, 0 AS pack, 1 AS pack_in, 0 AS pak, 0 AS pak_in, 'Package (Inbound)' AS
+            package_type_name, 4 AS package_type, 1 AS content, 1 AS bound
+            union
+            select 0 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 1 AS pak, 0 AS pak_in, 'Pak' AS package_type_name, 5
+            AS package_type, 2 AS content, 0 AS bound
+            union
+            select 0 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 1 AS pak_in, 'Pak (Inbound)' AS
+            package_type_name, 6 AS package_type, 2 AS content, 1 AS bound
+            union
+            select 0 as doc, 0 as doc_in, 0 as pack, 0 as pack_in, 0 as pak, 0 as pak_in, '' as package_type_name, 7 as
+            package_type, -1 as content, 0 as bound
+            ) as pac on (pac.doc = st.document and st.document = 1)
+            or (pac.doc_in = st.document_inbound and st.document_inbound = 1)
+            or (pac.pack = st.package and st.package = 1)
+            or (pac.pack_in = st.package_inbound and st.package_inbound = 1)
+            or (pac.pak = st.pak and st.pak = 1)
+            or (pac.pak_in = st.pak_inbound and st.pak_inbound = 1)
+            or (st.document = 0 and st.document_inbound=0 and st.package = 0 and st.package_inbound = 0 and
+            pac.content=-1)
+
+            <if test="serviceLevel != null and serviceLevel != '' and isCheckServiceLevel == false ">
+                WHERE
+                bound= #{billingBound}
+                AND content = #{billingContents}
+                AND shipment_type_id = #{shipmentTypeId}
+            </if>
+            <if test="serviceLevel != null and serviceLevel != '' and isCheckServiceLevel == true ">
+                WHERE
+                <![CDATA[
+							 bound !=  #{billingBound}
+							AND content != #{billingContents} 
+							AND shipment_type_id != #{shipmentTypeId}
+						]]>
+            </if>
+
+            ) as st on st.shipment_type_name = sb_temp.description and st.serviceid = sb_temp.carrier AND
+            st.display_description = sb_temp.display_description
+        </if>
+        INNER JOIN xms_tbl_shipment_invoice as si ON si.shipmentid = sb_temp.shipmentid AND si.airbill_number =
+        sb_temp.airbill_number
+        INNER JOIN xms_tbl_invoice as i ON i.invoiceid = si.invoiceid
+        INNER JOIN (
+        SELECT customer_code FROM xms_tbl_customer
+        <where>
+            <if test="saleRepId != null and saleRepId != ''">
+                <if test="!isCheckSaleRepId">
+                    and sales_rep_id=#{saleRepId}
+                </if>
+                <if test="isCheckSaleRepId">
+                    and sales_rep_id!=#{saleRepId}
+                </if>
+            </if>
+            <if test="franchiseList != null and franchiseList != ''">
+                and franchise_code IN (${franchiseList})
+            </if>
+        </where>
+        UNION
+        SELECT franchise_code AS customer_code FROM xms_tbl_franchise
+        <where>
+            <if test="saleRepId != null and saleRepId != ''">
+                <if test="!isCheckSaleRepId">
+                    and sales_rep_id=#{saleRepId}
+                </if>
+                <if test="isCheckSaleRepId">
+                    and sales_rep_id!=#{saleRepId}
+                </if>
+            </if>
+            <if test="franchiseList != null and franchiseList != ''">
+                and left(franchise_code,3) IN (${franchiseList})
+            </if>
+        </where>
+        ) AS c ON c.customer_code = i.customer_code
+        LEFT JOIN xms_tbl_address AS sa ON sb_temp.senderaddressid = sa.addressid
+        LEFT JOIN xms_tbl_country AS sc ON sa.country = sc.countryid
+        LEFT JOIN xms_tbl_address AS ra ON sb_temp.receiveraddressid = ra.addressid
+        LEFT JOIN xms_tbl_country AS rc ON ra.country = rc.countryid
+        LEFT JOIN xms_tbl_dhl_country AS dc ON rc.countryname = dc.dhl_countryname
+        LEFT JOIN xms_tbl_dhl_country AS dr ON sc.countryname = dr.dhl_countryname
+        <where>
+            <if test="startShipmentDate != null and startShipmentDate != '' and endShipmentDate != null and endShipmentDate != ''">
+                AND sb_temp.ship_date >= #{startShipmentDate}
+                <![CDATA[
+							AND sb_temp.ship_date < DATE_ADD(#{endShipmentDate}, INTERVAL 1 DAY)
+							]]>
+            </if>
+            <if test="importDate != null and importDate != ''">
+                <![CDATA[ AND sb_temp.import_date >= DATE(#{importDate}) and sb_temp.import_date < DATE_ADD(DATE(#{importDate}),interval 1 day) ]]>
+            </if>
+            <if test="zone != null and zone != '' and isNoZone == true">
+                AND (
+                sb_temp.zone = #{zone}
+                OR isnull(sb_temp.zone)
+                OR sb_temp.zone = ''
+                )
+            </if>
+            <if test="zone != null and zone != '' and isNoZone == false">
+                AND ( sb_temp.zone = #{zone} )
+            </if>
+            <if test="(zone == null or zone == '') and isNoZone == true">
+                AND (
+                isnull(sb_temp.zone)
+                OR sb_temp.zone = ''
+                )
+            </if>
+            <if test="minPieces != null and minPieces != '' and (maxPieces == null or maxPieces == '') and isCheckPieces == false">
+                AND (sb_temp.pal >= #{minPieces})
+            </if>
+            <if test="(minPieces == null or minPieces == '' ) and maxPieces != null and maxPieces != '' and isCheckPieces == false">
+                <![CDATA[
+								AND (sb_temp.pal <= #{maxPieces})
+							]]>
+            </if>
+            <if test="minPieces != null and minPieces != '' and maxPieces != null and maxPieces != '' and isCheckPieces == false">
+                AND sb_temp.pal BETWEEN #{minPieces} AND #{maxPieces}
+            </if>
+            <if test="minPieces != null and minPieces != '' and (maxPieces == null or maxPieces == '') and isCheckPieces == true">
+                AND NOT (sb_temp.pal >= #{minPieces})
+            </if>
+            <if test="(minPieces == null or minPieces == '') and maxPieces != null and maxPieces != '' and isCheckPieces == true">
+                <![CDATA[
+								AND NOT (sb_temp.pal <= #{maxPieces})
+							]]>
+            </if>
+            <if test="minPieces != null and minPieces != '' and maxPieces != null and maxPieces != '' and isCheckPieces == true">
+                AND sb_temp.pal NOT BETWEEN #{minPieces} AND #{maxPieces}
+            </if>
+            <if test="minWeight != null and minWeight != '' and (maxWeight == null or maxWeight == '') and isCheckWeight == false">
+                AND (sb_temp.weight >= #{minWeight})
+            </if>
+            <if test="(minWeight == null or minWeight == '') and maxWeight != null and maxWeight != '' and isCheckWeight == false">
+                <![CDATA[
+								AND (sb_temp.weight <= #{maxWeight})
+							]]>
+            </if>
+            <if test="minWeight != null and minWeight != '' and maxWeight != null and maxWeight != '' and isCheckWeight == false">
+                AND sb_temp.weight BETWEEN #{minWeight} AND #{maxWeight}
+            </if>
+
+            <if test="minWeight != null and minWeight != '' and (maxWeight == null or maxWeight == '') and isCheckWeight == true">
+                AND NOT (sb_temp.weight >= #{minWeight})
+            </if>
+            <if test="(minWeight == null or minWeight == '') and maxWeight != null and maxWeight != '' and isCheckWeight == true">
+                <![CDATA[
+								AND NOT (sb_temp.weight <= #{maxWeight})
+							]]>
+            </if>
+            <if test="minWeight != null and minWeight != '' and maxWeight != null and maxWeight != '' and isCheckWeight == true">
+                AND sb_temp.weight NOT BETWEEN #{minWeight} AND #{maxWeight}
+            </if>
+            <if test="accessorialName != null and accessorialName != '' and isCheckAccessorialName == false">
+                AND sb_temp.airbill_number IN (
+                SELECT
+                airbill_number
+                FROM
+                xms_tbl_shipment_billing
+                WHERE
+                description = #{accessorialName}
+                )
+            </if>
+            <if test="accessorialName != null and accessorialName != '' and isCheckAccessorialName == true">
+                <![CDATA[
+						AND sb_temp.airbill_number NOT IN (
+							SELECT
+								airbill_number
+							FROM
+								xms_tbl_shipment_billing
+							WHERE
+								description = #{accessorialName}
+						)
+						]]>
+            </if>
+            <if test="airbillNumber != null and airbillNumber != ''">
+                AND sb_temp.airbill_number LIKE CONCAT('',#{airbillNumber},'%')
+            </if>
+            <if test="airbillNumberList != null and airbillNumberList != ''">
+                AND sb_temp.airbill_number IN (${airbillNumberList})
+            </if>
+            <if test="serviceId != null and serviceId !='' and isCheckServiceId == false">
+                AND sb_temp.carrier = #{serviceId}
+            </if>
+            <if test="serviceId != null and serviceId !='' and isCheckServiceId == true">
+                <![CDATA[
+							AND sb_temp.carrier <> #{serviceId}
+						]]>
+            </if>
+            <if test="packageTypeId != null and packageTypeId != ''">
+                AND sh_tmp.packageid = #{packageTypeId}
+            </if>
+            <if test="startInvoiceDate != null and startInvoiceDate != '' and endInvoiceDate != null and endInvoiceDate != ''">
+                AND i.invoice_date >= #{startInvoiceDate}
+                <![CDATA[
+							AND i.invoice_date <DATE_ADD(#{endInvoiceDate}, INTERVAL 1 DAY)
+							]]>
+            </if>
+            <if test="customerCode != null and customerCode != ''">
+                AND i.customer_code LIKE CONCAT('',#{customerCode},'%')
+            </if>
+            <if test="invoiceDate != null and invoiceDate != ''">
+                AND i.invoice_date = #{invoiceDate}
+            </if>
+            <if test="invoiceStatus != null and invoiceStatus != ''">
+                <if test="invoiceStatus == 1">
+                    AND i.status >= 1
+                </if>
+                <if test="invoiceStatus != 1">
+                    <if test="invoiceStatus == 5">
+                        AND i.status = 0
+                    </if>
+                    <if test="invoiceStatus != 5">
+                        AND i.status = #{invoiceStatus}
+                    </if>
+                </if>
+            </if>
+            <if test="customerCode != null and customerCode != ''">
+                AND i.customer_code = #{customerCode}
+            </if>
+            <if test="invoiceCode != null and invoiceCode != ''">
+                AND i.invoice_code = #{invoiceCode}
+            </if>
+
+            <if test="senderCode != null and senderCode != '' and isCheckSenderCode == false">
+                AND sc.countrycode = #{senderCode}
+            </if>
+            <if test="senderCode != null and senderCode != '' and isCheckSenderCode == true">
+                <![CDATA[
+								AND sc.countrycode <> #{senderCode}
+							]]>
+            </if>
+            <if test="senderName != null and senderName != ''">
+                AND sa.companyname = #{senderName}
+            </if>
+            <if test="receiverCode != null and receiverCode != '' and isCheckReceiverCode == false">
+                AND rc.countrycode = #{receiverCode}
+            </if>
+            <if test="receiverCode != null and receiverCode != '' and isCheckReceiverCode == true">
+                <![CDATA[
+								AND rc.countrycode <> #{receiverCode}
+							]]>
+            </if>
+            <if test="franchiseCode != null and franchiseCode != '' and isCheckFranchiseCode == false">
+                AND left(c.customer_code,3) = #{franchiseCode}
+            </if>
+            <if test="franchiseCode != null and franchiseCode != '' and isCheckFranchiseCode == true">
+                <![CDATA[
+								AND left(c.customer_code,3)  <> #{franchiseCode}
+							]]>
+            </if>
+            AND sb_temp.shipmentid > 0
+        </where>
+        ) as b
+        GROUP BY b.shipmentid, b.airbill_number
+        ) AS sb
+        LEFT JOIN xms_tbl_airbill_adjustment as adj ON adj.shipmentid = sb.shipmentid AND adj.airbill_number =
+        sb.airbill_number
+        LEFT JOIN xms_tbl_credit_note_detail cd on adj.adjustmentid = cd.adjustmentid
+        LEFT JOIN xms_tbl_credit_note cn on cn.credit_note_id = cd.credit_note_id AND cn.status > 0
+    </select>
+</mapper>

@@ -1,0 +1,772 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Statistics">
+    <resultMap id="StatServiceTypeMap" type="com.gms.xms.dto.statistics.StatServiceTypeVo">
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="shipment_type_name" property="shipmentTypeName"/>
+        <result column="service_type" property="serviceType"/>
+        <result column="service_type_name" property="serviceTypeName"/>
+        <result column="shipment_count" property="shipmentCount"/>
+    </resultMap>
+    <resultMap id="StatWebshipLogMap" type="com.gms.xms.dto.statistics.StatWebshipLogVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="create_date" property="createDate"/>
+        <result column="shipment_status" property="shipmentStatus"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="service_name" property="serviceName"/>
+    </resultMap>
+    <resultMap id="StatShipmentMap" type="com.gms.xms.dto.statistics.StatShipmentVo">
+        <result column="column_name" property="columnName"/>
+        <result column="shipment_count" property="shipmentCount"/>
+    </resultMap>
+    <resultMap id="StatCostVsMarginMap" type="com.gms.xms.dto.statistics.StatCostVsMarginVo">
+        <result column="start_date" property="startDate"/>
+        <result column="end_date" property="endDate"/>
+        <result column="revenue" property="revenue"/>
+        <result column="margin" property="margin"/>
+        <result column="cost" property="cost"/>
+    </resultMap>
+    <resultMap id="StatFollowUpMap" type="com.gms.xms.dto.statistics.StatFollowUpVo">
+        <result column="noteid" property="noteId"/>
+        <result column="modify_date" property="modifyDate"/>
+        <result column="follow_up_date" property="followUpDate"/>
+        <result column="note" property="note"/>
+        <result column="check" property="check"/>
+        <result column="current" property="current"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="sale_rep_name" property="saleRepName"/>
+    </resultMap>
+    <resultMap id="StatSalesRepByManagerMap" type="com.gms.xms.dto.statistics.StatSalesRepByManagerVo">
+        <result column="userid" property="userId"/>
+        <result column="display_name" property="displayName"/>
+        <result column="opportunities" property="opportunities"/>
+        <result column="amount" property="amount"/>
+        <result column="opportunities_over" property="opportunitiesOver"/>
+        <result column="total_call" property="totalCall"/>
+        <result column="target_call" property="targetCall"/>
+        <result column="target_success" property="targetSuccess"/>
+        <result column="overdue_day" property="overdueDay"/>
+        <result column="count" property="count"/>
+    </resultMap>
+    <resultMap id="StatSalesRepByTeleMarketerMap" type="com.gms.xms.dto.statistics.StatSalesRepByTeleMarketerVo">
+        <result column="no" property="no"/>
+        <result column="count" property="count"/>
+    </resultMap>
+    <resultMap id="StatSalesRepBySalePersonMap" type="com.gms.xms.dto.statistics.StatSalesRepBySalePersonVo">
+        <result column="name" property="name"/>
+        <result column="total_1" property="total1"/>
+        <result column="total_2" property="total2"/>
+        <result column="total_3" property="total3"/>
+    </resultMap>
+    <resultMap id="StatSalesGraphMap" type="com.gms.xms.dto.statistics.StatSalesGraphVo">
+        <result column="srno" property="srno"/>
+        <result column="statusname" property="statusName"/>
+        <result column="status" property="status"/>
+        <result column="count" property="count"/>
+    </resultMap>
+    <resultMap id="StatSalesGraphTotalMap" type="com.gms.xms.dto.statistics.StatSalesGraphTotalVo">
+        <result column="sale_state" property="saleState"/>
+        <result column="revenue" property="revenue"/>
+    </resultMap>
+    <select id="getServiceTypeStats" parameterType="com.gms.xms.filter.statistics.StatisticsFilter"
+            resultMap="StatServiceTypeMap">
+        select
+        st.shipment_type_id,
+        st.shipment_type_name,
+        sm.service_type,
+        case sm.service_type
+        when -1 then concat(st.shipment_type_name)
+        when 0 then concat(st.shipment_type_name,' Documents')
+        when 1 then concat(st.shipment_type_name,' Documents (Inbound)')
+        when 2 then concat(st.shipment_type_name,' Package')
+        when 3 then concat(st.shipment_type_name,' Package (Inbound)')
+        end as service_type_name,
+        ifnull(sm.shipment_count,0) as shipment_count
+        from
+        (select
+        sm.shipment_type_id,
+        case
+        when sm.contents=0 and sm.bound_status=0 then 0 -- Doc
+        when sm.contents=0 and sm.bound_status=1 then 1 -- Doc Inbound
+        when sm.contents=1 and sm.bound_status=0 then 2 -- Package
+        when sm.contents=1 and sm.bound_status=1 then 3 -- Package Inbound
+        else -1
+        end as service_type,
+        count(sm.shipmentid) as shipment_count
+        from xms_tbl_shipment as sm
+        inner join
+        (select customer_code, sales_rep_id from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code as customer_code, sales_rep_id from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) as c on c.customer_code = sm.customer_code
+        where sm.status = 0
+        <![CDATA[
+				and sm.shipment_date<=curdate()
+			]]>
+        <if test="periodType==0">
+            and sm.shipment_date>=date_sub(curdate(),interval 1 week)
+        </if>
+        <if test="periodType==1">
+            and sm.shipment_date>=date_sub(curdate(),interval 2 week)
+        </if>
+        <if test="periodType==2">
+            and sm.shipment_date>=date_sub(curdate(),interval 4 week)
+        </if>
+        <if test="periodType==3">
+            and sm.shipment_date>=date_sub(curdate(),interval 12 week)
+        </if>
+        <if test="periodType==4">
+            and sm.shipment_date>=date_sub(curdate(),interval 12 month)
+        </if>
+        and sm.shipmentid not in (select distinct shipmentid from xms_tbl_schedule_collection
+        where status=0 and schedule_collection_id in (select max(schedule_collection_id) from
+        xms_tbl_schedule_collection group by shipmentid))
+        group by shipment_type_id, service_type
+        having service_type!=-1
+        ) as sm
+        inner join xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+        order by st.shipment_type_id, sm.service_type
+    </select>
+    <select id="getWebshipLogStats" parameterType="com.gms.xms.filter.statistics.StatisticsFilter"
+            resultMap="StatWebshipLogMap">
+        select
+        sm.customer_code,
+        sm.create_date,
+        ca.customer_name,
+        if(sm.status = 0, 'shipment', 'voided') as shipment_status,
+        sm.airbill_number,
+        sv.service_name
+        from xms_tbl_shipment as sm
+        inner join
+        (select customer_code, sales_rep_id from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code as customer_code, sales_rep_id from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) as c on c.customer_code = sm.customer_code
+        inner join xms_tbl_shipment_type as st on st.shipment_type_id = sm.shipment_type_id
+        inner join xms_tbl_service as sv on sv.service_id = st.serviceid
+        left join xms_tbl_customer_address as ca on ca.customer_code = sm.customer_code
+        where sm.webshipid!=0
+        <if test="periodType==0">
+            <![CDATA[
+			and sm.create_date >= curdate()
+			and sm.create_date < date_add(curdate(), interval 1 day)
+			]]>
+        </if>
+        <if test="periodType==1">
+            <![CDATA[
+			and sm.create_date >= date_sub(curdate(), interval 1 week)
+			and sm.create_date < date_add(curdate(), interval 1 day)
+			]]>
+        </if>
+        order by sm.create_date desc
+    </select>
+    <select id="getShipmentsToday" parameterType="com.gms.xms.filter.statistics.StatisticsFilter"
+            resultMap="StatShipmentMap">
+        select
+        p.period_hour as column_name,
+        ifnull(sm.shipment_count,0) as shipment_count
+        from
+        (select date(@cur_date:=now()) as period_date, hour(@cur_date) as period_hour
+        union
+        select date(date_sub(@cur_date,interval 1 hour)) as period_date, hour(date_sub(@cur_date,interval 1 hour)) as
+        period_hour
+        union
+        select date(date_sub(@cur_date,interval 2 hour)) as period_date, hour(date_sub(@cur_date,interval 2 hour)) as
+        period_hour
+        union
+        select date(date_sub(@cur_date,interval 3 hour)) as period_date, hour(date_sub(@cur_date,interval 3 hour)) as
+        period_hour
+        union
+        select date(date_sub(@cur_date,interval 4 hour)) as period_date, hour(date_sub(@cur_date,interval 4 hour)) as
+        period_hour
+        union
+        select date(date_sub(@cur_date,interval 5 hour)) as period_date, hour(date_sub(@cur_date,interval 5 hour)) as
+        period_hour
+        union
+        select date(date_sub(@cur_date,interval 6 hour)) as period_date, hour(date_sub(@cur_date,interval 6 hour)) as
+        period_hour
+        union
+        select date(date_sub(@cur_date,interval 7 hour)) as period_date, hour(date_sub(@cur_date,interval 7 hour)) as
+        period_hour
+        ) as p
+        left join
+        (select
+        date(sm.create_date) as c_date,
+        hour(sm.create_date) as c_hour,
+        count(sm.shipmentid) as shipment_count
+        from xms_tbl_shipment as sm
+        inner join
+        (select customer_code, sales_rep_id from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code as customer_code, sales_rep_id from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) as c on c.customer_code = sm.customer_code
+        where sm.webshipid!=0 and sm.status = 0
+        <![CDATA[
+				and sm.create_date >= curdate()
+				and sm.create_date < date_add(curdate(),interval 1 day)
+			]]>
+        group by c_date, c_hour
+        ) as sm on sm.c_date = p.period_date and sm.c_hour = p.period_hour
+        order by period_date, period_hour
+    </select>
+    <select id="getShipmentsWeek" parameterType="com.gms.xms.filter.statistics.StatisticsFilter"
+            resultMap="StatShipmentMap">
+        select
+        concat(day(p.period),'/',month(p.period)) as column_name,
+        ifnull(shipment_count,0) as shipment_count
+        from
+        (select @cur_date:=curdate() as period
+        union
+        select date_sub(@cur_date,interval 1 day) as period
+        union
+        select date_sub(@cur_date,interval 2 day) as period
+        union
+        select date_sub(@cur_date,interval 3 day) as period
+        union
+        select date_sub(@cur_date,interval 4 day) as period
+        union
+        select date_sub(@cur_date,interval 5 day) as period
+        union
+        select date_sub(@cur_date,interval 6 day) as period
+        union
+        select date_sub(@cur_date,interval 7 day) as period
+        ) as p
+        left join
+        (select
+        date(sm.create_date) as period,
+        count(sm.shipmentid) as shipment_count
+        from xms_tbl_shipment as sm
+        inner join
+        (select customer_code, sales_rep_id from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code as customer_code, sales_rep_id from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) as c on c.customer_code = sm.customer_code
+        where sm.webshipid!=0 and sm.status = 0
+        <![CDATA[
+				and sm.create_date >= date_sub(curdate(),interval 1 week)
+				and sm.create_date < date_add(curdate(),interval 1 day)
+			]]>
+        group by period
+        ) as sm on sm.period = p.period
+        order by p.period
+    </select>
+    <select id="getShipmentsMonth" parameterType="com.gms.xms.filter.statistics.StatisticsFilter"
+            resultMap="StatShipmentMap">
+        select
+        left(monthname(p.period),3) as column_name,
+        ifnull(sm.shipment_count,0) as shipment_count
+        from
+        (select date_sub(@cur_date:=curdate(),interval day(@cur_date)-1 day) as period
+        union
+        select date_sub(date_sub(@cur_date,interval 1 month),interval day(date_sub(@cur_date,interval 1 month))-1 day)
+        as period
+        union
+        select date_sub(date_sub(@cur_date,interval 2 month),interval day(date_sub(@cur_date,interval 2 month))-1 day)
+        as period
+        union
+        select date_sub(date_sub(@cur_date,interval 3 month),interval day(date_sub(@cur_date,interval 3 month))-1 day)
+        as period
+        union
+        select date_sub(date_sub(@cur_date,interval 4 month),interval day(date_sub(@cur_date,interval 4 month))-1 day)
+        as period
+        union
+        select date_sub(date_sub(@cur_date,interval 5 month),interval day(date_sub(@cur_date,interval 5 month))-1 day)
+        as period
+        union
+        select date_sub(date_sub(@cur_date,interval 6 month),interval day(date_sub(@cur_date,interval 6 month))-1 day)
+        as period
+        union
+        select date_sub(date_sub(@cur_date,interval 7 month),interval day(date_sub(@cur_date,interval 7 month))-1 day)
+        as period
+        union
+        select date_sub(date_sub(@cur_date,interval 8 month),interval day(date_sub(@cur_date,interval 8 month))-1 day)
+        as period
+        union
+        select date_sub(date_sub(@cur_date,interval 9 month),interval day(date_sub(@cur_date,interval 9 month))-1 day)
+        as period
+        union
+        select date_sub(date_sub(@cur_date,interval 10 month),interval day(date_sub(@cur_date,interval 10 month))-1 day)
+        as period
+        union
+        select date_sub(date_sub(@cur_date,interval 11 month),interval day(date_sub(@cur_date,interval 11 month))-1 day)
+        as period
+        ) as p
+        left join
+        (select
+        date(date_sub(sm.shipment_date,interval day(sm.shipment_date)-1 day)) as period,
+        count(sm.shipmentid) as shipment_count
+        from xms_tbl_shipment as sm
+        inner join
+        (select customer_code, sales_rep_id from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code as customer_code, sales_rep_id from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) as c on c.customer_code = sm.customer_code
+        where sm.status = 0
+        <![CDATA[
+				and sm.shipment_date >= date_sub(date_sub(curdate(),interval day(curdate())-1 day),interval 11 month)
+				and sm.shipment_date < date_add(date_sub(curdate(),interval day(curdate())-1 day),interval 1 month)
+			]]>
+        group by period
+        ) as sm on sm.period = p.period
+        order by p.period
+    </select>
+    <select id="getCostVsMargin" parameterType="com.gms.xms.filter.statistics.StatisticsFilter"
+            resultMap="StatCostVsMarginMap">
+        select
+        p.period as start_date,
+        date_add(p.period,interval 6 day) as end_date,
+        ifnull(st.revenue,0) as revenue,
+        ifnull(st.margin,0) as margin,
+        ifnull(st.cost,0) as cost
+        from
+        (select date_sub(curdate(),interval weekday(curdate()) day) as period
+        union
+        select date_sub(date_sub(curdate(),interval weekday(curdate()) day),interval 7 day) as period
+        union
+        select date_sub(date_sub(curdate(),interval weekday(curdate()) day),interval 14 day) as period
+        union
+        select date_sub(date_sub(curdate(),interval weekday(curdate()) day),interval 21 day) as period
+        union
+        select date_sub(date_sub(curdate(),interval weekday(curdate()) day),interval 28 day) as period
+        union
+        select date_sub(date_sub(curdate(),interval weekday(curdate()) day),interval 35 day) as period
+        union
+        select date_sub(date_sub(curdate(),interval weekday(curdate()) day),interval 42 day) as period
+        union
+        select date_sub(date_sub(curdate(),interval weekday(curdate()) day),interval 49 day) as period
+        ) as p
+        left join
+        (select
+        date_sub(i.invoice_date,interval weekday(i.invoice_date) day) as period,
+        sum(customer_cost+customer_tax_amount) as revenue,
+        sum(customer_cost+customer_tax_amount - franchise_cost-franchise_tax_amount) as margin,
+        sum(franchise_cost + franchise_tax_amount) as cost
+        from xms_tbl_shipment_billing as sb
+        inner join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and si.airbill_number =
+        sb.airbill_number
+        inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        inner join
+        (select customer_code, sales_rep_id from xms_tbl_customer
+        where left(customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        union
+        select franchise_code as customer_code, sales_rep_id from xms_tbl_franchise
+        where left(franchise_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and sales_rep_id = #{userId}
+        </if>
+        ) as c on c.customer_code = i.customer_code
+        where i.invoice_date between date_sub(date_sub(curdate(),interval weekday(curdate()) day),interval 49 day) and
+        date_add(date_sub(curdate(),interval weekday(curdate()) day),interval 6 day)
+        group by period
+        ) as st on st.period = p.period
+        order by p.period
+    </select>
+    <select id="getFollowUps" parameterType="com.gms.xms.filter.statistics.StatisticsFilter"
+            resultMap="StatFollowUpMap">
+        select
+        n.noteid,
+        n.modify_date,
+        n.follow_up_date,
+        n.note,
+        n.check,
+        n.current,
+        ca.customer_code,
+        ca.customer_name,
+        u.display_name as sale_rep_name
+        from xms_tbl_note as n
+        left join xms_tbl_customer_address as ca on ca.customer_code = n.account_no
+        left join xms_tbl_customer as c on c.customer_code = n.account_no and n.notetype=1
+        left join xms_tbl_franchise as f on f.franchise_code = n.account_no and n.notetype=2
+        left join xms_tbl_user as u on u.userid = c.sales_rep_id or u.userid = f.sales_rep_id
+        where (n.check = 0 or n.current = 1)
+        and n.modify_date >= date_sub(curdate(),interval 15 day)
+        and left(ca.customer_code,3) in (${franchiseList})
+        <if test="userLevel==6">
+            and c.sales_rep_id = #{userId}
+        </if>
+        order by n.modify_date desc
+    </select>
+    <select id="getSalesRepByManager" parameterType="com.gms.xms.filter.statistics.StatisticsFilter"
+            resultMap="StatSalesRepByManagerMap">
+        select
+        main.userid,
+        main.display_name,
+        main.opportunities,
+        main.amount,
+        main.opportunities_over,
+        ifnull(ph.total_call,0) as total_call,
+        ifnull(ph.target_call,0) as target_call,
+        ifnull(ph.target_success,0) as target_success,
+        ifnull(ph.overdue_day,0) as overdue_day,
+        ifnull(su.count,0) as count
+        from
+        (select
+        u.userid,
+        u.display_name,
+        count(pro.prospectid) as opportunities,
+        sum(ifnull(prod.revenue, 0)) as amount,
+        count(prod2.prospectid) as opportunities_over
+        from xms_tbl_user u
+        left join xms_tbl_prospect pro on pro.sales_person_id = u.userid
+        left join xms_tbl_prospect_product prod on prod.prospectid = pro.prospectid
+        left join
+        (select
+        pp.prospectid
+        from xms_tbl_user uu
+        left join xms_tbl_prospect pp on uu.userid = pp.sales_person_id
+        <![CDATA[
+				where date(pp.opportunity_start_date) < date(now() - interval uu.overdue_day day)
+		    ]]>
+        ) prod2 on pro.prospectid = prod2.prospectid
+        where pro.active = 1
+        and pro.status in (1,2,3,4)
+        and pro.qualified_status = 1
+        and u.userid =#{userId}
+        group by u.userid
+        ) as main
+        left join
+        (select
+        user.userid,
+        count(if(phone.prospectid = null, 0, 1)) as total_call,
+        user.target_phone_call as target_call,
+        user.target_success,
+        user.overdue_day
+        from xms_tbl_user user
+        left join xms_tbl_prospect pro on user.userid = pro.sales_person_id
+        inner join xms_tbl_prospect_phone_call phone on pro.prospectid = phone.prospectid
+        where pro.active = 1 and pro.status = 5
+        and pro.qualified_status = 1
+        and user.userid =#{userId}
+        and date(phone.action_date) between date(now() - interval 1 week) and date(now())
+        group by user.userid
+        ) as ph on ph.userid = main.userid
+        left join
+        (select
+        user.userid,
+        count(user.userid) as count
+        from xms_tbl_user user
+        left join xms_tbl_prospect pro on user.userid = pro.sales_person_id
+        where pro.active = 1
+        and pro.status in (5,6)
+        and pro.qualified_status = 1
+        and user.userid =#{userId}
+        group by user.userid
+        ) as su on su.userid = main.userid
+        order by main.display_name
+    </select>
+    <select id="getSalesRepByTeleMarketer" parameterType="com.gms.xms.filter.statistics.StatisticsFilter"
+            resultMap="StatSalesRepByTeleMarketerMap">
+        select
+        0 as no,
+        count(prospectid) as count
+        from xms_tbl_prospect_history as ph
+        where userid=#{userId}
+        and ph.status=0
+        and date(action_date)=curdate()
+        <if test="prospectList!=null and prospectList!=''">
+            and ph.prospectid in (${prospectList})
+        </if>
+        group by ph.status
+        union all
+        select
+        1 as no,
+        count(prospectid) as count
+        from xms_tbl_prospect_history as ph
+        where userid=#{userId}
+        and ph.status=0
+        <![CDATA[ and date(action_date)<=curdate() and date(action_date)>=date_sub(curdate(),INTERVAL 1 WEEK) ]]>
+        <if test="prospectList!=null and prospectList!=''">
+            and ph.prospectid in (${prospectList})
+        </if>
+        group by ph.status
+        union all
+        select
+        2 as no,
+        count(prospectid) as count
+        from xms_tbl_prospect_history as ph
+        where userid=#{userId}
+        and ph.status=0
+        <![CDATA[ and date(action_date)<=curdate() and date(action_date)>=date_sub(curdate(),INTERVAL 1 MONTH) ]]>
+        <if test="prospectList!=null and prospectList!=''">
+            and ph.prospectid in (${prospectList})
+        </if>
+        group by ph.status
+        union all
+        select
+        3 as no,
+        count(prospectid) as count
+        from xms_tbl_prospect_history as ph
+        where userid=#{userId}
+        and ph.status=0
+        <if test="prospectList!=null and prospectList!=''">
+            and ph.prospectid in (${prospectList})
+        </if>
+        group by ph.status
+    </select>
+    <select id="getSalesRepBySalePerson" parameterType="com.gms.xms.filter.statistics.StatisticsFilter"
+            resultMap="StatSalesRepBySalePersonMap">
+        select
+        'cus_total' as name,
+        count(ship.customer_code) as total_1,
+        0 as total_2,
+        0 as total_3
+        from xms_tbl_user user
+        left join xms_tbl_prospect pro on user.userid = pro.sales_person_id
+        left join xms_tbl_shipment ship on pro.customer_code = ship.customer_code
+        where pro.active=1
+        and user.userid=#{userId}
+        group by sales_person_id
+        union
+        select 'cus_active' as name,
+        count(ship.customer_code) as totcus,
+        0 as total2,
+        0 as total3
+        from xms_tbl_user user
+        left join xms_tbl_prospect pro on user.userid = pro.sales_person_id
+        left join xms_tbl_shipment ship on pro.customer_code = ship.customer_code
+        where pro.active=1
+        and user.userid=#{userId}
+        and date(ship.shipment_date)>date(now() - interval #{month} month)
+        group by sales_person_id
+        union
+        select
+        'cus_inactive' as name,
+        count(ship.customer_code) as totcus,
+        0 as total2,
+        0 as total3
+        from xms_tbl_user user
+        left join xms_tbl_prospect pro on user.userid = pro.sales_person_id
+        left join xms_tbl_shipment ship on pro.customer_code = ship.customer_code
+        where pro.active=1
+        and user.userid=#{userId}
+        <![CDATA[ and date(ship.shipment_date)<date(now() - interval #{month} month) ]]>
+        group by sales_person_id
+        union
+        select
+        'phone' as name,
+        count(if(phone.prospectid=null,0,1)) as totcall,
+        user.target_phone_call as targetcall,
+        user.overdue_day
+        from xms_tbl_user user
+        left join xms_tbl_prospect pro on user.userid = pro.sales_person_id
+        inner join xms_tbl_prospect_phone_call phone on pro.prospectid = phone.prospectid
+        where pro.active=1
+        and user.userid=#{userId}
+        and pro.status=5
+        and qualified_status=1 and date(phone.action_date) between date(now() - interval 1 week) and date(now())
+        group by user.userid
+        union
+        select
+        'opportunity' as name,
+        count(pro.prospectid) as count,
+        sum(ifnull(prod.revenue,0)) as amount,
+        display_name
+        from xms_tbl_user user
+        left join xms_tbl_prospect pro on user.userid = pro.sales_person_id
+        left join xms_tbl_prospect_product prod on pro.prospectid = prod.prospectid
+        where pro.active=1
+        and user.userid=#{userId}
+        and pro.status in (1,2,3,4) and qualified_status=1
+        group by user.userid
+        union
+        select
+        'opportunity_over' as name,
+        count(pro.prospectid) as count,
+        sum(ifnull(prod.revenue,0)) as amount,
+        display_name
+        from xms_tbl_user user
+        left join xms_tbl_prospect pro on user.userid = pro.sales_person_id
+        left join xms_tbl_prospect_product prod on pro.prospectid = prod.prospectid
+        where pro.active=1
+        and user.userid=#{userId}
+        and pro.status in (1,2,3,4) and qualified_status=1
+        <![CDATA[ and date(pro.opportunity_start_date) < date(now() - interval user.overdue_day day) ]]>
+        group by user.userid
+        union
+        select
+        'success' as name,
+        count(user.userid) as count,
+        user.target_success,
+        0 as total3
+        from xms_tbl_user user
+        left join xms_tbl_prospect pro on user.userid = pro.sales_person_id
+        left join xms_tbl_prospect_product prod on pro.prospectid = prod.prospectid
+        where pro.active=1
+        and user.userid=#{userId}
+        and pro.status in (5,6)
+        and qualified_status=1
+        group by user.userid
+    </select>
+    <select id="getSalesGraph" parameterType="com.gms.xms.filter.statistics.StatisticsFilter"
+            resultMap="StatSalesGraphMap">
+        select
+        1 as srno,
+        'Prospect' as statusname,
+        0 as status,
+        count(p.prospectid) as count
+        from xms_tbl_prospect p
+        where p.status=0
+        and p.active=1
+        <if test="prospectList!=null and prospectList!=''">
+            and p.prospectid in (${prospectList})
+        </if>
+        union
+        select
+        2 as srno,
+        'Qualified' as statusname,
+        1 as status,
+        count(p.prospectid) as count
+        from xms_tbl_prospect p
+        where p.status=1 and p.qualified_status=0
+        and p.active=1
+        <if test="prospectList!=null and prospectList!=''">
+            and p.prospectid in (${prospectList})
+        </if>
+        union
+        select
+        3 as srno,
+        'Opportunity' as statusname,
+        10 as status,
+        count(p.prospectid) as count
+        from xms_tbl_prospect p
+        <![CDATA[
+		where qualified_status=1 and status<>0 and status<>7 and status<>5 and prospectid not in (select distinct prospectid from xms_tbl_prospect_history where status in (2,3,4)) 
+		]]>
+        and p.active=1
+        <if test="prospectList!=null and prospectList!=''">
+            and p.prospectid in (${prospectList})
+        </if>
+        union
+        select
+        4 as srno,
+        'Set Scheduled Visit' as statusname,
+        2 as status, count(p.prospectid) as count
+        from xms_tbl_prospect p
+        where p.status=2
+        and p.active=1
+        <if test="prospectList!=null and prospectList!=''">
+            and p.prospectid in (${prospectList})
+        </if>
+        union
+        select
+        5 as srno,
+        'Visit' as statusname,
+        3 as status,
+        count(p.prospectid) as count
+        from xms_tbl_prospect p
+        where p.status=3
+        and p.active=1
+        <if test="prospectList!=null and prospectList!=''">
+            and p.prospectid in (${prospectList})
+        </if>
+        union
+        select
+        6 as srno,
+        'Proposal' as statusname,
+        4 as status,
+        count(p.prospectid) as count
+        from xms_tbl_prospect p
+        where p.status=4
+        and p.active=1
+        <if test="prospectList!=null and prospectList!=''">
+            and p.prospectid in (${prospectList})
+        </if>
+        union
+        select
+        7 as srno,
+        'Success' as statusname,
+        5 as status,
+        count(p.prospectid) as count
+        from xms_tbl_prospect p
+        where p.status=5
+        and p.active=1
+        <if test="prospectList!=null and prospectList!=''">
+            and p.prospectid in (${prospectList})
+        </if>
+        union
+        select
+        8 as srno,
+        'Shipping' as statusname,
+        6 as status,
+        count(p.prospectid) as count
+        from xms_tbl_prospect p
+        where p.status=6
+        and p.active=1
+        <if test="prospectList!=null and prospectList!=''">
+            and p.prospectid in (${prospectList})
+        </if>
+        order by srno
+    </select>
+    <select id="getSalesGraphTotal" parameterType="com.gms.xms.filter.statistics.StatisticsFilter"
+            resultMap="StatSalesGraphTotalMap">
+        select
+        no as sale_state,
+        sum(revenue) as revenue
+        from
+        (select
+        ifnull(pp.revenue,0) as revenue,
+        case
+        when p.status=1 and (p.qualified_status=0 or p.qualified_status=1) then 1
+        when p.status=2 then 2
+        when p.status=3 and p.qualified_status=1 then 3
+        when p.status=4 and p.qualified_status=0 then 4
+        when p.status=5 then 5
+        when p.status=6 then 6
+        else -1
+        end as no
+        from xms_tbl_prospect p
+        left join xms_tbl_prospect_product pp on p.prospectid=pp.prospectid
+        where p.active=1
+        <if test="prospectList!=null and prospectList!=''">
+            and p.prospectid in (${prospectList})
+        </if>
+        having no!=-1
+        ) as r
+        group by sale_state
+    </select>
+</mapper>

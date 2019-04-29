@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="MassEdit">
+    <update id="massEditChangeWeight" parameterType="ShipmentBillingVo">
+        update xms_tbl_shipment_billing
+        <set>
+            weight=#{weight}
+        </set>
+        where shipmentid = #{shipmentId} AND airbill_number = #{airbillNumber}
+    </update>
+
+    <select id="massEditChangeWeight_SelectForLog" parameterType="ShipmentBillingVo"
+            resultMap="ShipmentBilling.ShipmentBillingMap">
+        select * from xms_tbl_shipment_billing
+        where shipmentid = #{shipmentId} AND airbill_number = #{airbillNumber}
+    </select>
+
+    <resultMap id="CustomerAddressMapForMassEdit" type="CustomerAddressForMassEditVo"
+               extends="CustomerAddress.CustomerAddressMap">
+        <result column="senderaddressid" property="senderAddressId"/>
+    </resultMap>
+
+    <select id="selectCustomerAddress" parameterType="ShipmentBillingFilter" resultMap="CustomerAddressMapForMassEdit">
+        select
+        sb.senderaddressid,
+        cadd.customer_code,
+        cadd.customer_name,
+        cadd.contact_name,
+        cadd.email,
+        cadd.address1,
+        cadd.address2,
+        cadd.city,
+        cadd.postal_code,
+        cadd.country,
+        cadd.phone
+        from
+        xms_tbl_shipment_billing sb
+        left join
+        xms_tbl_shipment_invoice si on (sb.shipmentid = si.shipmentid
+        and sb.airbill_number = si.airbill_number)
+        left join
+        xms_tbl_invoice i on (si.invoiceid = i.invoiceid)
+        left join
+        xms_tbl_customer_address cadd on (i.customer_code = cadd.customer_code)
+        where
+        sb.shipmentid = #{shipmentId}
+        and sb.airbill_number = #{airbillNumber}
+        limit 1
+    </select>
+
+    <resultMap id="WebshipAddressMapForMassEdit" type="WebshipAddressForMassEditVo" extends="Address.AddressMap">
+        <result column="shipment_sender" property="shipmentSender"/>
+        <result column="sb_sender" property="sbSender"/>
+        <result column="company_name" property="companyName"/>
+    </resultMap>
+
+    <select id="selectWebshipAddress" parameterType="ShipmentBillingFilter" resultMap="WebshipAddressMapForMassEdit">
+        select
+        s.senderaddressid as shipment_sender,
+        sb.senderaddressid as sb_sender,
+        ad.companyname as company_name,
+        ad.contact_name,
+        ad.email,
+        ad.address,
+        ad.address2,
+        ad.city,
+        ad.postal_code,
+        ad.country,
+        ad.phone
+        from
+        xms_tbl_shipment s
+        left join xms_tbl_shipment_billing sb on s.shipmentid = sb.shipmentid
+        and s.airbill_number = sb.airbill_number
+        and sb.is_base_charge = 1
+        left join xms_tbl_address ad on (s.senderaddressid = ad.addressid)
+        where
+        s.shipmentid = #{shipmentId}
+        limit 1
+    </select>
+
+    <update id="massEditChangeSenderAddress" parameterType="AddressVo">
+        update xms_tbl_address
+        <set>
+            companyname=#{companyName},
+            phone=#{phone},
+            contact_name=#{contactName},
+            email=#{email},
+            country=#{country},
+            address=#{address},
+            address2=#{address2},
+            city=#{city},
+            postal_code=#{postalCode}
+        </set>
+        where addressid=#{addressId}
+    </update>
+
+    <select id="massEditChangeSenderAddress_SelectForLog" parameterType="AddressVo" resultMap="Address.AddressMap">
+        select * from xms_tbl_address
+        where addressid=#{addressId}
+    </select>
+
+    <resultMap id="ServiceLevelByCarrierMap" type="ServiceLevelVo" extends="ShipmentType.ShipmentType">
+        <result column="id" property="id"/>
+        <result column="type" property="type"/>
+    </resultMap>
+
+    <select id="getServiceLevelByCarrier" parameterType="long" resultMap="ServiceLevelByCarrierMap">
+        select
+        shipment_type_id,
+        shipment_type_name,
+        id,
+        type
+        from
+        (select
+        shipment_type_id,
+        if(s.localizationid>0,If(ld.detail='' or ld.detail is null,l.default_text,ld.detail),shipment_type_name) as
+        shipment_type_name,
+        concat(shipment_type_id , ',0,0,',serviceid) as id,
+        'document' as type
+        from xms_tbl_shipment_type as s
+        left join xms_tbl_localization as l on s.localizationid=l.localizationid
+        left join xms_tbl_localization_detail as ld on ld.languageid = 0 and s.localizationid=ld.localizationid
+        where s.serviceid=#{carrierId} and document='1' order by shipment_type_name
+        ) as doc
+        union
+        select
+        shipment_type_id,
+        shipment_type_name,
+        id,
+        type
+        from
+        (select
+        shipment_type_id,
+        if(s.localizationid>0,If(ld.detail='' or ld.detail is null,l.default_text,ld.detail),shipment_type_name) as
+        shipment_type_name,
+        concat(shipment_type_id , ',0,1,',serviceid) as id,
+        'document_inbound' as type
+        from xms_tbl_shipment_type as s
+        left join xms_tbl_localization as l on s.localizationid=l.localizationid
+        left join xms_tbl_localization_detail as ld on ld.languageid = 0 and s.localizationid=ld.localizationid
+        where s.serviceid=#{carrierId} and document_inbound='1' order by shipment_type_name
+        ) as doc_in
+        union
+        select
+        shipment_type_id,
+        shipment_type_name,
+        id,
+        type
+        from
+        (select
+        shipment_type_id,
+        if(s.localizationid>0,If(ld.detail='' or ld.detail is null,l.default_text,ld.detail),shipment_type_name) as
+        shipment_type_name,
+        concat(shipment_type_id , ',1,0,',serviceid) as id ,
+        'package' as type
+        from xms_tbl_shipment_type as s
+        left join xms_tbl_localization as l on s.localizationid=l.localizationid
+        left join xms_tbl_localization_detail as ld on ld.languageid = 0 and s.localizationid=ld.localizationid
+        where s.serviceid=#{carrierId} and package='1' order by shipment_type_name
+        ) as pack
+        union
+        select
+        shipment_type_id,
+        shipment_type_name,
+        id,
+        type
+        from
+        (select
+        shipment_type_id,
+        if(s.localizationid>0,If(ld.detail='' or ld.detail is null,l.default_text,ld.detail),shipment_type_name) as
+        shipment_type_name,
+        concat(shipment_type_id , ',1,1,',serviceid) as id ,
+        'package_inbound' as type
+        from xms_tbl_shipment_type as s
+        left join xms_tbl_localization as l on s.localizationid=l.localizationid
+        left join xms_tbl_localization_detail as ld on ld.languageid = 0 and s.localizationid=ld.localizationid
+        where s.serviceid=#{carrierId} and package_inbound='1' order by shipment_type_name
+        ) as pack_in
+        union
+        select
+        shipment_type_id,
+        shipment_type_name,
+        id,
+        type
+        from
+        (select
+        shipment_type_id,
+        if(s.localizationid>0,If(ld.detail='' or ld.detail is null,l.default_text,ld.detail),shipment_type_name) as
+        shipment_type_name,
+        concat(shipment_type_id , ',2,0,',serviceid) as id ,
+        'pak' as type
+        from xms_tbl_shipment_type as s
+        left join xms_tbl_localization as l on s.localizationid=l.localizationid
+        left join xms_tbl_localization_detail as ld on ld.languageid = 0 and s.localizationid=ld.localizationid
+        where s.serviceid=#{carrierId} and pak='1' order by shipment_type_name
+        ) as pak
+        union
+        select
+        shipment_type_id,
+        shipment_type_name,
+        id,
+        type
+        from
+        (select
+        shipment_type_id,
+        if(s.localizationid>0,If(ld.detail='' or ld.detail is null,l.default_text,ld.detail),shipment_type_name) as
+        shipment_type_name,
+        concat(shipment_type_id , ',2,1,',serviceid) as id ,
+        'pak_inbound' as type
+        from xms_tbl_shipment_type as s
+        left join xms_tbl_localization as l on s.localizationid=l.localizationid
+        left join xms_tbl_localization_detail as ld on ld.languageid = 0 and s.localizationid=ld.localizationid
+        where s.serviceid=#{carrierId} and pak_inbound='1' order by shipment_type_name
+        ) as pak_in
+        union
+        select
+        shipment_type_id,
+        shipment_type_name,
+        id,
+        type
+        from
+        (select
+        shipment_type_id,
+        if(s.localizationid>0,If(ld.detail='' or ld.detail is null,l.default_text,ld.detail),shipment_type_name) as
+        shipment_type_name,
+        concat(shipment_type_id , ',0,0,',serviceid) as id ,
+        '' as type
+        from xms_tbl_shipment_type as s
+        left join xms_tbl_localization as l on s.localizationid=l.localizationid
+        left join xms_tbl_localization_detail as ld on ld.languageid = 0 and s.localizationid=ld.localizationid
+        where s.serviceid=#{carrierId} and document!='1' and document_inbound!='1'
+        and package!='1' and package_inbound!='1' and pak!='1' and pak_inbound!='1' order by shipment_type_name
+        ) as non_type
+        order by shipment_type_name
+    </select>
+
+    <resultMap id="AllAccessorialsMap" type="MassAccessorialVo" extends="Accessorial.AccessorialMap">
+        <result column="default_charge" property="defaultCharge"/>
+        <result column="id" property="id"/>
+        <result column="display" property="display"/>
+    </resultMap>
+
+    <select id="selectAllAccessorials" resultMap="AllAccessorialsMap">
+        select
+        acc.accessorialid,
+        code,
+        description,
+        date_format(modified_date, '%d-%m-%Y %H:%i:%s') as modified_date,
+        typeid,
+        isquotable,
+        default_charge,
+        carrier,
+        concat(carrier, '#', description) AS id,
+        concat(service_name,' - ',description) as display
+        from
+        xms_tbl_accessorial acc
+        left join
+        (select
+        accessorialid, default_charge
+        from
+        (select
+        accessorialid, default_charge
+        from
+        xms_tbl_accessorial_detail
+        where
+        apply_start_date <![CDATA[ <= ]]> now()
+        order by accessorialid asc , apply_start_date desc) as acc
+        group by accessorialid) acc_det on acc.accessorialid = acc_det.accessorialid
+        left join xms_tbl_service ser on ser.service_id = acc.carrier
+        where inactive = 0
+        and description != ''
+        and description != '0'
+        order by carrier , description
+    </select>
+
+    <select id="selectAccessorialsByCarrier" parameterType="long" resultMap="AllAccessorialsMap">
+        select
+        acc.accessorialid,
+        code,
+        description,
+        date_format(modified_date, '%d-%m-%Y %H:%i:%s') as modified_date,
+        typeid,
+        isquotable,
+        default_charge,
+        carrier,
+        concat(carrier, '#', description) AS id,
+        concat(service_name,' - ',description) as display
+        from
+        xms_tbl_accessorial acc
+        left join
+        (select
+        accessorialid, default_charge
+        from
+        (select
+        accessorialid, default_charge
+        from
+        xms_tbl_accessorial_detail
+        where
+        apply_start_date <![CDATA[ <= ]]> now()
+        order by accessorialid asc , apply_start_date desc) as acc
+        group by accessorialid) acc_det on acc.accessorialid = acc_det.accessorialid
+        left join xms_tbl_service ser on ser.service_id = acc.carrier
+        where inactive = 0
+        and carrier = #{carrierId}
+        and description != ''
+        and description != '0'
+        order by carrier , description
+    </select>
+</mapper>

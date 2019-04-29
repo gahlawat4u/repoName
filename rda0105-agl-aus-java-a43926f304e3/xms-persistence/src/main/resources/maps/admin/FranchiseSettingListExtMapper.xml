@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="FranchiseSettingListExt">
+    <select id="selectListFranchiseByCode" parameterType="com.gms.xms.filter.admin.FranchiseSettingListExtFilter"
+            resultType="FranchiseSettingListExtVo">
+        SELECT
+        f.*, l.user_level_code
+        FROM
+        xms_tbl_franchise_setting f
+        LEFT JOIN xms_tbl_user_level l ON f.user_level = l.user_level_id
+        WHERE
+        franchise_code = #{franchiseCode}
+        AND l.user_level_code >=
+        #{userLevelCode}
+        ORDER BY
+        franchise_setting_name ASC
+    </select>
+
+    <select id="selectListFranchiseByCodeCount" parameterType="com.gms.xms.filter.admin.FranchiseSettingListExtFilter"
+            resultType="int">
+        SELECT
+        count(*)
+        FROM
+        xms_tbl_franchise_setting f
+        LEFT JOIN xms_tbl_user_level l ON f.user_level = l.user_level_id
+        WHERE
+        franchise_code = #{franchiseCode}
+        AND l.user_level_code >=
+        #{userLevelCode}
+    </select>
+</mapper>

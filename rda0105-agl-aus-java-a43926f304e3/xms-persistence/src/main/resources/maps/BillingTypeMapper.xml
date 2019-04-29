@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="BillingType">
+    <resultMap id="BillingTypeResultMap" type="BillingTypeVo">
+        <id column="billing_id" property="billingId"/>
+        <result column="billing_name" property="billingName"/>
+        <result column="localizationid" property="localizationId"/>
+    </resultMap>
+
+    <select id="getBillingTypeList" resultMap="BillingTypeResultMap">
+        select * from xms_tbl_billing_type
+    </select>
+
+    <select id="selectBillingTypeById" resultMap="BillingTypeResultMap" parameterType="int">
+        select * from xms_tbl_billing_type
+        where billing_id = #{billingId}
+    </select>
+</mapper>

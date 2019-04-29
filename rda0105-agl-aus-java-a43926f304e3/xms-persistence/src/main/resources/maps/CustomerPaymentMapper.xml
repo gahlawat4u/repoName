@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerPayment">
+    <resultMap id="CustomerPaymentMap" type="com.gms.xms.txndb.vo.CustomerPaymentVo">
+        <id column="cus_paymentid" property="cusPaymentId"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="amount" property="amount"/>
+        <result column="cheque" property="cheque"/>
+        <result column="payment_type" property="paymentType"/>
+        <result column="bankid" property="bankId"/>
+        <result column="payment_date" property="paymentDate"/>
+        <result column="cim_payment_transactionid" property="cimPaymentTransactionId"/>
+    </resultMap>
+
+    <select id="selectCustomerPayment" resultMap="CustomerPaymentMap" parameterType="long">
+        select * from xms_tbl_customer_payment
+        where cus_paymentid = #{cusPaymentId}
+    </select>
+
+    <insert id="insert" parameterType="CustomerPaymentVo" useGeneratedKeys="true" keyProperty="cusPaymentId">
+        insert into xms_tbl_customer_payment (customer_code, amount, payment_type, cheque, bankid, payment_date,
+        cim_payment_transactionid)
+        values (#{customerCode}, #{amount}, #{paymentType}, #{cheque}, #{bankId}, #{paymentDate},
+        #{cimPaymentTransactionId})
+    </insert>
+
+    <delete id="deleteById" parameterType="long">
+        delete from xms_tbl_customer_payment
+        where cus_paymentid = #{cusPaymentId}
+    </delete>
+
+    <select id="deleteById_SelectForLog" parameterType="long" resultMap="CustomerPaymentMap">
+        select * from xms_tbl_customer_payment
+        where cus_paymentid = #{cusPaymentId}
+    </select>
+</mapper>

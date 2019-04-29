@@ -1,0 +1,1 @@
+delete from xms_tbl_shipment_billing where shipmentid=483758 and airbill_number=7193 and carrier=73;

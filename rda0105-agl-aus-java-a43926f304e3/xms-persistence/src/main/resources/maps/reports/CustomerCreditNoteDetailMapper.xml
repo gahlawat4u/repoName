@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerCreditNoteDetail">
+    <resultMap id="CustomerCreditNoteDetailMap" type="CustomerCreditNoteDetailVo">
+        <result column="credit_note_id" property="creditNoteId"/>
+        <result column="credit_code" property="creditCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="create_date" property="createDate"/>
+        <result column="amount" property="amount"/>
+        <result column="gst" property="gst"/>
+        <result column="total" property="total"/>
+    </resultMap>
+
+    <select id="getCreditNoteDetailReport"
+            parameterType="com.gms.xms.filter.reports.customer.invoicedetail.CustomerCreditNoteDetailFilter"
+            resultMap="CustomerCreditNoteDetailMap">
+        select * from tmp_customer_credit_note_detail_report
+        where rpt_txn_id = #{rptTxnId}
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="sumCreditNoteDetailReport"
+            parameterType="com.gms.xms.filter.reports.customer.invoicedetail.CustomerCreditNoteDetailFilter"
+            resultMap="CustomerCreditNoteDetailMap">
+        select
+        sum(amount) as amount,
+        sum(gst) as gst,
+        sum(total) as total
+        from tmp_customer_credit_note_detail_report
+        where rpt_txn_id = #{rptTxnId}
+    </select>
+
+    <select id="checkCreditNoteDetailReport"
+            parameterType="com.gms.xms.filter.reports.customer.invoicedetail.CustomerCreditNoteDetailFilter"
+            resultType="long">
+        select count(*) from tmp_customer_credit_note_detail_report
+        where rpt_txn_id = #{rptTxnId}
+    </select>
+
+    <insert id="prepareCreditNoteDetailReport"
+            parameterType="com.gms.xms.filter.reports.customer.invoicedetail.CustomerCreditNoteDetailFilter">
+        <![CDATA[
+		insert into tmp_customer_credit_note_detail_report (
+			rpt_txn_id,
+			credit_note_id,
+			credit_code,
+			customer_name,
+			create_date,
+			amount,
+			gst,
+			total
+		)
+		select
+			#{rptTxnId},
+			cn.credit_note_id,
+			cn.credit_code,
+		    ca.customer_name,
+		    cn.create_date,
+		    sum(adj.customer_amount) as amount,
+		    sum(adj.gst_customer_amount) as gst,
+		    sum(adj.customer_amount+gst_customer_amount) as total
+		from xms_tbl_credit_note as cn
+		inner join xms_tbl_invoice as i on i.invoice_code = cn.invoice_code
+		inner join xms_tbl_customer_address as ca on ca.customer_code = i.customer_code
+		inner join xms_tbl_credit_note_detail as cnd on cnd.credit_note_id = cn.credit_note_id
+		inner join xms_tbl_airbill_adjustment as adj on adj.adjustmentid = cnd.adjustmentid
+		inner join xms_tbl_customer_payment as cp on cp.cus_paymentid = cnd.cus_paymentid
+		where cn.status != 0 and adj.status = 4
+			and left(i.customer_code,3) in (${franchiseList})
+		    and date(cn.create_date) between #{startDate} and #{endDate}
+		group by cn.credit_note_id
+		]]>
+    </insert>
+</mapper>

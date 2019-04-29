@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="MoveUnfrozenInvoices">
+    <select id="getUnfrozenInvoiceDates" parameterType="string" resultType="java.util.Date">
+        select distinct invoice_date from xms_tbl_invoice
+        where status=0
+        and left(customer_code,3) in (${_parameter})
+        and invoice_date != '0000-00-00'
+        order by invoice_date desc
+    </select>
+
+    <select id="getMoveInvoices" parameterType="com.gms.xms.filter.invoicing.MoveUnfrozenInvoicesFilter"
+            resultMap="Invoice.Invoice">
+        select * from xms_tbl_invoice
+        where status=0
+        and left(customer_code,3) in (${franchiseList})
+        and invoice_date = date(#{fromDate})
+        <if test="exclude!=null and exclude">
+            and customer_code not in (${customerList})
+        </if>
+    </select>
+
+    <select id="checkFrozenInvoiceByInvoiceCode" parameterType="string" resultType="int">
+        select count(*) frozen from xms_tbl_invoice
+        where invoice_code = #{invoiceCode}
+        and status!=0
+    </select>
+
+    <update id="updateInvoiceId4ShipmentInvoice" parameterType="com.gms.xms.txndb.parameter.InvoiceIdParam">
+        update xms_tbl_shipment_invoice
+        set invoiceid = #{newInvoiceId}
+        where invoiceid = #{oldInvoiceId}
+    </update>
+
+    <select id="updateInvoiceId4ShipmentInvoice_SelectForLog" parameterType="com.gms.xms.txndb.parameter.InvoiceIdParam"
+            resultMap="ShipmentInvoice.ShipmentInvoiceMap">
+        select * from xms_tbl_shipment_invoice
+        where invoiceid = #{oldInvoiceId}
+    </select>
+</mapper>

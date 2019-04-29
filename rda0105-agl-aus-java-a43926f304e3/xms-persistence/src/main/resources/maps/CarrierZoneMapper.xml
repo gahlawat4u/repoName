@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CarrierZone">
+    <resultMap id="CarrierZoneMap" type="CarrierZoneVo">
+        <result column="zone_code" property="zoneCode"/>
+        <result column="zone_name" property="zoneName"/>
+        <result column="carrier" property="carrier"/>
+        <result column="state_code" property="stateCode"/>
+        <result column="zone_no" property="zoneNo"/>
+        <result column="is_display" property="isDisplay"/>
+    </resultMap>
+
+    <select id="getZoneByCarrier" parameterType="long" resultMap="CarrierZoneMap">
+        select distinct * from xms_tbl_carrier_zone
+        where carrier = #{_parameter}
+        <if test="_parameter==3 or _parameter==72">
+            and is_display=1
+        </if>
+        order by zone_name
+    </select>
+
+    <select id="getZoneByCarrierAndCode" parameterType="CarrierZoneVo" resultMap="CarrierZoneMap">
+        select * from xms_tbl_carrier_zone
+        where carrier = #{carrier} and zone_code = #{zoneCode}
+        limit 0,1
+    </select>
+
+    <select id="checkCarrierZoneStartrack" parameterType="CarrierZoneVo" resultType="long">
+        select count(*) from xms_tbl_carrier_zone
+        where zone_code = #{zoneCode}
+        and zone_name = #{zoneName}
+        and carrier = #{carrier}
+        and is_display = #{isDisplay}
+    </select>
+
+    <select id="getTntZones" resultMap="CarrierZoneMap"
+            parameterType="com.gms.xms.filter.admin.systemstats.SysStatsFilter">
+        select * from xms_tbl_carrier_zone
+        where carrier = 3
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+    <select id="countTntZones" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsFilter" resultType="long">
+        select count(*) from xms_tbl_carrier_zone
+        where carrier = 3
+    </select>
+
+    <insert id="saveCarrierZone" parameterType="CarrierZoneVo">
+        insert into xms_tbl_carrier_zone
+        (zone_code,
+        zone_name,
+        carrier,
+        state_code,
+        zone_no,
+        is_display)
+        values
+        (#{zoneCode},
+        #{zoneName},
+        #{carrier},
+        #{stateCode},
+        #{zoneNo},
+        #{isDisplay})
+    </insert>
+    <select id="getZoneByCarrierAndZoneNo" parameterType="CarrierZoneVo" resultMap="CarrierZoneMap">
+        select * from xms_tbl_carrier_zone
+        where carrier = #{carrier} and zone_no = #{zoneNo}
+        limit 0,1
+    </select>
+</mapper>

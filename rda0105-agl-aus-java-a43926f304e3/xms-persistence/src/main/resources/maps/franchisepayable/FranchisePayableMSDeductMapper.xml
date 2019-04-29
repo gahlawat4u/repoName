@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FranchisePayableMSDeduct">
+    <resultMap id="FranchisePayableMSDeductMap" type="FranchisePayableMSDeductVo">
+        <result column="customer_name" property="customerName" jdbcType="VARCHAR"/>
+        <result column="invoice_number" property="invoiceNumber" jdbcType="VARCHAR"/>
+        <result column="airbill_number" property="airbillNumber" jdbcType="VARCHAR"/>
+        <result column="customer_payment" property="customerPayment" jdbcType="DECIMAL"/>
+        <result column="customer_cost" property="customerCost" jdbcType="DECIMAL"/>
+        <result column="customer_tax" property="customerTax" jdbcType="DECIMAL"/>
+        <result column="franchise_cost" property="franchiseCost" jdbcType="DECIMAL"/>
+        <result column="franchise_tax" property="franchiseTax" jdbcType="DECIMAL"/>
+        <result column="franchise_charge" property="franchiseCharge" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <!-- Carrier Cost Deduction (Margin Share) -->
+    <select id="getCarrierCostDeduction" parameterType="FranchisePayableFilter" resultMap="FranchisePayableMSDeductMap">
+        <![CDATA[
+		SELECT * FROM tmp_xms_tbl_ms_rpt_fran_pab_deduct
+		WHERE rpt_txn_id = #{rptTxnId} and franchise_charge>0
+	    ]]>
+        AND franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        ORDER BY customer_name, invoice_number, airbill_number
+        <if test="startRecord!=null and recordSize!=null">
+            LIMIT #{startRecord}, #{recordSize}
+        </if>
+    </select>
+
+    <select id="getCarrierCostDeductionTotal" parameterType="FranchisePayableFilter"
+            resultMap="FranchisePayableMSDeductMap">
+        <![CDATA[
+		SELECT
+			SUM(customer_payment) AS customer_payment,
+			SUM(customer_cost) AS customer_cost,
+			SUM(customer_tax) AS customer_tax,
+			SUM(franchise_cost) AS franchise_cost,
+			SUM(franchise_tax) AS franchise_tax,
+			SUM(franchise_charge) AS franchise_charge
+		FROM tmp_xms_tbl_ms_rpt_fran_pab_deduct
+		WHERE rpt_txn_id = #{rptTxnId} and franchise_charge>0
+	    ]]>
+        AND franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+
+    <select id="getCarrierCostDeductionRecordCount" parameterType="FranchisePayableFilter" resultType="int">
+        SELECT COUNT(*) FROM tmp_xms_tbl_ms_rpt_fran_pab_deduct
+        WHERE rpt_txn_id = #{rptTxnId} and franchise_charge>0
+        AND franchise_code IN
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+</mapper>

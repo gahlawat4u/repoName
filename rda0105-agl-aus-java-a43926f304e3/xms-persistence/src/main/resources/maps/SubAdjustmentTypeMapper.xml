@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="SubAdjustmentType">
+    <select id="selectByAWB" parameterType="com.gms.xms.txndb.vo.ShipmentBillingVo" resultType="SubAdjustmentTypeVo">
+        select distinct description as typeName from xms_tbl_shipment_billing
+        where shipmentid = #{shipmentId} and airbill_number = #{airbillNumber} and accessorial_count != 0
+        order by accessorial_count asc
+    </select>
+</mapper>

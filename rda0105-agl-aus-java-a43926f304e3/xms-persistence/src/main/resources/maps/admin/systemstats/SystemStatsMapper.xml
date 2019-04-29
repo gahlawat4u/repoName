@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="SystemStats">
+    <resultMap id="RecentImportMap" type="com.gms.xms.txndb.vo.admin.systemstats.RecentImportVo">
+        <result column="import_date" property="importDate"/>
+        <result column="service_name" property="carrierName"/>
+        <result column="import_count" property="importCount"/>
+    </resultMap>
+    <resultMap id="IdsMap" type="com.gms.xms.txndb.vo.admin.systemstats.IdsVo">
+        <result column="webshipid" property="webshipId"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="senderaddressid" property="senderAddressId"/>
+        <result column="receiveraddressid" property="receiverAddressId"/>
+        <result column="schedule_collection_id" property="scheduleCollectionId"/>
+        <result column="schedule_addressid" property="scheduleAddressId"/>
+        <result column="piece_id" property="pieceId"/>
+    </resultMap>
+    <resultMap id="SysStatAdjustmentLogMap" type="com.gms.xms.txndb.vo.admin.systemstats.SysStatAdjustmentLogVo">
+        <result column="adjustmentid" property="adjustmentId"/>
+        <result column="adjustment_type" property="adjustmentType"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="userid" property="userId"/>
+        <result column="actiondate" property="actionDate"/>
+        <result column="carrier_amt" property="carrierAmt"/>
+        <result column="customer_amt" property="customerAmt"/>
+        <result column="status" property="status"/>
+        <result column="status_name" property="statusName"/>
+        <result column="user_name" property="userName"/>
+        <result column="display_name" property="displayName"/>
+    </resultMap>
+    <select id="getRecentImports" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsFilter"
+            resultMap="RecentImportMap">
+        select
+        concat(
+        substring(
+        date_format(
+        sm.create_date,
+        '%d-%m-%Y %H:%i:%s'
+        ),
+        1,
+        15
+        ),
+        'x'
+        ) as import_date,
+        sv.service_name,
+        count(sm.shipmentid) as import_count
+        from xms_tbl_shipment as sm
+        left join xms_tbl_shipment_type as st on st.shipment_type_id=sm.shipment_type_id
+        left join xms_tbl_service as sv on sv.service_id=st.serviceid
+        where sm.status=0
+        <![CDATA[ and sm.create_date>=date_sub(curdate(),interval 13 month) and sm.create_date<=curdate() ]]>
+        group by import_date, sv.service_id
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+    <select id="countRecentImports" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsFilter"
+            resultType="long">
+        select
+        count(*)
+        from
+        (select
+        concat(
+        substring(
+        date_format(
+        sm.create_date,
+        '%d-%m-%Y %H:%i:%s'
+        ),
+        1,
+        15
+        ),
+        'x'
+        ) as import_date,
+        sv.service_name,
+        count(sm.shipmentid) as import_count
+        from xms_tbl_shipment as sm
+        left join xms_tbl_shipment_type as st on st.shipment_type_id=sm.shipment_type_id
+        left join xms_tbl_service as sv on sv.service_id=st.serviceid
+        where sm.status=0
+        <![CDATA[ and sm.create_date>=date_sub(curdate(),interval 13 month) and sm.create_date<=curdate() ]]>
+        group by import_date, sv.service_id
+        ) as r
+    </select>
+    <select id="getFilterCollections" parameterType="string" resultMap="IdsMap">
+        <bind name="airbillNumberSearch" value="_parameter + '%'"/>
+        select
+        s.webshipid,
+        s.shipmentid,
+        ifnull(s.senderaddressid,0) as senderaddressid,
+        ifnull(s.receiveraddressid,0) as receiveraddressid,
+        ifnull(c.schedule_collection_id,0) as schedule_collection_id,
+        ifnull(c.addressid,0) as schedule_addressid,
+        ifnull(p.piece_id,0) as piece_id
+        from xms_tbl_shipment s
+        left join xms_tbl_schedule_collection c on s.shipmentid=c.shipmentid
+        left join xms_tbl_shipment_product_detail sp on s.shipmentid=sp.shipmentid
+        left join xms_tbl_piece p on s.shipmentid=p.shipmentid
+        where s.airbill_number like #{airbillNumberSearch}
+    </select>
+    <select id="getAdjustmentLogs" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsAdjustmentLogFilter"
+            resultMap="SysStatAdjustmentLogMap">
+        select
+        adh.adjustmentid,
+        adj.adjustment_type,
+        adj.airbill_number,
+        sm.customer_code,
+        adh.userid,
+        adh.actiondate,
+        (adj.carrier_amount+adj.gst_carrier_amount) as carrier_amt,
+        (adj.customer_amount+adj.gst_customer_amount) as customer_amt,
+        adh.status,
+        case adh.status
+        when 1 then 'Submitted'
+        when 2 then 'Pending'
+        when 3 then 'Disputed'
+        when 4 then 'Approved'
+        when 5 then 'Disputed Denied'
+        when 6 then 'Deleted'
+        else ''
+        end as status_name,
+        u.user_name,
+        u.display_name
+        from xms_tbl_adjustment_history as adh
+        left join xms_tbl_user as u on u.userid = adh.userid
+        left join xms_tbl_airbill_adjustment as adj on adj.adjustmentid = adh.adjustmentid
+        left join xms_tbl_shipment as sm on sm.shipmentid = adj.shipmentid and sm.airbill_number = adj.airbill_number
+        <where>
+            <if test="franchiseList!=null and franchiseList!=''">
+                and left(sm.customer_code,3) in (${franchiseList})
+            </if>
+            <if test="startDate!=null and startDate!=''">
+                and adh.actiondate>=#{startDate}
+            </if>
+            <if test="endDate!=null and endDate!=''">
+                <![CDATA[ and adh.actiondate<date_add(#{endDate},interval 1 day) ]]>
+            </if>
+            <if test="requestType!=null and requestType!=''">
+                and adj.adjustment_type = #{requestType}
+            </if>
+            <if test="airbillNumber!=null and airbillNumber!=''">
+                and adj.airbill_number like concat('%',#{airbillNumber},'%')
+            </if>
+            <if test="status!=null and status!=''">
+                <if test="status!=-1">
+                    and adh.status = #{status}
+                </if>
+            </if>
+        </where>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+    <select id="countAdjustmentLogs" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsAdjustmentLogFilter"
+            resultType="long">
+        select
+        count(*)
+        from xms_tbl_adjustment_history as adh
+        left join xms_tbl_user as u on u.userid = adh.userid
+        left join xms_tbl_airbill_adjustment as adj on adj.adjustmentid = adh.adjustmentid
+        left join xms_tbl_shipment as sm on sm.shipmentid = adj.shipmentid and sm.airbill_number = adj.airbill_number
+        <where>
+            <if test="franchiseList!=null and franchiseList!=''">
+                and left(sm.customer_code,3) in (${franchiseList})
+            </if>
+            <if test="startDate!=null and startDate!=''">
+                and adh.actiondate>=#{startDate}
+            </if>
+            <if test="endDate!=null and endDate!=''">
+                <![CDATA[ and adh.actiondate<date_add(#{endDate},interval 1 day) ]]>
+            </if>
+            <if test="requestType!=null and requestType!=''">
+                and adj.adjustment_type = #{requestType}
+            </if>
+            <if test="airbillNumber!=null and airbillNumber!=''">
+                and adj.airbill_number like concat('%',#{airbillNumber},'%')
+            </if>
+            <if test="status!=null and status!=''">
+                <if test="status!=-1">
+                    and adh.status = #{status}
+                </if>
+            </if>
+        </where>
+    </select>
+</mapper>

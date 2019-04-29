@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ManageCustomerInvoice">
+    <resultMap id="ManageCustomerInvoiceMap" type="ManageCustomerInvoiceVo">
+        <id column="invoiceid" property="invoiceId"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="total" property="total"/>
+        <result column="late_fee" property="lateFee"/>
+        <result column="paid" property="paid"/>
+        <result column="owed" property="owed"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="due_date" property="dueDate"/>
+        <result column="over_due" property="overDue"/>
+        <result column="airbill_count" property="airbillCount"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <resultMap id="ManageCustomerInvoiceDetailMap" type="ManageCustomerInvoiceDetailVo"
+               extends="ManageCustomerInvoiceMap">
+        <result column="cust_paid" property="customerPaid"/>
+        <result column="credit_total" property="creditTotal"/>
+        <result column="credit_note" property="creditNote"/>
+        <result column="bad_debt" property="badDebt"/>
+        <result column="satisfaction_credit" property="satisfactionCredit"/>
+        <result column="margin_exc_tax" property="marginExcTax"/>
+        <result column="paid_late_fee" property="paidLateFee"/>
+    </resultMap>
+
+    <select id="selectByCusCode" parameterType="com.gms.xms.filter.account.customers.manage.ManageCustomerInvoiceFilter"
+            resultMap="ManageCustomerInvoiceMap">
+        <![CDATA[
+		select
+			r2.invoiceid,
+			r2.invoice_code,
+			r2.total,
+			r2.late_fee,
+			r2.paid,
+		    (r2.total+r2.late_fee-r2.paid) as owed,
+		    r2.invoice_date,
+		    r2.due_date,
+		    if(r2.total>r2.paid,datediff(now(),r2.due_date),null) as over_due,
+		    r2.airbill_count,
+		    r2.status
+		from 
+			(select 
+				r1.invoiceid, 
+				r1.invoice_code,
+				r1.total,
+				r1.late_fee,
+				ifnull(sum(ip.amount),0) as paid,
+				r1.invoice_date,
+				date_add(r1.invoice_date,interval it.days day) as due_date,
+				r1.airbill_count,
+		        max(ip.apply_date) as last_payment_date,
+		        r1.status
+			from
+				(select 
+					i.invoiceid, 
+					i.invoice_code,
+					i.invoice_date,
+					i.late_fee,
+					c.invoice_terms,
+					sum(sb.customer_cost+sb.customer_tax_amount) as total,
+					sic.airbill_count,
+					i.status
+				from xms_tbl_invoice as i
+				inner join 
+					(select customer_code, invoice_terms from xms_tbl_customer
+					union 
+					select franchise_code as customer_code, invoice_terms from xms_tbl_franchise) as c on c.customer_code = i.customer_code
+				inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+				inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+				inner join
+					(select invoiceid, count(*) as airbill_count from xms_tbl_shipment_invoice
+					group by invoiceid
+					) as sic on sic.invoiceid = i.invoiceid
+			]]>
+        where i.customer_code = #{customerCode}
+        group by i.invoice_code) as r1
+        left join xms_tbl_invoice_payment as ip on ip.invoiceid = r1.invoiceid
+        left join xms_tbl_invoice_terms as it on it.invoice_terms_id = r1.invoice_terms
+        group by r1.invoice_code) as r2
+        <if test="filterType==1">
+            where r2.total>r2.paid
+        </if>
+        <if test="filterType==2">
+            having over_due>0
+        </if>
+        <if test="filterType==3">
+            where r2.total&lt;=r2.paid
+        </if>
+        order by r2.invoice_date desc, over_due desc
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countByCusCode" parameterType="com.gms.xms.filter.account.customers.manage.ManageCustomerInvoiceFilter"
+            resultType="long">
+        select count(*) from
+        (<![CDATA[
+			select
+				r2.invoiceid,
+				r2.invoice_code,
+				r2.total,
+				r2.late_fee,
+				r2.paid,
+			    (r2.total+r2.late_fee-r2.paid) as owed,
+			    r2.invoice_date,
+			    r2.due_date,
+			    if(r2.total>r2.paid,datediff(now(),r2.due_date),null) as over_due,
+			    r2.airbill_count
+			from 
+				(select 
+					r1.invoiceid, 
+					r1.invoice_code,
+					r1.total,
+					r1.late_fee,
+					ifnull(sum(ip.amount),0) as paid,
+					r1.invoice_date,
+					date_add(r1.invoice_date,interval it.days day) as due_date,
+					r1.airbill_count,
+			        max(ip.apply_date) as last_payment_date
+				from
+					(select 
+						i.invoiceid, 
+						i.invoice_code,
+						i.invoice_date,
+						i.late_fee,
+						c.invoice_terms,
+						sum(sb.customer_cost+sb.customer_tax_amount) as total,
+						sic.airbill_count
+					from xms_tbl_invoice as i
+					inner join 
+						(select customer_code, invoice_terms from xms_tbl_customer
+						union 
+						select franchise_code as customer_code, invoice_terms from xms_tbl_franchise) as c on c.customer_code = i.customer_code
+					inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+					inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+					inner join
+						(select invoiceid, count(*) as airbill_count from xms_tbl_shipment_invoice
+						group by invoiceid
+						) as sic on sic.invoiceid = i.invoiceid
+				]]>
+        where i.customer_code = #{customerCode}
+        group by i.invoice_code) as r1
+        left join xms_tbl_invoice_payment as ip on ip.invoiceid = r1.invoiceid
+        left join xms_tbl_invoice_terms as it on it.invoice_terms_id = r1.invoice_terms
+        group by r1.invoice_code) as r2
+        <if test="filterType==1">
+            where r2.total>r2.paid
+        </if>
+        <if test="filterType==2">
+            having over_due>0
+        </if>
+        <if test="filterType==3">
+            where r2.total&lt;=r2.paid
+        </if>) as r3
+    </select>
+
+    <select id="selectByInvoiceCode" parameterType="String" resultMap="ManageCustomerInvoiceDetailMap">
+        <![CDATA[
+		select 
+			r3.*,
+			r3.paid-ifnull(credit.credit_total,0) as cust_paid,
+			ifnull(credit.credit_note,0) as credit_note,
+		    ifnull(credit.credit_total,0) as credit_total,
+		    ifnull(credit.bad_debt,0) as bad_debt,
+		    ifnull(credit.satisfaction_credit,0) as satisfaction_credit,
+		    0 as paid_late_fee
+		from
+			(select
+				r2.invoiceid,
+				r2.invoice_code,
+				r2.total,
+				r2.late_fee,
+				r2.margin_exc_tax,
+				r2.paid,
+				(r2.total+r2.late_fee-r2.paid) as owed,
+				r2.invoice_date,
+				r2.due_date,
+				if(r2.total>r2.paid,datediff(now(),r2.due_date),null) as over_due,
+				r2.airbill_count
+			from 
+				(select 
+					r1.invoiceid, 
+					r1.invoice_code,
+					r1.total,
+					r1.late_fee,
+					r1.margin_exc_tax,
+					ifnull(sum(ip.amount),0) as paid,
+					r1.invoice_date,
+					date_add(r1.invoice_date,interval it.days day) as due_date,
+					r1.airbill_count,
+					max(ip.apply_date) as last_payment_date
+				from
+					(select 
+						i.invoiceid, 
+						i.invoice_code,
+						i.invoice_date,
+						i.late_fee,
+						c.invoice_terms,
+						sum(sb.customer_cost+sb.customer_tax_amount) as total,
+						sum(sb.customer_cost-sb.franchise_cost) as margin_exc_tax,
+						sic.airbill_count
+					from xms_tbl_invoice as i
+					inner join 
+						(select customer_code, invoice_terms from xms_tbl_customer
+						union 
+						select franchise_code as customer_code, invoice_terms from xms_tbl_franchise) as c on c.customer_code = i.customer_code
+					inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+					inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+					inner join
+						(select invoiceid, count(*) as airbill_count from xms_tbl_shipment_invoice
+						group by invoiceid
+						) as sic on sic.invoiceid = i.invoiceid
+				]]>
+        where i.invoice_code = #{invoiceCode}
+        group by i.invoice_code) as r1
+        left join xms_tbl_invoice_payment as ip on ip.invoiceid = r1.invoiceid
+        left join xms_tbl_invoice_terms as it on it.invoice_terms_id = r1.invoice_terms
+        group by r1.invoice_code) as r2
+        ) as r3
+        left join
+        (select
+        i.invoice_code,
+        sum(ip.amount) as credit_total,
+        sum(if(cp.cheque='Credit Note',ip.amount,0)) as credit_note,
+        sum(if(cp.cheque='Bad Debt',ip.amount,0)) as bad_debt,
+        sum(if(cp.cheque='Satisfaction Credit',ip.amount,0)) as satisfaction_credit
+        from xms_tbl_customer_payment as cp
+        inner join xms_tbl_credit_note_detail as cnd on cnd.cus_paymentid = cp.cus_paymentid
+        inner join xms_tbl_airbill_adjustment as adj on adj.adjustmentid = cnd.adjustmentid
+        inner join xms_tbl_invoice_payment as ip on ip.cus_paymentid = cp.cus_paymentid
+        inner join xms_tbl_invoice as i on i.invoiceid = ip.invoiceid
+        where i.invoice_code = #{invoiceCode}) as credit on credit.invoice_code = r3.invoice_code
+    </select>
+</mapper>

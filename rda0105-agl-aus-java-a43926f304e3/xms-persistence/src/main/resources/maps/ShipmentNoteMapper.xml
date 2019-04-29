@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ShipmentNote">
+    <resultMap id="ShipmentNote" type="com.gms.xms.txndb.vo.ShipmentNoteVo">
+        <id column="id" property="id"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="create_date" property="createDate"/>
+        <result column="note" property="note"/>
+    </resultMap>
+
+    <select id="selectNoteByShipmentId" resultMap="ShipmentNote" parameterType="ShipmentNoteFilter">
+        SELECT SQL_CALC_FOUND_ROWS n.shipmentid,n.create_date,n.note
+        FROM xms_tbl_shipment_note AS n where n.shipmentid=#{shipmentId}
+        <if test="shipmentId != null">
+            LIMIT 0,#{sizeRecord}
+        </if>
+    </select>
+
+    <insert id="ShipmentNode_InsertNote" parameterType="com.gms.xms.txndb.vo.ShipmentNoteVo">
+        insert into xms_tbl_shipment_note (shipmentid, create_date,
+        note)
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="shipmentId != null">
+                #{shipmentId},
+            </if>
+            <if test="createDate != null">
+                #{createDate},
+            </if>
+            <if test="createDate == null">
+                date(now()),
+            </if>
+            <if test="note != null">
+                #{note},
+            </if>
+        </trim>
+    </insert>
+
+</mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="DhlRemoteSurchargeData">
+    <resultMap id="DhlRemoteSurchargeDataMap" type="DhlRemoteSurchargeDataVo">
+        <result column="id" property="id"/>
+        <result column="country_code" property="countryCode"/>
+        <result column="state_name" property="stateName"/>
+        <result column="city_name" property="cityName"/>
+        <result column="from_postal" property="fromPostal"/>
+        <result column="to_postal" property="toPostal"/>
+    </resultMap>
+    <select id="selectDhlRemoteSurchargeData" resultMap="DhlRemoteSurchargeDataMap"
+            parameterType="com.gms.xms.filter.webship.DhlRemoteSurchargeDataFilter">
+        <if test='"I".equals(checkType)'>
+            SELECT
+            *
+            FROM
+            (SELECT
+            *
+            FROM
+            xms_tbl_dhl_remote_surcharge_data
+            WHERE
+            country_code = #{countryCode}) AS ras
+            WHERE
+            ras.city_name = #{cityName}
+            <if test="postalCode != null and postalCode != ''">
+                <![CDATA[
+			        OR (#{postalCode} >= ras.from_postal
+			        AND #{postalCode} <= ras.to_postal)
+					]]>
+            </if>
+        </if>
+        <if test='"P".equals(checkType) or "C".equals(checkType)'>
+            SELECT
+            *
+            FROM
+            xms_tbl_dhl_remote_surcharge_data
+            WHERE
+            country_code = #{countryCode}
+            <if test='"C".equals(checkType)'>
+                AND city_name = #{cityName}
+            </if>
+            <if test='"P".equals(checkType)'>
+                <![CDATA[
+					        AND #{postalCode} >= from_postal AND #{postalCode} <= to_postal
+					    ]]>
+            </if>
+        </if>
+    </select>
+</mapper>

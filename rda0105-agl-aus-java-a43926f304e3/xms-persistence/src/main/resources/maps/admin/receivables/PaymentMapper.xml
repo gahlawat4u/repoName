@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Payment">
+    <resultMap id="PaymentMap" type="PaymentDetailVo">
+        <result column="cus_paymentid" property="cusPaymentId"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="payment_date" property="paymentDate"/>
+        <result column="amount" property="amount"/>
+        <result column="cheque" property="cheque"/>
+        <result column="note" property="note"/>
+        <result column="over_amount" property="overAmount"/>
+        <result column="credit_type" property="creditType"/>
+        <result column="over_payment_type" property="overPaymentType"/>
+        <result column="is_credit" property="isCredit"/>
+        <result column="invoice_list" property="invoiceList"/>
+    </resultMap>
+
+    <resultMap id="PaymentTotalMap" type="PaymentTotalVo">
+        <result column="total" property="total"/>
+        <result column="total_received" property="totalReceived"/>
+    </resultMap>
+
+    <select id="getPaymentByFilter" parameterType="com.gms.xms.filter.admin.receivables.payments.PaymentFilter"
+            resultMap="PaymentMap">
+        <![CDATA[
+		select
+			cp.cus_paymentid,
+			cp.customer_code,
+		    ca.customer_name,
+		    cp.payment_date,
+		    cp.amount,
+		    cp.cheque,
+		    n.note,
+		    ifnull(op.over_amount,0) as over_amount,
+		    ifnull(credit.credit_type,'') as credit_type,
+		    if (op.over_amount>0,concat(ifnull(credit.credit_type,'Normal'),' Overpayment'),'') as over_payment_type,
+		    if (cp.cheque not in('Satisfaction Credit','Bad Debt','Credit Note','NSF of Satisfaction Credit','NSF of Bad Debt','Carrier Credit Note'),0,1) as is_credit,
+		    ifnull(i.invoice_list,'') as invoice_list
+		from xms_tbl_customer_payment as cp 
+		left join xms_tbl_note as n on n.paymentid = cp.cus_paymentid and n.paymentid>0
+		left join xms_tbl_customer_address as ca on ca.customer_code = cp.customer_code
+		left join
+			(select 
+				cnd.cus_paymentid,
+				case adj.credit_type 
+					when 0 then 'Carrier Credit'
+					when 1 then 'Credit'
+					else 'Unknown Credit'
+				end as credit_type
+			from xms_tbl_credit_note_detail as cnd
+			inner join xms_tbl_airbill_adjustment as adj on adj.adjustmentid = cnd.adjustmentid
+			where cnd.cus_paymentid!=0
+			group by cnd.cus_paymentid
+		    ) as credit on credit.cus_paymentid = cp.cus_paymentid
+		left join
+			(select cus_paymentid, sum(over_amount) as over_amount from xms_tbl_overpayment
+		    group by cus_paymentid
+		    ) as op on op.cus_paymentid = cp.cus_paymentid
+		left join
+			(select ip.cus_paymentid, group_concat(DISTINCT i.invoice_code order by invoice_code) as invoice_list from xms_tbl_invoice_payment as ip
+		    inner join xms_tbl_invoice as i on i.invoiceid = ip.invoiceid
+		    group by ip.cus_paymentid
+		    ) as i on i.cus_paymentid = cp.cus_paymentid
+		]]>
+        where left(cp.customer_code,3) in (${franchiseList})
+        <![CDATA[ and cp.payment_date>=date(#{startDate}) and cp.payment_date<date_add(date(#{endDate}),interval 1 day) ]]>
+        <if test="bankId!=null and bankId!=''">
+            and cp.bankid = #{bankId}
+        </if>
+        <if test="customerCode!=null and customerCode!=''">
+            and cp.customer_code like concat(#{customerCode},'%')
+        </if>
+        <if test="min!=null">
+            and cp.amount >= #{min}
+        </if>
+        <if test="max!=null">
+            <![CDATA[ and cp.amount <= #{max} ]]>
+        </if>
+        <if test="note!=null and note!=''">
+            and n.note like concat('%',#{note},'%')
+        </if>
+        <if test="cheque!=null and cheque!=''">
+            and cp.cheque like concat('%',#{cheque},'%')
+        </if>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countPaymentByFilter" parameterType="com.gms.xms.filter.admin.receivables.payments.PaymentFilter"
+            resultType="long">
+        <![CDATA[
+		select
+			count(*)
+		from xms_tbl_customer_payment as cp 
+		left join xms_tbl_note as n on n.paymentid = cp.cus_paymentid and n.paymentid>0
+		left join xms_tbl_customer_address as ca on ca.customer_code = cp.customer_code
+		left join
+			(select 
+				cnd.cus_paymentid,
+				case adj.credit_type 
+					when 0 then 'Carrier Credit'
+					when 1 then 'Credit'
+					else 'Unknown Credit'
+				end as credit_type
+			from xms_tbl_credit_note_detail as cnd
+			inner join xms_tbl_airbill_adjustment as adj on adj.adjustmentid = cnd.adjustmentid
+			where cnd.cus_paymentid!=0
+			group by cnd.cus_paymentid
+		    ) as credit on credit.cus_paymentid = cp.cus_paymentid
+		left join
+			(select cus_paymentid, sum(over_amount) as over_amount from xms_tbl_overpayment
+		    group by cus_paymentid
+		    ) as op on op.cus_paymentid = cp.cus_paymentid
+		left join
+			(select ip.cus_paymentid, group_concat(DISTINCT i.invoice_code order by invoice_code) as invoice_list from xms_tbl_invoice_payment as ip
+		    inner join xms_tbl_invoice as i on i.invoiceid = ip.invoiceid
+		    group by ip.cus_paymentid
+		    ) as i on i.cus_paymentid = cp.cus_paymentid
+		]]>
+        where left(cp.customer_code,3) in (${franchiseList})
+        <![CDATA[ and cp.payment_date>=date(#{startDate}) and cp.payment_date<date_add(date(#{endDate}),interval 1 day) ]]>
+        <if test="bankId!=null and bankId!=''">
+            and cp.bankid = #{bankId}
+        </if>
+        <if test="customerCode!=null and customerCode!=''">
+            and cp.customer_code like concat(#{customerCode},'%')
+        </if>
+        <if test="min!=null">
+            and cp.amount >= #{min}
+        </if>
+        <if test="max!=null">
+            <![CDATA[ and cp.amount <= #{max} ]]>
+        </if>
+        <if test="note!=null and note!=''">
+            and n.note like concat('%',#{note},'%')
+        </if>
+        <if test="cheque!=null and cheque!=''">
+            and cp.cheque like concat('%',#{cheque},'%')
+        </if>
+    </select>
+
+    <select id="sumPaymentByFilter" parameterType="com.gms.xms.filter.admin.receivables.payments.PaymentFilter"
+            resultMap="PaymentTotalMap">
+        <![CDATA[
+		select
+		    sum(cp.amount) as total,
+		    sum(if(cp.cheque not in('Satisfaction Credit','Bad Debt','Credit Note','NSF of Satisfaction Credit','NSF of Bad Debt','Carrier Credit Note'),cp.amount,0)) as total_received
+		from xms_tbl_customer_payment as cp 
+		left join xms_tbl_note as n on n.paymentid = cp.cus_paymentid and n.paymentid>0
+		]]>
+        where left(cp.customer_code,3) in (${franchiseList})
+        <![CDATA[ and cp.payment_date>=date(#{startDate}) and cp.payment_date<date_add(date(#{endDate}),interval 1 day) ]]>
+        <if test="bankId!=null and bankId!=''">
+            and cp.bankid = #{bankId}
+        </if>
+        <if test="customerCode!=null and customerCode!=''">
+            and cp.customer_code like concat(#{customerCode},'%')
+        </if>
+        <if test="min!=null">
+            and cp.amount >= #{min}
+        </if>
+        <if test="max!=null">
+            <![CDATA[ and cp.amount <= #{max} ]]>
+        </if>
+        <if test="note!=null and note!=''">
+            and n.note like concat('%',#{note},'%')
+        </if>
+        <if test="cheque!=null and cheque!=''">
+            and cp.cheque like concat('%',#{cheque},'%')
+        </if>
+    </select>
+
+    <select id="getPaymentForCredit" parameterType="string" resultType="double">
+        select
+        if(invoice.paid = 1,
+        '0.00',
+        (sum(ifnull(bill.customer_cost, '0.00') + ifnull(bill.customer_tax_amount, '0.00'))) - (ifnull(payment.paid,
+        '0.00'))) as remain
+        from
+        xms_tbl_invoice as invoice
+        left join
+        xms_tbl_shipment_invoice as ship on ship.invoiceid = invoice.invoiceid
+        left join
+        xms_tbl_shipment_billing bill on (bill.shipmentid = ship.shipmentid
+        and bill.airbill_number = ship.airbill_number)
+        left join
+        (select
+        invoiceid, sum(amount) as paid
+        from
+        xms_tbl_invoice_payment
+        group by invoiceid) as payment on payment.invoiceid = invoice.invoiceid
+        where
+        invoice.invoice_code = #{invoiceCode}
+    </select>
+</mapper>

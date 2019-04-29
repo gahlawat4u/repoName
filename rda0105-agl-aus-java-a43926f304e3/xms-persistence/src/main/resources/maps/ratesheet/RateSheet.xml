@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="RateSheet">
+    <select id="selectCarrierRate"
+            parameterType="com.gms.xms.txndb.vo.ratesheet.CarrierRateFilterVo"
+            resultType="com.gms.xms.txndb.vo.ratesheet.CarrierRateVo">
+        <![CDATA[
+	SELECT
+		sum(carrier) AS carrierRate,
+		sum(noncarrier) AS nonCarrierRate,
+		sum(carrier_per) AS carrierPerWeightRate,
+		sum(noncarrier_per) AS nonCarrierPerWeightRate
+	FROM
+	(
+		SELECT
+			CASE WHEN carrier_cost = 1 AND is_per_weight = 0 THEN sheet_id ELSE '' END AS carrier,
+			CASE WHEN carrier_cost = 0 AND is_per_weight = 0 THEN sheet_id ELSE '' END AS noncarrier,
+			CASE WHEN carrier_cost = 1 AND is_per_weight = 1 THEN sheet_id ELSE '' END AS carrier_per,
+			CASE WHEN carrier_cost = 0 AND is_per_weight = 1 THEN sheet_id ELSE '' END AS noncarrier_per
+		FROM xms_tbl_rate_sheet
+		WHERE sheet_name LIKE CONCAT('%',#{sheetName},'%')
+	) AS rate LIMIT 1;
+	]]>
+    </select>
+
+    <select id="selectQuoteBaseChargeWebship"
+            parameterType="com.gms.xms.txndb.vo.ratesheet.CarrierRateFilterVo"
+            resultType="com.gms.xms.txndb.vo.ratesheet.QuoteBaseChargeVo">
+        SELECT
+        value as value,
+        row_name as rowName,
+        char_row_name as charRowName,
+        ischar as isChar,
+        FROM
+        xms_tbl_rate_sheet_detail AS sd
+        INNER JOIN xms_tbl_rate_sheet_column AS sc ON sc.column_id = sd.column_id
+        INNER JOIN xms_tbl_rate_sheet_row AS sr ON sr.row_id = sd.row_id
+        WHERE
+        sd.sheet_id = 0
+        AND sc.column_name = '0'
+        <if test="pieces != ''">
+            AND sr.row_name >= #{pieces} order by sr.row_name LIMIT 1
+        </if>
+        <if test="pieces == ''">
+            <![CDATA[
+				AND sr.row_name <= #{pieces} order by sr.row_name desc LIMIT 1
+			]]>
+        </if>
+    </select>
+
+    <select id="getMaxMinWeight"
+            parameterType="com.gms.xms.txndb.vo.ratesheet.CarrierRateFilterVo"
+            resultType="com.gms.xms.txndb.vo.ratesheet.MaxMinWeightVo">
+
+        SELECT 'max document' as detail , row_name as weight , value as rateValue FROM xms_tbl_rate_sheet_detail AS sd
+
+        INNER JOIN xms_tbl_rate_sheet_column AS sc on sc.column_id=sd.column_id
+
+        INNER JOIN xms_tbl_rate_sheet_row AS sr on sr.row_id=sd.row_id
+
+        WHERE sd.sheet_id=#{sheetId} and sc.column_name=#{zone}
+        order by sr.row_name
+        <if test="type == 'max'">
+            desc
+        </if>
+        LIMIT 1
+
+
+    </select>
+
+</mapper>

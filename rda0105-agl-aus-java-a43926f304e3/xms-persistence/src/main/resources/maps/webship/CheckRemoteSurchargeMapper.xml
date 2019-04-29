@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CheckRemoteSurcharge">
+    <resultMap id="CheckRemoteSurchargeMap" type="CheckRemoteSurchargeVo">
+        <result column="id" property="id"/>
+        <result column="countryid" property="countryId"/>
+        <result column="countryname" property="countryName"/>
+        <result column="is_cityname" property="isCityName"/>
+        <result column="is_postalcode" property="isPostalCode"/>
+    </resultMap>
+    <select id="getCheckRemoteData" parameterType="long" resultType="string">
+        SELECT
+        CASE
+        WHEN is_cityname = 0 AND is_postalcode = 1 THEN 'P'
+        WHEN is_cityname = 1 AND is_postalcode = 0 THEN 'C'
+        WHEN is_cityname = 1 AND is_postalcode = 1 THEN 'I'
+        END AS result
+        FROM
+        xms_tbl_check_remote_surcharge
+        WHERE
+        countryid = #{countryId};
+    </select>
+</mapper>

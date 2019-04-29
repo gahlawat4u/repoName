@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Bank">
+    <resultMap id="BankMap" type="com.gms.xms.txndb.vo.BankVo">
+        <id column="bankid" property="bankId" jdbcType="BIGINT"/>
+        <result column="bankname" property="bankName" jdbcType="VARCHAR"/>
+        <result column="user_level_id" property="userLevelId" jdbcType="INTEGER"/>
+        <result column="modified_date" property="modifiedDate" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <resultMap id="BankListMap" type="BankVo" extends="BankMap">
+        <id column="user_level_id" property="userLevelId"/>
+        <association property="userLevel" javaType="UserLevelVo">
+            <id column="user_level_id" property="userLevelId"/>
+            <result column="ul_user_level_name" property="userLevelName"/>
+        </association>
+    </resultMap>
+
+    <select id="selectAll" resultMap="BankMap">
+        select * from xms_tbl_bank order by bankname
+    </select>
+
+    <select id="countBankListByFilter" parameterType="com.gms.xms.filter.receivables.BankFilter" resultType="long">
+        select count(*) from xms_tbl_bank b
+        inner join xms_tbl_user_level ul on b.user_level_id=ul.user_level_id
+        <if test="userLevelId != 1">
+            where b.bankid != 0 and b.user_level_id= #{userLevelId}
+        </if>
+    </select>
+
+    <select id="selectBankList" parameterType="com.gms.xms.filter.receivables.BankFilter" resultMap="BankListMap">
+        select
+        b.bankid,
+        b.bankname,
+        b.modified_date AS modified_date,
+        b.modified_date AS sorting_date,
+        ul.user_level_name as ul_user_level_name
+        from xms_tbl_bank b
+        inner join xms_tbl_user_level ul on b.user_level_id=ul.user_level_id
+        <if test="userLevelId != 1">
+            where b.bankid != 0 and b.user_level_id= #{userLevelId}
+        </if>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectById" parameterType="long" resultMap="BankMap">
+        select * from xms_tbl_bank where bankid = #{bankId}
+    </select>
+
+    <insert id="insert" parameterType="BankVo" useGeneratedKeys="true" keyProperty="productId">
+        insert into xms_tbl_bank (bankname,user_level_id,modified_date)
+        values (#{bankName},#{userLevelId},#{modifiedDate})
+    </insert>
+
+    <update id="update" parameterType="BankVo">
+        update xms_tbl_bank
+        <set>
+            <if test="bankName != null">
+                bankname = #{bankName},
+            </if>
+            <if test="userLevelId != null">
+                user_level_id = #{userLevelId},
+            </if>
+            <if test="modifiedDate != null">
+                modified_date = #{modifiedDate}
+            </if>
+        </set>
+        <where>
+            bankid = #{bankId}
+        </where>
+    </update>
+
+    <select id="update_SelectForLog" parameterType="BankVo" resultMap="BankMap">
+        select * from xms_tbl_bank
+        <where>
+            bankid = #{bankId}
+        </where>
+    </select>
+
+    <delete id="delete" parameterType="long">
+        delete from xms_tbl_bank where bankid = #{bankId}
+    </delete>
+
+    <select id="delete_SelectForLog" parameterType="long" resultMap="BankMap">
+        select * from xms_tbl_bank where bankid = #{bankId}
+    </select>
+
+    <select id="countBankByName" resultType="long" parameterType="com.gms.xms.filter.receivables.BankFilter">
+        select count(*) FROM xms_tbl_bank WHERE bankname = #{bankName}
+        <if test="bankId != null">
+            and bankid != #{bankId}
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TollPickupResponse>
+    <Header>
+        <Sender>Toll</Sender>
+        <Receiver>TollConnect</Receiver>
+        <DocumentType>TollPickupResponse</DocumentType>
+        <DocumentID>2006121783371</DocumentID>
+        <DateTimeStamp>2006-01-12T17:08:03+1100</DateTimeStamp>
+    </Header>
+    <Error>
+        <Message># ERROR (0): Error while processing B2B Pickup Request.
+            -&gt; original exception: # ERROR (0): The Carrier (GOOG) does not support B2B Pickup, OR you do not have
+            the required privileges to perform B2B Pickup request.
+        </Message>
+    </Error>
+</TollPickupResponse>

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Markup">
+    <resultMap id="MarkupMap" type="MarkupVo">
+        <result column="accessorialid" property="accessorialId"/>
+        <result column="code" property="code"/>
+        <result column="description" property="description"/>
+        <result column="modified_date" property="modifiedDate"/>
+        <result column="typename" property="typeName"/>
+        <result column="amount" property="amount"/>
+        <result column="service_name" property="serviceName"/>
+        <result column="profileid" property="profileId"/>
+        <result column="franchise_code" property="franchsieCode"/>
+    </resultMap>
+
+    <insert id="insertCustomerProfileAccessorial" parameterType="MarkupVo">
+        insert into xms_tbl_customer_profile_accessorial(profileid, accessorialid, amount)
+        values (#{profileId},#{accessorialId}, #{amount})
+    </insert>
+
+    <update id="updateCustomerProfile" parameterType="MarkupVo">
+        update xms_tbl_customer_profile_accessorial
+        set amount = #{amount}
+        where profileid = #{profileId} and accessorialid = #{accessorialId}
+    </update>
+
+    <select id="updateCustomerProfile_SelectForLog" parameterType="MarkupVo" resultMap="MarkupMap">
+        select * from xms_tbl_customer_profile_accessorial
+        where profileid = #{profileId} and accessorialid = #{accessorialId}
+    </select>
+
+    <select id="selectDetailByIds" parameterType="com.gms.xms.filter.account.customers.manage.MarkupFilter"
+            resultMap="MarkupMap">
+        SELECT
+        a.accessorialid,
+        description,
+        <if test="profileId != null and profileId != ''">
+            cpa.profileid,
+        </if>
+
+        CODE,
+        AT.typename,
+        ifnull(cpa.amount, '0.00') AS amount,
+        modified_date
+        FROM
+        xms_tbl_accessorial AS a
+        INNER JOIN xms_tbl_accessorial_type AS AT ON a.typeid = AT .typeid
+        <if test="franchiseCode != null and franchiseCode != ''">
+            LEFT JOIN xms_tbl_customer_accessorial AS cpa ON (
+            a.accessorialid = cpa.accessorialid
+            AND cpa.customer_code = #{franchiseCode}
+            )
+        </if>
+        <if test="profileId == null and franchiseCode == null">
+            LEFT JOIN xms_tbl_customer_accessorial AS cpa ON (
+            a.accessorialid = cpa.accessorialid
+            )
+        </if>
+        <if test="profileId != null and profileId != ''">
+            LEFT JOIN xms_tbl_customer_profile_accessorial AS cpa ON (
+            a.accessorialid = cpa.accessorialid
+            AND profileid = #{profileId}
+            )
+        </if>
+
+        <where>
+            <if test="accessorialId!=null or accessorialId!=''">
+                and a.accessorialid = #{accessorialId}
+            </if>
+        </where>
+        limit 1
+    </select>
+
+    <select id="selectMarkupForCustomer" parameterType="com.gms.xms.filter.account.customers.manage.MarkupFilter"
+            resultMap="MarkupMap">
+        SELECT
+        a.accessorialid,
+        description,
+        CODE,
+        AT.typename,
+        <if test="(profileId != null and profileId != '') or (franchiseCode != null and franchiseCode != '')">
+            ifnull(cpa.amount, '0.00') AS amount,
+        </if>
+        s.service_name,
+        modified_date
+        FROM
+        xms_tbl_accessorial AS a
+        INNER JOIN xms_tbl_accessorial_type AS AT ON a.typeid = AT .typeid
+        <if test="profileId != null and profileId != ''">
+            LEFT JOIN xms_tbl_customer_profile_accessorial AS cpa ON (
+            a.accessorialid = cpa.accessorialid
+            AND profileid = #{profileId}
+            )
+        </if>
+        <if test="franchiseCode != null and franchiseCode != ''">
+            LEFT JOIN xms_tbl_customer_accessorial AS cpa ON (
+            a.accessorialid = cpa.accessorialid
+            AND cpa.customer_code = #{franchiseCode}
+            )
+        </if>
+        LEFT JOIN xms_tbl_service AS s ON (a.carrier = s.service_id)
+        <where>
+            <if test="code!=null and code!=''">
+                and a.code like concat(#{code},'%')
+            </if>
+            <if test="description!=null and description!=''">
+                and a.description like concat(#{description},'%')
+            </if>
+            <if test="typeName!=null and typeName!=''">
+                and AT.typename like concat(#{typeName},'%')
+            </if>
+            <if test="amount!=null and amount!=''">
+                and ifnull(cpa.amount,0.00) like concat(#{amount},'%')
+            </if>
+            <if test="serviceName!=null and serviceName!=''">
+                and s.service_name like concat(#{serviceName},'%')
+            </if>
+        </where>
+        <if test="profileId != null and profileId != ''">
+            GROUP BY accessorialid, profileid
+        </if>
+        <if test="franchiseCode != null and franchiseCode != ''">
+            GROUP BY accessorialid, cpa.customer_code
+        </if>
+
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+
+    <select id="selectMarkupForCustomerCount" parameterType="com.gms.xms.filter.account.customers.manage.MarkupFilter"
+            resultType="long">
+        SELECT
+        count(*)
+        FROM
+        xms_tbl_accessorial AS a
+        INNER JOIN xms_tbl_accessorial_type AS AT ON a.typeid = AT .typeid
+        <if test="profileId != null and profileId != ''">
+            LEFT JOIN xms_tbl_customer_profile_accessorial AS cpa ON (
+            a.accessorialid = cpa.accessorialid
+            AND profileid = #{profileId}
+            )
+        </if>
+        <if test="franchiseCode != null and franchiseCode != ''">
+            LEFT JOIN xms_tbl_customer_accessorial AS cpa ON (
+            a.accessorialid = cpa.accessorialid
+            AND cpa.customer_code = #{franchiseCode}
+            )
+        </if>
+        LEFT JOIN xms_tbl_service AS s ON (a.carrier = s.service_id)
+        <where>
+            s.service_name != '' and s.inactive = 0 and a.description not in ('','-','0','Un Known')
+            <if test="code!=null and code!=''">
+                and a.code like concat(#{code},'%')
+            </if>
+            <if test="description!=null and description!=''">
+                and a.description like concat(#{description},'%')
+            </if>
+            <if test="typeName!=null and typeName!=''">
+                and AT.typename like concat(#{typeName},'%')
+            </if>
+            <if test="amount!=null and amount!=''">
+                and ifnull(cpa.amount,0.00) like concat(#{amount},'%')
+            </if>
+            <if test="serviceName!=null and serviceName!=''">
+                and s.service_name like concat(#{serviceName},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="selectByFilter" parameterType="com.gms.xms.filter.account.customers.manage.MarkupFilter"
+            resultMap="MarkupMap">
+        select
+        a.accessorialid,
+        a.code,
+        a.description,
+        a.modified_date,
+        atp.typename,
+        ifnull(cas.amount,0.00) as amount,
+        sv.service_name
+        from xms_tbl_accessorial as a
+        inner join xms_tbl_accessorial_type as atp on atp.typeid = a.typeid
+        left join xms_tbl_customer_accessorial as cas on cas.accessorialid = a.accessorialid and cas.customer_code =
+        #{customerCode}
+        left join xms_tbl_service as sv on sv.service_id = a.carrier
+        <where>
+            sv.service_name != '' and sv.inactive = 0 and a.description not in ('','-','0','Un Known')
+            <if test="code!=null and code!=''">
+                and a.code like concat(#{code},'%')
+            </if>
+            <if test="code!=null and code!=''">
+                and a.code like concat(#{code},'%')
+            </if>
+            <if test="description!=null and description!=''">
+                and a.description like concat(#{description},'%')
+            </if>
+            <if test="typeName!=null and typeName!=''">
+                and atp.typename like concat(#{typeName},'%')
+            </if>
+            <if test="amount!=null and amount!=''">
+                and ifnull(cas.amount,0.00) like concat(#{amount},'%')
+            </if>
+            <if test="serviceName!=null and serviceName!=''">
+                and sv.service_name like concat(#{serviceName},'%')
+            </if>
+        </where>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countByFilter" parameterType="com.gms.xms.filter.account.customers.manage.MarkupFilter"
+            resultType="long">
+        select count(*) from xms_tbl_accessorial as a
+        inner join xms_tbl_accessorial_type as atp on atp.typeid = a.typeid
+        left join xms_tbl_customer_accessorial as cas on cas.accessorialid = a.accessorialid and cas.customer_code =
+        #{customerCode}
+        left join xms_tbl_service as sv on sv.service_id = a.carrier
+        <where>
+            <if test="code!=null and code!=''">
+                and a.code like concat(#{code},'%')
+            </if>
+            <if test="description!=null and description!=''">
+                and a.description like concat(#{description},'%')
+            </if>
+            <if test="typeName!=null and typeName!=''">
+                and atp.typename like concat(#{typeName},'%')
+            </if>
+            <if test="amount!=null and amount!=''">
+                and ifnull(cas.amount,0.00) like concat(#{amount},'%')
+            </if>
+            <if test="serviceName!=null and serviceName!=''">
+                and sv.service_name like concat(#{serviceName},'%')
+            </if>
+        </where>
+    </select>
+</mapper>

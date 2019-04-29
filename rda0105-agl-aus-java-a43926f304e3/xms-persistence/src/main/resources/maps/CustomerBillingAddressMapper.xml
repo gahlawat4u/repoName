@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerBillingAddress">
+    <resultMap id="CustomerBillingAddressMap" type="com.gms.xms.txndb.vo.CustomerBillingAddressVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="usertype" property="usertype"/>
+        <result column="billing_same_with_customer" property="billingSameWithCustomer"/>
+        <result column="billing_customer_name" property="billingCustomerName"/>
+        <result column="billing_contact_name" property="billingContactName"/>
+        <result column="billing_city" property="billingCity"/>
+        <result column="billing_state_code" property="billingStateCode"/>
+        <result column="billing_country" property="billingCountry"/>
+        <result column="billing_postal_code" property="billingPostalCode"/>
+        <result column="billing_phone" property="billingPhone"/>
+        <result column="billing_fax" property="billingFax"/>
+        <result column="billing_email" property="billingEmail"/>
+        <result column="billing_mobile" property="billingMobile"/>
+        <result column="billing_alternate_phone" property="billingAlternatePhone"/>
+        <result column="billing_contact_title" property="billingContactTitle"/>
+        <result column="billing_address1" property="billingAddress1"/>
+        <result column="billing_address2" property="billingAddress2"/>
+    </resultMap>
+    <select id="CustomerBillingAddress_SelectBillingCustomerByCode" resultMap="CustomerBillingAddressMap"
+            parameterType="long">
+        SELECT
+        customer_code,
+        usertype,
+        billing_same_with_customer,
+        billing_customer_name,
+        billing_contact_name,
+        billing_contact_title,
+        billing_address1,
+        billing_address2,
+        billing_city,
+        billing_country,
+        billing_postal_code,
+        billing_phone,
+        billing_fax,
+        billing_email,
+        billing_mobile,
+        billing_alternate_phone,
+        countryid,
+        countryname,
+        display_name,
+        other_name,
+        countrycode,
+        gst_percent,
+        isvat_quotable,
+        modified_date,
+        is_show,
+        IF (
+        other_name = '',
+        display_name,
+        other_name
+        ) AS billing_country
+        FROM
+        xms_tbl_customer_billing_address cba
+        LEFT JOIN xms_tbl_country c ON cba.billing_country = c.countryid
+        WHERE customer_code = #{customerCode}
+    </select>
+
+    <select id="getByCustomerCode" parameterType="String" resultMap="CustomerBillingAddressMap">
+        select cba.* from xms_tbl_customer_billing_address as cba
+        inner join
+        (select customer_code from xms_tbl_customer
+        where customer_code = #{customerCode}
+        union
+        select franchise_code from xms_tbl_franchise
+        where franchise_code = #{customerCode}
+        ) as c on c.customer_code = cba.customer_code
+    </select>
+
+    <insert id="insertCustomerBillingAddress" parameterType="CustomerBillingAddressVo">
+        insert into xms_tbl_customer_billing_address
+        (customer_code, usertype, billing_same_with_customer, billing_customer_name, billing_contact_name,
+        billing_contact_title, billing_address1, billing_address2, billing_city, billing_state_code, billing_country,
+        billing_postal_code, billing_phone, billing_fax, billing_email, billing_mobile, billing_alternate_phone)
+        values (#{customerCode}, #{usertype}, #{billingSameWithCustomer}, #{billingCustomerName}, #{billingContactName},
+        #{billingContactTitle}, #{billingAddress1}, #{billingAddress2}, #{billingCity}, #{billingStateCode},
+        #{billingCountry},
+        #{billingPostalCode}, #{billingPhone}, #{billingFax}, #{billingEmail}, #{billingMobile},
+        #{billingAlternatePhone})
+    </insert>
+
+    <update id="updateCustomerBillingAddress" parameterType="CustomerBillingAddressVo">
+        update xms_tbl_customer_billing_address
+        <set>
+            <if test="usertype!=null">
+                usertype = #{usertype},
+            </if>
+            <if test="billingSameWithCustomer!=null">
+                billing_same_with_customer = #{billingSameWithCustomer},
+            </if>
+            <if test="billingCustomerName!=null">
+                billing_customer_name = #{billingCustomerName},
+            </if>
+            <if test="billingContactName!=null">
+                billing_contact_name = #{billingContactName},
+            </if>
+            <if test="billingContactTitle!=null">
+                billing_contact_title = #{billingContactTitle},
+            </if>
+            <if test="billingAddress1!=null">
+                billing_address1 = #{billingAddress1},
+            </if>
+            <if test="billingAddress2!=null">
+                billing_address2 = #{billingAddress2},
+            </if>
+            <if test="billingCity!=null">
+                billing_city = #{billingCity},
+            </if>
+            <if test="billingStateCode!=null">
+                billing_state_code = #{billingStateCode},
+            </if>
+            <if test="billingCountry!=null">
+                billing_country = #{billingCountry},
+            </if>
+            <if test="billingPostalCode!=null">
+                billing_postal_code = #{billingPostalCode},
+            </if>
+            <if test="billingPhone!=null">
+                billing_phone = #{billingPhone},
+            </if>
+            <if test="billingFax!=null">
+                billing_fax = #{billingFax},
+            </if>
+            <if test="billingEmail!=null">
+                billing_email = #{billingEmail},
+            </if>
+            <if test="billingMobile!=null">
+                billing_mobile = #{billingMobile},
+            </if>
+            <if test="billingAlternatePhone!=null">
+                billing_alternate_phone = #{billingAlternatePhone},
+            </if>
+        </set>
+        where customer_code = #{customerCode}
+    </update>
+
+    <select id="updateCustomerBillingAddress_SelectForLog" parameterType="CustomerBillingAddressVo"
+            resultMap="CustomerBillingAddressMap">
+        select * from xms_tbl_customer_billing_address
+        where customer_code = #{customerCode}
+    </select>
+</mapper>

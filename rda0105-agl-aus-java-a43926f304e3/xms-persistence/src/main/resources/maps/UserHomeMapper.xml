@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="UserHome">
+    <resultMap type="UserHomeVo" id="UserHomeMap">
+        <result column="userid" property="userId"/>
+        <result column="div1" property="div1"/>
+        <result column="div2" property="div2"/>
+        <result column="div3" property="div3"/>
+        <result column="div4" property="div4"/>
+        <result column="div5" property="div5"/>
+        <result column="div6" property="div6"/>
+        <result column="left_width" property="leftWidth"/>
+        <result column="top_left" property="topLeft"/>
+        <result column="top_right" property="topRight"/>
+        <result column="bottom_left" property="bottomLeft"/>
+        <result column="bottom_right" property="bottomRight"/>
+    </resultMap>
+    <select id="selectUserHomeByUserId" parameterType="long" resultMap="UserHomeMap">
+        SELECT
+        *
+        FROM
+        xms_tbl_user_home
+        WHERE
+        userid = #{userId}
+    </select>
+    <insert id="insert" parameterType="UserHomeVo">
+        insert into `xms_tbl_user_home`
+        (`userid`,
+        `div1`,
+        `div2`,
+        `div3`,
+        `div4`,
+        `div5`,
+        `div6`,
+        `left_width`,
+        `top_left`,
+        `top_right`,
+        `bottom_left`,
+        `bottom_right`)
+        VALUES
+        (#{userId},
+        #{div1},
+        #{div2},
+        #{div3},
+        #{div4},
+        #{div5},
+        #{div6},
+        #{leftWidth},
+        #{topLeft},
+        #{topRight},
+        #{bottomLeft},
+        #{bottomRight})
+    </insert>
+    <update id="update" parameterType="UserHomeVo">
+        update xms_tbl_user_home
+        <set>
+            <if test="div1 != null">
+                div1 = #{div1},
+            </if>
+            <if test="div2 != null">
+                div2 = #{div2},
+            </if>
+            <if test="div3 != null">
+                div3 = #{div3},
+            </if>
+            <if test="div4 != null">
+                div4 = #{div4},
+            </if>
+            <if test="div5 != null">
+                div5 = #{div5},
+            </if>
+            <if test="div6 != null">
+                div6 = #{div6},
+            </if>
+            <if test="leftWidth != null">
+                left_width = #{leftWidth},
+            </if>
+            <if test="topLeft != null">
+                top_left = #{topLeft},
+            </if>
+            <if test="topRight != null">
+                top_right = #{topRight},
+            </if>
+            <if test="bottomLeft != null">
+                bottom_left = #{bottomLeft},
+            </if>
+            <if test="bottomRight != null">
+                bottom_right = #{bottomRight},
+            </if>
+        </set>
+        where userid = #{userId}
+    </update>
+</mapper>

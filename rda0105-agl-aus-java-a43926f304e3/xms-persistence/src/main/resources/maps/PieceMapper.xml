@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Piece">
+    <resultMap id="Piece" type="com.gms.xms.txndb.vo.PieceVo">
+        <id column="piece_id" property="pieceId"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="weight" property="weight"/>
+        <result column="dimension_l" property="dimensionL"/>
+        <result column="dimension_w" property="dimensionW"/>
+        <result column="dimension_h" property="dimensionH"/>
+        <result column="custom_value" property="customValue"/>
+        <result column="license_plate" property="licensePlate"/>
+        <result column="license_plate_barcode" property="licensePlateBarcode"/>
+        <result column="data_identifier" property="dataIdentifier"/>
+        <result column="dead_weight" property="deadWeight"/>
+        <result column="quantity" property="quantity"/>
+        <result column="dimension" property="dimension"/>
+    </resultMap>
+    <!-- <select id="getPieceBySmId" parameterType="long" resultMap="Piece">
+        SELECT
+        COUNT(pic.piece_id) AS pieces,
+        COUNT(pic.piece_id) AS quantity,
+        CONCAT(
+        pic.dimension_l,
+        ' x ',
+        pic.dimension_w,
+        ' x ',
+        pic.dimension_h,
+        ' '
+        ) AS dimension,
+        pic.*
+        FROM
+        xms_tbl_piece AS pic
+        WHERE
+        pic.shipmentid = #{shipmentId}
+        GROUP BY
+        pic.piece_id,
+        pic.weight,
+        dimension
+    </select>
+ -->
+      
+      <select id="getPieceBySmId" parameterType="long" resultMap="Piece">
+       SELECT COUNT(pic.piece_id) AS pieces,
+        COUNT(pic.piece_id) AS quantity,
+        CONCAT( pic.dimension_h, ' x ',
+         pic.dimension_w,' x ',
+          pic.dimension_l, ' ') AS dimension,
+           pic.* FROM  xms_tbl_piece AS pic WHERE pic.shipmentid = #{shipmentId}
+GROUP BY pic.piece_id,dimension
+    </select>
+      
+ 
+    <insert id="insert" parameterType="PieceVo">
+        INSERT INTO xms_tbl_piece (shipmentid, weight,dead_weight, dimension_l, dimension_w, dimension_h, custom_value,
+        license_plate, license_plate_barcode , data_identifier)
+        VALUES ( #{shipmentId}, #{weight}, #{deadWeight}, #{dimensionL}, #{dimensionW}, #{dimensionH}, #{customValue},
+        #{licensePlate}, #{licensePlateBarcode}, #{dataIdentifier} );
+    </insert>
+
+    <select id="getPieceBySmIdNonGroup" parameterType="long" resultMap="Piece">
+        SELECT
+        CONCAT(
+        pic.dimension_l, ' ', sm.dimension_unit,
+        ' x ',
+        pic.dimension_w, ' ', sm.dimension_unit,
+        ' x ',
+        pic.dimension_h, ' ', sm.dimension_unit,
+        ' '
+        ) AS dimension,
+        pic.*
+        FROM
+        xms_tbl_piece AS pic
+        INNER JOIN xms_tbl_shipment sm ON sm.shipmentid = pic.shipmentid
+        WHERE
+        pic.shipmentid = #{shipmentId}
+    </select>
+
+    <select id="selectByShipmentId" parameterType="long" resultMap="Piece">
+        select * from xms_tbl_piece
+        where shipmentid = #{shipmentId}
+    </select>
+
+    <select id="selectGroupedPiecesByShipmentId" parameterType="long" resultMap="Piece">
+        select dead_weight, dimension_l, dimension_w, dimension_h, ifnull(custom_value,0) as custom_value, count(*) as
+        quantity from xms_tbl_piece
+        where shipmentid = #{shipmentId}
+        group by dead_weight, dimension_l, dimension_w, dimension_h
+    </select>
+
+    <select id="selectPiecesByShipmentId" parameterType="long" resultMap="Piece">
+        select dead_weight, dimension_l, dimension_w, dimension_h, ifnull(custom_value,0) as custom_value, 1 as quantity from xms_tbl_piece
+        where shipmentid = #{shipmentId}
+        order by piece_id
+    </select>
+</mapper>

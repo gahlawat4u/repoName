@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="TradeType">
+    <resultMap id="TradeType" type="TradeTypeVo">
+        <id column="tradeid" property="tradeId"/>
+        <result column="tradename" property="tradeName"/>
+        <result column="tradecode" property="tradeCode"/>
+        <result column="localizationid" property="localizationId"/>
+    </resultMap>
+
+    <select id="getTradeTypeList" resultMap="TradeType">
+        SELECT
+        tradeid,
+        tradecode,
+        CONCAT(tradecode, ' - ', tradename) AS tradename
+        FROM
+        xms_tbl_trade_type
+    </select>
+</mapper>

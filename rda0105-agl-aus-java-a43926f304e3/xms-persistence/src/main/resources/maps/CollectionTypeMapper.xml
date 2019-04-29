@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CollectionType">
+    <resultMap id="CollectionType" type="CollectionTypeVo">
+        <id column="collection_type_id" property="collectionTypeId"/>
+        <result column="collection_type_name" property="collectionTypeName"/>
+        <result column="localizationid" property="localizationId"/>
+    </resultMap>
+
+    <select id="getCollectionTypeList" resultMap="CollectionType">
+        SELECT * FROM xms_tbl_collection_type
+    </select>
+</mapper>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="TollPriorityRateSheet">
+    <resultMap id="TollPriorityRateSheetMap" type="TollPriorityRateSheetVo">
+        <result column="customer" property="customer"/>
+        <result column="product" property="product"/>
+        <result column="service" property="service"/>
+        <result column="zone_from" property="zoneFrom"/>
+        <result column="zone_to" property="zoneTo"/>
+        <result column="price_type" property="priceType"/>
+        <result column="min_charge" property="minCharge"/>
+        <result column="con_rate" property="conRate"/>
+        <result column="kgs_included" property="kgsIncluded"/>
+        <result column="kgs_rate" property="kgsRate"/>
+        <result column="gst_pct" property="gstPct"/>
+        <result column="cubic_conv" property="cubicConv"/>
+        <result column="surcharge_pct" property="surchargePct"/>
+    </resultMap>
+    <select id="selectTollPriorityRateSheet" resultMap="TollPriorityRateSheetMap"
+            parameterType="TollPriorityRateSheetFilter">
+        select * from xms_tbl_toll_priority_rate_sheet
+        where product = #{product} and service = #{service} and zone_from = #{zoneFrom} and zone_to = #{zoneTo} limit 1
+    </select>
+    <select id="getTollPriorityRateSheets" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsFilter"
+            resultMap="TollPriorityRateSheetMap">
+        select * from xms_tbl_toll_priority_rate_sheet
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+    <select id="countTollPriorityRateSheets" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsFilter"
+            resultType="long">
+        select count(*) from xms_tbl_toll_priority_rate_sheet
+    </select>
+</mapper>

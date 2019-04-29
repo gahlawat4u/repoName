@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="State">
+    <resultMap id="State" type="StateVo">
+        <id column="id" property="id"/>
+        <result column="state_name" property="stateName"/>
+        <result column="state_code" property="stateCode"/>
+        <result column="city_name" property="cityName"/>
+        <result column="city_code" property="cityCode"/>
+        <result column="countryid" property="countryId"/>
+        <result column="dhl_zone" property="dhlZone"/>
+        <result column="from_postcode" property="fromPostCode"/>
+        <result column="to_postcode" property="toPostCode"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <select id="selectAllState" resultMap="State">
+        SELECT
+        *
+        FROM
+        xms_tbl_state
+    </select>
+
+    <select id="selectStateById" parameterType="long" resultMap="State">
+        SELECT
+        *
+        FROM
+        xms_tbl_state where id=#{_parameter}
+    </select>
+
+
+    <select id="selectStateByCountryIdList" parameterType="List" resultMap="State">
+        SELECT
+        *
+        FROM
+        xms_tbl_state
+        WHERE
+        status = '0'
+        AND state_name NOT LIKE '%other%'
+        AND countryid IN
+        <foreach item="countryId" collection="list" open="(" close=")" separator=",">
+            #{countryId}
+        </foreach>
+        ORDER BY state_name
+    </select>
+
+    <select id="selectStateByCountryId" parameterType="long" resultMap="State">
+        SELECT
+        *
+        FROM
+        xms_tbl_state
+        WHERE
+        countryid = #{countryId} AND status = '0'
+        AND state_name NOT LIKE '%other%'
+        ORDER BY state_name
+    </select>
+
+    <select id="selectStateRecordCountByCountryId" parameterType="long" resultType="long">
+        SELECT
+        COUNT(*)
+        FROM
+        xms_tbl_state
+        WHERE
+        countryid = '248' AND status = '0'
+        AND state_name NOT LIKE '%other%'
+        ORDER BY state_name
+    </select>
+
+    <select id="selectListStateByCountryId" parameterType="com.gms.xms.filter.admin.AdministrationFilter"
+            resultMap="State">
+        select * from xms_tbl_state
+        where countryid = #{countryId}
+        <if test="id!=null">
+            and id = #{id}
+        </if>
+        <if test="stateName!=null and stateName!=''">
+            and state_name like concat('%',#{stateName},'%')
+        </if>
+        <if test="stateCode!=null and stateCode!=''">
+            and state_code like concat('%',#{stateCode},'%')
+        </if>
+        <if test="cityName!=null and cityName!=''">
+            and city_name like concat('%',#{cityName},'%')
+        </if>
+        <if test="cityCode!=null and cityCode!=''">
+            and city_code like concat('%',#{cityCode},'%')
+        </if>
+        <if test="postalCodeFrom!=null and postalCodeFrom!=''">
+            and from_postcode like concat('%',#{postalCodeFrom},'%')
+        </if>
+        <if test="postalCodeTo!=null and postalCodeTo!=null!=''">
+            and to_postcode like concat('%',#{postalCodeTo},'%')
+        </if>
+        <if test="dhlZoneCode!=null and dhlZoneCode!=null!=''">
+            and dhl_zone like concat('%',#{dhlZoneCode},'%')
+        </if>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectListStateByCountryIdCount" parameterType="com.gms.xms.filter.admin.AdministrationFilter"
+            resultType="long">
+        select count(*) from xms_tbl_state
+        where countryid = #{countryId}
+        <if test="id!=null">
+            and id = #{id}
+        </if>
+        <if test="stateName!=null and stateName!=''">
+            and state_name like concat('%',#{stateName},'%')
+        </if>
+        <if test="stateCode!=null and stateCode!=''">
+            and state_code like concat('%',#{stateCode},'%')
+        </if>
+        <if test="cityName!=null and cityName!=''">
+            and city_name like concat('%',#{cityName},'%')
+        </if>
+        <if test="cityCode!=null and cityCode!=''">
+            and city_code like concat('%',#{cityCode},'%')
+        </if>
+        <if test="postalCodeFrom!=null and postalCodeFrom!=''">
+            and from_postcode like concat('%',#{postalCodeFrom},'%')
+        </if>
+        <if test="postalCodeTo!=null and postalCodeTo!=null!=''">
+            and to_postcode like concat('%',#{postalCodeTo},'%')
+        </if>
+        <if test="dhlZoneCode!=null and dhlZoneCode!=null!=''">
+            and dhl_zone like concat('%',#{dhlZoneCode},'%')
+        </if>
+    </select>
+
+    <select id="checkInsert" parameterType="StateVo" resultType="int">
+        SELECT
+        count(*)
+        FROM
+        xms_tbl_state
+        WHERE
+        state_name = #{stateName}
+        AND city_name = #{cityName}
+        AND state_code = #{stateCode}
+        AND city_code = #{cityCode}
+        AND countryid = #{countryId}
+    </select>
+
+    <insert id="insert" parameterType="StateVo">
+        INSERT INTO xms_tbl_state (
+        state_name,
+        state_code,
+        city_name,
+        city_code,
+        from_postcode,
+        to_postcode,
+        countryid,
+        dhl_zone
+        )
+        VALUES
+        (
+        #{stateName},
+        #{stateCode},
+        #{cityName},
+        #{cityCode},
+        #{fromPostCode},
+        #{toPostCode},
+        #{countryId},
+        #{dhlZone}
+        )
+    </insert>
+
+    <update id="update" parameterType="StateVo">
+        UPDATE xms_tbl_state
+        SET state_name = #{stateName},
+        state_code = #{stateCode},
+        city_name = #{cityName},
+        city_code = #{cityCode},
+        from_postcode = #{fromPostCode},
+        to_postcode = #{toPostCode},
+        dhl_zone = #{dhlZone}
+        WHERE
+        id = #{id}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="StateVo" resultMap="State">
+        select * from xms_tbl_state
+        WHERE
+        id = #{id}
+    </select>
+
+    <select id="checkDelete" parameterType="StateVo" resultType="int">
+        select count(*) from xms_tbl_address where state=#{stateName} and country=#{countryid}
+    </select>
+
+    <delete id="delete" parameterType="long">
+        delete from xms_tbl_state where id=#{_parameter}
+    </delete>
+
+    <select id="delete_SelectForLog" parameterType="long" resultMap="State">
+        select * from xms_tbl_state where id=#{_parameter}
+    </select>
+</mapper>

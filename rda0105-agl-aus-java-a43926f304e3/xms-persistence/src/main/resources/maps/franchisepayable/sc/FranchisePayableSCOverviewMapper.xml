@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FranchisePayableSCOverview">
+    <resultMap id="FranchisePayableSCOverviewMap" type="FranchisePayableSCOverviewVo">
+        <result column="rpt_txn_id" property="rptTxnId"/>
+        <result column="setups" property="setups"/>
+        <result column="activations" property="activations"/>
+        <result column="printed_invoices" property="printedInvoices"/>
+        <result column="email_invoices" property="emailInvoices"/>
+        <result column="cust_cost" property="customerCost"/>
+        <result column="cust_marginable_cost" property="customerMarginableCost"/>
+        <result column="fran_cost" property="franchiseCost"/>
+        <result column="fran_cost_taxable" property="franchiseCostTaxable"/>
+        <result column="fran_cost_non_taxable" property="franchiseCostNonTaxable"/>
+        <result column="fran_gst" property="franchiseGst"/>
+        <result column="fran_total" property="franchiseTotal"/>
+        <result column="margin_shared" property="marginShared"/>
+        <result column="management_fee" property="managementFee"/>
+        <result column="marketing_fee" property="marketingFee"/>
+        <result column="carrier_credits" property="carrierCredits"/>
+        <result column="carrier_credits_taxable" property="carrierCreditsTaxable"/>
+        <result column="carrier_credits_non_taxable" property="carrierCreditsNonTaxable"/>
+        <result column="carrier_credits_gst" property="carrierCreditsGst"/>
+        <result column="carrier_credits_total" property="carrierCreditsTotal"/>
+        <result column="tech_fee_on_intl_shipment" property="techFeeOnIntlShipments"/>
+        <result column="tech_fee_on_dom_shipment" property="techFeeOnDomShipments"/>
+        <result column="intl_shipment_count" property="intlShipmentCount"/>
+        <result column="dom_shipment_count" property="domShipmentCount"/>
+        <result column="net_receivable" property="netReceivable"/>
+        <result column="gst" property="gst"/>
+        <result column="total_receivable" property="totalReceivable"/>
+        <result column="management_fee_on_credit_revenue" property="managementFeeOnCreditRevenue"/>
+        <result column="management_fee_on_credit_profit_shared" property="managementFeeOnCreditProfitShared"/>
+    </resultMap>
+
+    <select id="getOverview" parameterType="FranchisePayableFilter" resultMap="FranchisePayableSCOverviewMap">
+        select
+        rpt_txn_id,
+        sum(setups) as setups,
+        sum(activations) as activations,
+        sum(printed_invoices) as printed_invoices,
+        sum(email_invoices) as email_invoices,
+        sum(cust_cost) as cust_cost,
+        sum(cust_marginable_cost) as cust_marginable_cost,
+        sum(fran_cost) as fran_cost,
+        sum(fran_cost_taxable) as fran_cost_taxable,
+        sum(fran_cost_non_taxable) as fran_cost_non_taxable,
+        sum(fran_gst) as fran_gst,
+        sum(fran_total) as fran_total,
+        sum(margin_shared) as margin_shared,
+        sum(management_fee) as management_fee,
+        sum(marketing_fee) as marketing_fee,
+        sum(carrier_credits) as carrier_credits,
+        sum(carrier_credits_taxable) as carrier_credits_taxable,
+        sum(carrier_credits_non_taxable) as carrier_credits_non_taxable,
+        sum(carrier_credits_gst) as carrier_credits_gst,
+        sum(carrier_credits_total) as carrier_credits_total,
+        sum(tech_fee_on_intl_shipment) as tech_fee_on_intl_shipment,
+        sum(tech_fee_on_dom_shipment) as tech_fee_on_dom_shipment,
+        sum(intl_shipment_count) as intl_shipment_count,
+        sum(dom_shipment_count) as dom_shipment_count,
+        sum(net_receivable) as net_receivable,
+        sum(fran_gst - carrier_credits) AS gst,
+        sum(net_receivable + fran_gst) as total_receivable,
+        sum(management_fee_on_credit_revenue) as management_fee_on_credit_revenue,
+        sum(management_fee_on_credit_profit_shared) as management_fee_on_credit_profit_shared
+        from tmp_xms_tbl_fran_rab_overview
+        where rpt_txn_id = #{rptTxnId}
+        and franchise_code in
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+
+    <select id="getManagementFeeOnCredit" parameterType="FranchisePayableFilter"
+            resultMap="FranchisePayableSCOverviewMap">
+        select
+        rpt_txn_id,
+        -ifnull(pc1.revenue_pct,0)*sum(credits_customer_cost_exc_gst)/100 as management_fee_on_credit_revenue,
+        -ifnull(pc2.profit_pct,0)*sum(gross_margin_exc_gst-new_margin_exc_gst)/100 as
+        management_fee_on_credit_profit_shared
+        from tmp_xms_tbl_sc_rpt_fran_pab_credit as cr
+        left join
+        (select setting_value as revenue_pct from xms_tbl_system_setting
+        where setting_name = 'Management Fee On Credit Revenue Percent'
+        ) as pc1 on (1=1)
+        left join
+        (select setting_value as profit_pct from xms_tbl_system_setting
+        where setting_name = 'Management Fee On Credit Profit Shared Percent'
+        ) as pc2 on (1=1)
+        where rpt_txn_id = #{rptTxnId} and franchise_code = #{franchiseCode}
+    </select>
+
+    <update id="updateManagementFeeOnCredit" parameterType="FranchisePayableSCOverviewVo">
+        update tmp_xms_tbl_fran_rab_overview
+        set management_fee_on_credit_revenue = #{managementFeeOnCreditRevenue},
+        management_fee_on_credit_profit_shared = #{managementFeeOnCreditProfitShared},
+        net_receivable = fran_cost_taxable + fran_cost_non_taxable + management_fee + marketing_fee + margin_shared +
+        tech_fee_on_intl_shipment + tech_fee_on_dom_shipment - carrier_credits_taxable - carrier_credits_non_taxable -
+        #{managementFeeOnCreditRevenue} - #{managementFeeOnCreditProfitShared},
+        gst = 0.2*(fran_cost_taxable-carrier_credits_taxable),
+        total_receivable = fran_cost_taxable + fran_cost_non_taxable + management_fee + marketing_fee + margin_shared +
+        tech_fee_on_intl_shipment + tech_fee_on_dom_shipment - carrier_credits_taxable - carrier_credits_non_taxable -
+        #{managementFeeOnCreditRevenue} - #{managementFeeOnCreditProfitShared} +
+        0.2*(fran_cost_taxable-carrier_credits_taxable)
+        where rpt_txn_id = #{rptTxnId} and franchise_code = #{franchiseCode}
+    </update>
+</mapper>

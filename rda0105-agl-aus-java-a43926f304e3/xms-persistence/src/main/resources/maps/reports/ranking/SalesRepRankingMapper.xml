@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="SalesRepRanking">
+    <resultMap id="SalesRepRankingMap" type="SalesRepRankingVo">
+        <result column="rank" property="rank"/>
+        <result column="sale_rep_name" property="saleRepName"/>
+        <result column="franchise_code" property="franchiseCode"/>
+        <result column="territory" property="territory"/>
+        <result column="activate_customers" property="activateCustomers"/>
+        <result column="activations" property="activations"/>
+        <result column="shipments" property="shipments"/>
+        <result column="weights" property="weights"/>
+        <result column="rev_inc_gst" property="revenueIncGst"/>
+        <result column="rev_exc_gst" property="revenueExcGst"/>
+        <result column="rev_per_ship_inc_gst" property="revenuePerShipIncGst"/>
+        <result column="rev_per_ship_exc_gst" property="revenuePerShipExcGst"/>
+        <result column="fran_cost_inc_tax" property="franchiseCostIncGst"/>
+        <result column="fran_cost_exc_tax" property="franchiseCostExcGst"/>
+        <result column="gross_margin_inc_tax" property="marginIncGst"/>
+        <result column="gross_margin_exc_tax" property="marginExcGst"/>
+        <result column="margin_per_ship_inc_tax" property="marginPerShipIncGst"/>
+        <result column="margin_per_ship_exc_tax" property="marginPerShipExcGst"/>
+        <result column="margin_per_weight_inc_tax" property="marginPerWeightIncGst"/>
+        <result column="margin_per_weight_exc_tax" property="marginPerWeightExcGst"/>
+    </resultMap>
+
+    <select id="getSalesRepRankingReport" parameterType="com.gms.xms.filter.reports.ranking.SalesRepRankingFilter"
+            resultMap="SalesRepRankingMap">
+        select
+        (select count(*) from
+        (select distinct gross_margin_inc_tax from tmp_sales_rep_ranking_report
+        where rpt_txn_id = #{rptTxnId}
+        ) as a
+        where rpt_txn_id = #{rptTxnId}
+        and a.gross_margin_inc_tax>b.gross_margin_inc_tax
+        ) + 1 as rank,
+        b.*
+        from tmp_sales_rep_ranking_report as b
+        where rpt_txn_id = #{rptTxnId}
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="checkSalesRepRankingReport" parameterType="com.gms.xms.filter.reports.ranking.SalesRepRankingFilter"
+            resultType="long">
+        select count(*) from tmp_sales_rep_ranking_report
+        where rpt_txn_id = #{rptTxnId}
+    </select>
+
+    <insert id="prepareSalesRepRankingReport" parameterType="com.gms.xms.filter.reports.ranking.SalesRepRankingFilter">
+        <![CDATA[
+		insert into tmp_sales_rep_ranking_report (
+			rpt_txn_id,
+			sale_rep_name,
+			franchise_code,
+			territory,
+			activate_customers,
+			activations,
+			shipments,
+			weights,
+			rev_inc_gst,
+			rev_exc_gst,
+			rev_per_ship_inc_gst,
+			rev_per_ship_exc_gst,
+			fran_cost_inc_tax,
+			fran_cost_exc_tax,
+			gross_margin_inc_tax,
+			gross_margin_exc_tax,
+			margin_per_ship_inc_tax,
+			margin_per_ship_exc_tax,
+			margin_per_weight_inc_tax,
+			margin_per_weight_exc_tax
+		)
+		select
+			#{rptTxnId},
+			u.display_name as sale_rep_name,
+			c.franchise_code,
+		    c.territory,
+		    acti_cus.activate_customers,
+		    ifnull(ac.activations,0) as activations,
+		    sm.shipments,
+		    stat.weights,
+		    stat.cust_cost+stat.cust_tax as rev_inc_gst,
+		    stat.cust_cost as rev_exc_gst,
+		    if(sm.shipments=0,0,(stat.cust_cost+stat.cust_tax)/sm.shipments) as rev_per_ship_inc_gst,
+		    if(sm.shipments=0,0,stat.cust_cost/sm.shipments) as rev_per_ship_exc_gst,
+		    stat.fran_cost+stat.fran_tax as fran_cost_inc_tax,
+		    stat.fran_cost as fran_cost_exc_tax,
+		    stat.gross_margin+stat.gross_margin_tax as gross_margin_inc_tax,
+		    stat.gross_margin as gross_margin_exc_tax,
+		    if(sm.shipments=0,0,(stat.gross_margin+stat.gross_margin_tax)/sm.shipments) as margin_per_ship_inc_tax,
+		    if(sm.shipments=0,0,stat.gross_margin/sm.shipments) as margin_per_ship_exc_tax,
+		    if(stat.weights=0,0,(stat.gross_margin+stat.gross_margin_tax)/stat.weights) as margin_per_weight_inc_tax,
+		    if(stat.weights=0,0,stat.gross_margin/stat.weights) as margin_per_weight_exc_tax
+		from 
+			(select 
+				cc.sales_rep_id, 
+				cc.franchise_code,
+				f.franchise_territory as territory
+			from xms_tbl_customer as cc 
+			inner join xms_tbl_franchise as f on left(f.franchise_code,3) = cc.franchise_code
+			where cc.sales_rep_id!=0
+				and cc.franchise_code in (${franchiseList})
+			group by sales_rep_id, franchise_code
+				union
+			select 
+				sales_rep_id, 
+				left(franchise_code,3) as franchise_code,
+				franchise_territory as territory
+			from xms_tbl_franchise
+			where sales_rep_id!=0
+				and left(franchise_code,3) in (${franchiseList})
+			group by sales_rep_id, franchise_code
+		    ) as c
+		left join 
+			(select
+				sales_rep_id,
+		        franchise_code,
+		        count(*) as activations
+		    from xms_tbl_customer
+		    where sales_rep_id!=0
+		    	and franchise_code in (${franchiseList})
+				and date(activate_date) between #{startDate} and #{endDate}
+		    group by sales_rep_id, franchise_code
+		    ) as ac on ac.sales_rep_id = c.sales_rep_id and ac.franchise_code = c.franchise_code
+		inner join xms_tbl_user as u on u.userid = c.sales_rep_id and c.sales_rep_id!=0
+		inner join 
+			(select
+				sales_rep_id,
+		        franchise_code,
+				count(*) as activate_customers
+			from
+				(select
+					c.sales_rep_id,
+					c.customer_code,
+		            c.franchise_code,
+					count(*) as invoice_count
+				from
+					(select franchise_code, customer_code, sales_rep_id from xms_tbl_customer
+					where sales_rep_id!=0 
+						and franchise_code in (${franchiseList})
+						union
+					select left(franchise_code,3) as franchise_code, franchise_code as customer_code, sales_rep_id from xms_tbl_franchise
+					where sales_rep_id!=0 
+						and franchise_code in (${franchiseList})
+					) as c
+				inner join xms_tbl_invoice as i on i.customer_code = c.customer_code
+				where i.invoice_date between #{startDate} and #{endDate}
+				group by c.customer_code, c.franchise_code
+				having invoice_count>0
+				) as ivc
+			group by sales_rep_id, franchise_code
+		    ) as acti_cus on acti_cus.sales_rep_id = c.sales_rep_id and acti_cus.franchise_code = c.franchise_code
+		left join 
+			(select
+				sales_rep_id,
+		        franchise_code,
+				count(*) as shipments
+			from xms_tbl_invoice as i
+			inner join 
+				(select franchise_code, customer_code, sales_rep_id from xms_tbl_customer
+				where sales_rep_id!=0 
+					and franchise_code in (${franchiseList}) 
+					union
+				select left(franchise_code,3) as franchise_code, franchise_code as customer_code, sales_rep_id from xms_tbl_franchise
+				where sales_rep_id!=0 
+					and left(franchise_code,3) in (${franchiseList})
+				) as c on c.customer_code = i.customer_code
+			inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+		    inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number and sb.accessorial_count = 0
+			where i.invoice_date between #{startDate} and #{endDate}
+			group by sales_rep_id, franchise_code
+		    ) as sm on sm.sales_rep_id = c.sales_rep_id and sm.franchise_code = c.franchise_code
+		left join 
+			(select
+				c.sales_rep_id,
+		        c.franchise_code,
+				sum(if(sb.accessorial_count=0,sb.weight,0)) as weights,
+				sum(sb.customer_cost) as cust_cost,
+				sum(sb.customer_tax_amount) as cust_tax,
+				sum(sb.franchise_cost) as fran_cost,
+				sum(sb.franchise_tax_amount) as fran_tax,
+				sum(sb.customer_cost-sb.franchise_cost) as gross_margin,
+				sum(sb.customer_tax_amount-sb.franchise_tax_amount) as gross_margin_tax
+			from xms_tbl_invoice as i
+			inner join 
+				(select franchise_code, customer_code, sales_rep_id from xms_tbl_customer
+				where sales_rep_id!=0 
+					and franchise_code in (${franchiseList})
+					union
+				select left(franchise_code,3) as franchise_code, franchise_code as customer_code, sales_rep_id from xms_tbl_franchise
+				where sales_rep_id!=0 
+					and left(franchise_code,3) in (${franchiseList})
+				) as c on c.customer_code = i.customer_code
+			inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+			inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+			where i.invoice_date between #{startDate} and #{endDate}
+			group by sales_rep_id, franchise_code
+		    ) as stat on stat.sales_rep_id = c.sales_rep_id and stat.franchise_code = c.franchise_code
+		]]>
+    </insert>
+</mapper>

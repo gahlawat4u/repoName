@@ -1,0 +1,515 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CreditNote">
+    <resultMap id="CreditNote" type="CreditNoteVo">
+        <id column="credit_note_id" property="creditNoteId"/>
+        <result column="credit_code" property="creditCode"/>
+        <result column="create_date" property="createDate"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="status" property="status"/>
+    </resultMap>
+    <resultMap type="CreditNoteVo" id="CreditNoteExtend" extends="CreditNote">
+        <association property="invoice" javaType="InvoiceVo">
+            <id column="invoice_code" property="invoiceCode"/>
+            <result column="customer_code" property="customerCode"/>
+        </association>
+    </resultMap>
+    <resultMap type="CreditNoteVo" id="CreditNoteToMap" extends="CreditNote">
+        <association property="invoice" javaType="com.gms.xms.txndb.vo.InvoiceVo">
+            <id column="invoiceid" property="invoiceId"/>
+            <result column="invoice_code" property="invoiceCode"/>
+            <result column="customer_code" property="customerCode"/>
+            <result column="invoice_date" property="invoiceDate"/>
+            <result column="late_fee" property="lateFee"/>
+            <result column="status" property="status"/>
+            <result column="paid" property="paid"/>
+            <result column="inv_create_date" property="invCreateDate"/>
+        </association>
+        <association property="customer" javaType="com.gms.xms.txndb.vo.CustomerVo">
+            <id column="id" property="id"/>
+            <result column="customer_code" property="customerCode"/>
+            <result column="franchise_code" property="franchiseCode"/>
+            <result column="srno" property="srno"/>
+            <result column="create_date" property="createDate"/>
+            <result column="activate_date" property="activateDate"/>
+            <result column="inactive" property="inActive"/>
+            <result column="group_id" property="groupId"/>
+            <result column="webship_groupid" property="webshipGroupId"/>
+            <result column="industryid" property="industryId"/>
+            <result column="sales_rep_id" property="salesRepId"/>
+            <result column="collectorid" property="collectorId"/>
+            <result column="registrationid" property="registrationId"/>
+            <result column="gstid" property="gstid"/>
+            <result column="rejection_note" property="rejectionNote"/>
+            <result column="minimun_base_charge" property="minimunBaseCharge"/>
+            <result column="invoice_sorting" property="invoiceSorting"/>
+            <result column="invoice_terms" property="invoiceTerms"/>
+            <result column="invoice_to_customerid" property="invoiceToCustomerId"/>
+            <result column="pickup_fee" property="pickupFee"/>
+            <result column="invoice_late_fee" property="invoiceLateFee"/>
+            <result column="email_invoice" property="emailInvoice"/>
+            <result column="download_csv_invoice" property="downloadCsvInvoice"/>
+            <result column="admin_function" property="adminFunction"/>
+            <result column="webship_adminid" property="webshipAdminId"/>
+            <result column="dhl_account" property="dhlAccount"/>
+            <result column="dhl_domestic_account" property="dhlDomesticAccount"/>
+            <result column="dhl_international_account" property="dhlInternationalAccount"/>
+            <result column="dhl_inbound_account" property="dhlInboundAccount"/>
+            <result column="other_account" property="otherAccount"/>
+            <result column="previous_carrier" property="previousCarrier"/>
+            <result column="area_id" property="areaId"/>
+            <result column="created_userid" property="createdUserId"/>
+            <result column="tnt_account" property="tntAccount"/>
+            <result column="aae_account" property="aaeAccount"/>
+            <result column="hub_account" property="hubAccount"/>
+            <result column="fedex_account" property="fedexAccount"/>
+            <result column="toll_priority_account" property="tollPriorityAccount"/>
+            <result column="uk_mail_account" property="ukMailAccount"/>
+            <result column="ups_account" property="upsAccount"/>
+            <result column="booking_email_notification" property="bookingEmailNotification"/>
+            <result column="toll_ipec_account" property="tollIpecAccount"/>
+            <result column="ram_account" property="ramAccount"/>
+            <result column="usps_account" property="uspsAccount"/>
+            <result column="ontrac_account" property="ontracAccount"/>
+        </association>
+    </resultMap>
+
+    <select id="selectByCreditCode" resultMap="CreditNote" parameterType="string">
+        SELECT * FROM xms_tbl_credit_note
+        where credit_code = #{creditCode}
+        LIMIT 1
+    </select>
+
+    <select id="selectCreateDateList" resultMap="CreditNote" parameterType="CreditNoteFilter">
+        SELECT DISTINCT
+        DATE(create_date) AS create_date
+        FROM
+        xms_tbl_credit_note AS cn
+        LEFT JOIN
+        xms_tbl_invoice AS i ON i.invoice_code = cn.invoice_code
+        WHERE
+        SUBSTRING(i.customer_code, 1, 3) IN
+        <foreach collection="franchiseCodeList" item="franchiseCode" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        <if test="status != null">
+            AND cn.status = #{status}
+        </if>
+        ORDER BY DATE(cn.create_date) DESC
+    </select>
+
+    <select id="selectCreateDateListForSendCreditNotes" resultMap="CreditNote" parameterType="CreditNoteFilter">
+        SELECT
+        *
+        FROM
+        (SELECT DISTINCT
+        DATE(cn.create_date) AS create_date, cnd.*
+        FROM
+        xms_tbl_credit_note AS cn
+        LEFT JOIN xms_tbl_invoice AS i ON i.invoice_code = cn.invoice_code
+        LEFT JOIN (SELECT
+        cnd.credit_note_id, SUM(customer_amount) AS totalAmount
+        FROM
+        xms_tbl_credit_note_detail AS cnd
+        INNER JOIN xms_tbl_airbill_adjustment AS aa ON aa.adjustmentid = cnd.adjustmentid
+        GROUP BY cnd.credit_note_id) AS cnd ON cnd.credit_note_id = cn.credit_note_id
+        WHERE
+        SUBSTRING(i.customer_code, 1, 3) IN
+        <foreach collection="franchiseCodeList" item="franchiseCode" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        <if test="status != null">
+            AND cn.status = #{status}
+        </if>
+        GROUP BY DATE(cn.create_date)
+        ORDER BY DATE(cn.create_date) DESC) AS date
+        <![CDATA[
+		WHERE
+		    date.totalAmount <> 0
+		]]>
+    </select>
+
+    <select id="selectFreezeCreditNoteDateList" resultMap="CreditNote" parameterType="CreditNoteFilter">
+        SELECT DISTINCT
+        cn.*, i.*
+        FROM
+        xms_tbl_credit_note AS cn
+        INNER JOIN xms_tbl_invoice AS i ON i.invoice_code = cn.invoice_code
+        INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.credit_note_id = cn.credit_note_id
+        INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+        WHERE
+        adj.status = 4
+        AND SUBSTRING(i.customer_code, 1, 3) IN
+        <foreach collection="franchiseCodeList" item="franchise" open="(" close=")" separator=",">
+            #{franchise}
+        </foreach>
+        <if test="status != null">
+            AND cn.status = #{status}
+        </if>
+        <if test="createDate != null">
+            AND DATE(cn.create_date) = #{createDate}
+        </if>
+        <if test="franchiseCode != null">
+            AND left(i.customer_code,3) = #{franchiseCode}
+        </if>
+        <if test="customerCode != null">
+            AND i.customer_code = #{customerCode}
+        </if>
+        ORDER BY i.customer_code,cn.credit_code DESC
+    </select>
+
+    <select id="CreditNote_SelectCreateDateListCustomerCode" resultMap="CreditNote" parameterType="CreditNoteFilter">
+        SELECT DISTINCT
+        DATE(cn.create_date) AS create_date
+        FROM
+        xms_tbl_credit_note AS cn
+        LEFT JOIN xms_tbl_invoice AS inv ON cn.invoice_code = inv.invoice_code
+        WHERE
+        cn.status = 1
+        AND inv.customer_code IN
+        <foreach collection="listCustomerVos" item="customer" open="(" close=")" separator=",">
+            #{customer.customerCode}
+        </foreach>
+        GROUP BY
+        create_date
+        ORDER BY
+        create_date DESC
+    </select>
+
+    <select id="CreditNote_SelectCreditNoteTo" resultMap="CreditNoteToMap" parameterType="long">
+        SELECT
+        cn.credit_note_id,
+        c.invoice_to_customerid,
+        inv.customer_code
+        FROM
+        xms_tbl_credit_note AS cn
+        LEFT JOIN xms_tbl_invoice AS inv ON cn.invoice_code = inv.invoice_code
+        LEFT JOIN xms_tbl_customer AS c ON c.customer_code = inv.customer_code
+        WHERE
+        cn.credit_note_id = #{creditNoteId}
+    </select>
+
+    <select id="selectCreditNoteGSTSummary" parameterType="string" resultType="CreditNotesGSTSummaryVo">
+        SELECT
+        *
+        FROM
+        (SELECT
+        SUM(customer_amount) AS customerAmount,
+        SUM(gst_customer_amount) AS gstCustomerAmount,
+        customer_tax_percent as customerTaxPercent,
+        SUM(customer_amount + gst_customer_amount) AS total
+        FROM
+        (SELECT
+        aa.adjustmentid,
+        aa.customer_amount,
+        aa.gst_customer_amount,
+        sb.customer_tax_percent
+        FROM xms_tbl_credit_note cn
+        INNER JOIN xms_tbl_credit_note_detail cnd ON cn.credit_note_id = cnd.credit_note_id
+        INNER JOIN xms_tbl_airbill_adjustment aa ON cnd.adjustmentid = aa.adjustmentid
+        INNER JOIN xms_tbl_shipment_billing sb ON sb.shipmentid = aa.shipmentid and sb.airbill_number =
+        aa.airbill_number
+        <![CDATA[ AND (aa.adjustment_type = sb.description or (sb.accessorial_count = 0 and aa.adjustment_type in ('Rate Dispute','Service Level','Late Delivery','Lost Shipment','Damaged Shipment','Incorrect Weight','Reweight Error','Zero Weight Default(ZWD)','Partial Refund'))) ]]>
+        WHERE cn.credit_code = #{creditCode}
+        UNION
+        SELECT
+        aa.adjustmentid,
+        ROUND(IF(total_awb_customer_cost = 0, 0, aa.customer_amount * sb.customer_cost / total_awb_customer_cost), 2) AS
+        customer_amount1,
+        ROUND(IF(total_awb_customer_cost = 0, 0, aa.gst_customer_amount * sb.customer_tax_amount /
+        total_awb_customer_tax_amount), 2) AS gst_customer_amount1,
+        sb.customer_tax_percent total_awb_customer_cost
+        FROM xms_tbl_credit_note cn
+        INNER JOIN xms_tbl_credit_note_detail cnd ON cn.credit_note_id = cnd.credit_note_id
+        INNER JOIN xms_tbl_airbill_adjustment aa ON cnd.adjustmentid = aa.adjustmentid
+        INNER JOIN xms_tbl_shipment_billing sb ON sb.shipmentid = aa.shipmentid and sb.airbill_number =
+        aa.airbill_number
+        INNER JOIN
+        (SELECT
+        tmp2_sb.shipmentid,
+        tmp2_sb.airbill_number,
+        SUM(tmp2_sb.customer_cost) AS total_awb_customer_cost, SUM(tmp2_sb.customer_tax_amount) AS
+        total_awb_customer_tax_amount
+        FROM
+        (SELECT
+        tmp_aa.shipmentid,
+        tmp_aa.airbill_number
+        FROM xms_tbl_credit_note tmp_cn
+        INNER JOIN xms_tbl_credit_note_detail tmp_cnd ON tmp_cn.credit_note_id = tmp_cnd.credit_note_id
+        INNER JOIN xms_tbl_airbill_adjustment tmp_aa ON tmp_cnd.adjustmentid = tmp_aa.adjustmentid
+        WHERE tmp_cn.credit_code = #{creditCode}
+        GROUP BY tmp_aa.shipmentid, tmp_aa.airbill_number
+        ) AS tmp2_awb
+        INNER JOIN xms_tbl_shipment_billing tmp2_sb ON tmp2_sb.shipmentid = tmp2_awb.shipmentid and
+        tmp2_sb.airbill_number = tmp2_awb.airbill_number
+        GROUP BY tmp2_sb.shipmentid, tmp2_sb.airbill_number
+        ) AS tmp_awb ON tmp_awb.shipmentid = aa.shipmentid and tmp_awb.airbill_number = aa.airbill_number
+        WHERE cn.credit_code = #{creditCode}
+        AND aa.adjustmentid NOT IN
+        (SELECT aa.adjustmentid FROM xms_tbl_credit_note cn
+        INNER JOIN xms_tbl_credit_note_detail cnd ON cn.credit_note_id = cnd.credit_note_id
+        INNER JOIN xms_tbl_airbill_adjustment aa ON cnd.adjustmentid = aa.adjustmentid
+        INNER JOIN xms_tbl_shipment_billing sb ON sb.shipmentid = aa.shipmentid and sb.airbill_number =
+        aa.airbill_number
+        <![CDATA[ AND (aa.adjustment_type = sb.description or (sb.accessorial_count = 0 and aa.adjustment_type in ('Rate Dispute','Service Level','Late Delivery','Lost Shipment','Damaged Shipment','Incorrect Weight','Reweight Error','Zero Weight Default(ZWD)','Partial Refund'))) ]]>
+        WHERE cn.credit_code = #{creditCode})
+        ) AS result
+        GROUP BY customerTaxPercent
+        UNION
+        SELECT
+        0.00, 0.00, 0.00, 0.00
+        FROM DUAL
+        WHERE '0.00' NOT IN
+        (SELECT
+        ROUND(customer_tax_percent, 2)
+        FROM
+        (SELECT
+        aa.adjustmentid,
+        aa.customer_amount,
+        aa.gst_customer_amount,
+        sb.customer_tax_percent
+        FROM xms_tbl_credit_note cn
+        INNER JOIN xms_tbl_credit_note_detail cnd ON cn.credit_note_id = cnd.credit_note_id
+        INNER JOIN xms_tbl_airbill_adjustment aa ON cnd.adjustmentid = aa.adjustmentid
+        INNER JOIN xms_tbl_shipment_billing sb ON sb.shipmentid = aa.shipmentid and sb.airbill_number =
+        aa.airbill_number
+        <![CDATA[ AND (aa.adjustment_type = sb.description or (sb.accessorial_count = 0 and aa.adjustment_type in ('Rate Dispute','Service Level','Late Delivery','Lost Shipment','Damaged Shipment','Incorrect Weight','Reweight Error','Zero Weight Default(ZWD)','Partial Refund'))) ]]>
+        WHERE cn.credit_code = #{creditCode}
+        UNION
+        SELECT
+        aa.adjustmentid,
+        ROUND(IF(total_awb_customer_cost = 0, 0, aa.customer_amount * sb.customer_cost / total_awb_customer_cost), 2) AS
+        customer_amount1,
+        ROUND(IF(total_awb_customer_cost = 0, 0, aa.gst_customer_amount * sb.customer_tax_amount /
+        total_awb_customer_tax_amount), 2) AS gst_customer_amount1,
+        sb.customer_tax_percent total_awb_customer_cost
+        FROM xms_tbl_credit_note cn
+        INNER JOIN xms_tbl_credit_note_detail cnd ON cn.credit_note_id = cnd.credit_note_id
+        INNER JOIN xms_tbl_airbill_adjustment aa ON cnd.adjustmentid = aa.adjustmentid
+        INNER JOIN xms_tbl_shipment_billing sb ON sb.shipmentid = aa.shipmentid and sb.airbill_number =
+        aa.airbill_number
+        INNER JOIN
+        (SELECT
+        tmp2_sb.shipmentid,
+        tmp2_sb.airbill_number,
+        SUM(tmp2_sb.customer_cost) AS total_awb_customer_cost,
+        SUM(tmp2_sb.customer_tax_amount) AS total_awb_customer_tax_amount
+        FROM
+        (SELECT
+        tmp_aa.shipmentid,
+        tmp_aa.airbill_number
+        FROM xms_tbl_credit_note tmp_cn
+        INNER JOIN xms_tbl_credit_note_detail tmp_cnd ON tmp_cn.credit_note_id = tmp_cnd.credit_note_id
+        INNER JOIN xms_tbl_airbill_adjustment tmp_aa ON tmp_cnd.adjustmentid = tmp_aa.adjustmentid
+        WHERE tmp_cn.credit_code = #{creditCode}
+        GROUP BY tmp_aa.shipmentid, tmp_aa.airbill_number
+        ) AS tmp2_awb
+        INNER JOIN xms_tbl_shipment_billing tmp2_sb ON tmp2_sb.shipmentid = tmp2_awb.shipmentid and
+        tmp2_sb.airbill_number = tmp2_awb.airbill_number
+        GROUP BY tmp2_sb.shipmentid, tmp2_sb.airbill_number
+        ) AS tmp_awb ON tmp_awb.shipmentid = aa.shipmentid and tmp_awb.airbill_number = aa.airbill_number
+        WHERE cn.credit_code = #{creditCode}
+        AND aa.adjustmentid NOT IN
+        (SELECT
+        aa.adjustmentid
+        FROM xms_tbl_credit_note cn
+        INNER JOIN xms_tbl_credit_note_detail cnd ON cn.credit_note_id = cnd.credit_note_id
+        INNER JOIN xms_tbl_airbill_adjustment aa ON cnd.adjustmentid = aa.adjustmentid
+        INNER JOIN xms_tbl_shipment_billing sb ON sb.shipmentid = aa.shipmentid and sb.airbill_number =
+        aa.airbill_number
+        <![CDATA[ AND (aa.adjustment_type = sb.description or (sb.accessorial_count = 0 and aa.adjustment_type in ('Rate Dispute','Service Level','Late Delivery','Lost Shipment','Damaged Shipment','Incorrect Weight','Reweight Error','Zero Weight Default(ZWD)','Partial Refund'))) ]]>
+        WHERE cn.credit_code = #{creditCode})
+        ) AS result
+        GROUP BY customer_tax_percent)
+        ) AS R
+        ORDER BY customerTaxPercent DESC
+    </select>
+
+    <select id="CreditNote_SelectCreditInfo" resultType="com.gms.xms.txndb.vo.CreditNoteInfoVo" parameterType="string">
+        SELECT
+        cn.credit_note_id AS creditNoteId,
+        cn.status AS status,
+        cn.credit_code AS creditCode,
+        cn.create_date AS createDate,
+        i.customer_code AS customerCode,
+        count(*) AS credits,
+        sum(
+        IF (
+        adj.gst_customer_amount > 0,
+        adj.customer_amount,
+        0.00
+        )
+        ) AS shipmentAmount,
+        sum(
+        IF (
+        adj.gst_customer_amount > 0,
+        adj.gst_customer_amount,
+        0.00
+        )
+        ) AS gstAmount,
+        sum(
+        IF (
+        adj.gst_customer_amount = 0,
+        adj.customer_amount,
+        0.00
+        )
+        ) AS nonShipmentAmount,
+        0.00 AS nonGstAmount,
+        sum(
+        adj.customer_amount + adj.gst_customer_amount
+        ) AS totalCredited,
+        cba.billing_customer_name AS billingCustomerName,
+        cba.billing_contact_name AS billingContactName,
+        cba.billing_address1 AS billingAddress1,
+        cba.billing_address2 AS billingAddress2,
+        cba.billing_city AS billingCity,
+        c.countryname AS countryName,
+        cba.billing_postal_code AS billingPostalCode
+        FROM
+        xms_tbl_credit_note AS cn
+        INNER JOIN xms_tbl_invoice AS i ON i.invoice_code = cn.invoice_code
+        INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.credit_note_id = cn.credit_note_id
+        INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+        LEFT JOIN xms_tbl_customer_billing_address AS cba ON cba.customer_code = i.customer_code
+        LEFT JOIN xms_tbl_country AS c ON c.countryid = cba.billing_country
+        WHERE
+        cn.credit_code = #{creditCode}
+        GROUP BY
+        cn.credit_note_id
+    </select>
+
+    <select id="CreditNote_SelectCreditShowList" resultType="com.gms.xms.txndb.vo.CreditNoteShowListVo"
+            parameterType="com.gms.xms.filter.invoicing.CreditNoteShowListFilter">
+        SELECT
+        cn.credit_code AS creditCode,
+        i.invoice_code AS invoiceCode,
+        adj.airbill_number AS airbillNumber,
+        DATE(i.invoice_date) AS invoiceDate,
+        cnd.reason,
+        adj.customer_amount AS shipmentAmount,
+        gst_customer_amount AS gstAmount,
+        (
+        adj.customer_amount + adj.gst_customer_amount
+        ) AS totalCredit
+        FROM
+        xms_tbl_credit_note AS cn
+        INNER JOIN xms_tbl_credit_note_detail AS cnd ON cn.credit_note_id = cnd.credit_note_id
+        INNER JOIN xms_tbl_invoice AS i ON i.invoice_code = cn.invoice_code
+        INNER JOIN xms_tbl_airbill_adjustment AS adj ON cnd.adjustmentid = adj.adjustmentid
+        WHERE
+        cn.credit_code = #{creditCode}
+        GROUP BY
+        adj.adjustmentid
+        <if test="orderBy != null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+
+    </select>
+
+    <select id="selectListCreditNotesByFilter" resultMap="CreditNoteExtend" parameterType="CreditNoteFilter">
+        SELECT DISTINCT
+        cn.*, i.*
+        FROM
+        xms_tbl_credit_note AS cn
+        INNER JOIN xms_tbl_invoice AS i ON i.invoice_code = cn.invoice_code
+        INNER JOIN xms_tbl_credit_note_detail AS cnd ON cnd.credit_note_id = cn.credit_note_id
+        INNER JOIN xms_tbl_airbill_adjustment AS adj ON adj.adjustmentid = cnd.adjustmentid
+        WHERE
+        adj.status = 4
+        AND SUBSTRING(i.customer_code, 1, 3) IN
+        <foreach collection="franchiseCodeList" item="franchise" open="(" close=")" separator=",">
+            #{franchise}
+        </foreach>
+        <if test="status != null">
+            AND cn.status = #{status}
+        </if>
+        <if test="createDate != null">
+            AND DATE(cn.create_date) = #{createDate}
+        </if>
+        <if test="franchiseCode != null">
+            AND left(i.customer_code,3) = #{franchiseCode}
+        </if>
+        <if test="customerCode != null">
+            AND i.customer_code = #{customerCode}
+        </if>
+        ORDER BY i.customer_code,cn.credit_code DESC
+    </select>
+
+    <select id="selectCreditNoteByCreditCode" resultMap="CreditNoteExtend" parameterType="String">
+        SELECT DISTINCT
+        cn.*, i.*
+        FROM
+        xms_tbl_credit_note AS cn
+        LEFT JOIN
+        xms_tbl_invoice AS i ON i.invoice_code = cn.invoice_code
+        LEFT JOIN
+        xms_tbl_credit_note_detail AS cnd ON cnd.credit_note_id = cn.credit_note_id
+        WHERE
+        cn.credit_code = #{creditCode}
+    </select>
+
+    <insert id="insert" parameterType="CreditNoteVo" useGeneratedKeys="true" keyProperty="creditNoteId">
+        insert into xms_tbl_credit_note (credit_code, create_date, invoice_code, status)
+        values (#{creditCode}, #{createDate}, #{invoiceCode}, #{status})
+    </insert>
+
+    <update id="UpdateByPrimaryKeySelective" parameterType="com.gms.xms.txndb.vo.CreditNoteVo">
+        update xms_tbl_credit_note
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+        </set>
+        where credit_note_id = #{creditNoteId}
+    </update>
+
+    <select id="UpdateByPrimaryKeySelective_SelectForLog" parameterType="com.gms.xms.txndb.vo.CreditNoteVo"
+            resultMap="CreditNote">
+        select * from xms_tbl_credit_note
+        where credit_note_id = #{creditNoteId}
+    </select>
+
+    <select id="selectCreditNotesByCode" resultMap="CreditNoteExtend" parameterType="CreditNoteFilter">
+        SELECT * FROM xms_tbl_credit_note
+        where credit_code = #{creditCode}
+    </select>
+
+    <select id="selectById" resultMap="CreditNote" parameterType="long">
+        select * from xms_tbl_credit_note
+        where credit_note_id = #{creditNoteId}
+    </select>
+
+    <update id="update" parameterType="CreditNoteVo">
+        update xms_tbl_credit_note
+        <set>
+            <if test="creditCode!=null">
+                credit_code = #{creditCode},
+            </if>
+            <if test="createDate!=null">
+                create_date = #{createDate},
+            </if>
+            <if test="invoiceCode!=null">
+                invoice_code = #{invoiceCode},
+            </if>
+            <if test="status!=null">
+                status = #{status},
+            </if>
+        </set>
+        where credit_note_id = #{creditNoteId}
+    </update>
+
+    <select id="update_SelectForLog_SelectForLog" parameterType="CreditNoteVo" resultMap="CreditNote">
+        select * from xms_tbl_credit_note
+        where credit_note_id = #{creditNoteId}
+    </select>
+
+    <delete id="deleteById" parameterType="long">
+        delete from xms_tbl_credit_note
+        where credit_note_id = #{creditNoteId}
+    </delete>
+
+    <select id="deleteById_SelectForLog" parameterType="long" resultMap="CreditNote">
+        select * from xms_tbl_credit_note
+        where credit_note_id = #{creditNoteId}
+    </select>
+</mapper>

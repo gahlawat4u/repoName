@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Permission">
+    <resultMap id="PermissionMap" type="PermissionVo">
+        <id column="permission_id" property="permissionId"/>
+        <result column="permission_name" property="permissionName"/>
+        <result column="localizationid" property="localizationId"/>
+    </resultMap>
+
+    <select id="selectPermissionAll" parameterType="com.gms.xms.filter.admin.AdministrationFilter"
+            resultType="PermissionResultVo">
+        SELECT
+        per.permission_name AS setting,
+        IF(adminTbl.status >= 1,1,0) as adminPermission,
+        IF(franchiseTbl.status >= 1,1,0) as franchisePermission,
+        IF(accountTbl.status >= 1,1,0) as accountPermission,
+        IF(saleTbl.status >= 1,1,0) as salePermission,
+        IF(saleRepTbl.status >= 1,1,0) as saleRepPermission,
+        IF(teleTbl.status >= 1,1,0) as telePermission,
+        IF(carrierTbl.status >= 1,1,0) as carrierPermission,
+        IF(carrierServiceTbl.status >= 1,1,0) as carrierServicePermission,
+        per.permission_id as perId
+
+        FROM xms_tbl_permission as per
+        LEFT JOIN
+        (
+        SELECT count(*) as status, ulp.permission_id as perId from xms_tbl_user_level as ul
+        LEFT JOIN xms_tbl_user_level_permission as ulp on ul.user_level_id = ulp.user_level_id
+        WHERE
+        ul.user_level_id = 2
+        GROUP BY ulp.permission_id,ul.user_level_id
+        ) as adminTbl ON adminTbl.perId = per.permission_id
+        LEFT JOIN
+        (
+        SELECT count(*) as status, ulp.permission_id as perId from xms_tbl_user_level_permission as ulp
+        LEFT JOIN xms_tbl_user_level as ul on ul.user_level_id = ulp.user_level_id
+        WHERE
+        ul.user_level_id = 3
+        GROUP BY ul.user_level_id,ulp.permission_id
+        ) as franchiseTbl ON franchiseTbl.perId = per.permission_id
+
+        LEFT JOIN
+        (
+        SELECT count(*) as status, ulp.permission_id as perId from xms_tbl_user_level_permission as ulp
+        LEFT JOIN xms_tbl_user_level as ul on ul.user_level_id = ulp.user_level_id
+        WHERE
+        ul.user_level_id = 4
+        GROUP BY ul.user_level_id,ulp.permission_id
+        ) as accountTbl ON accountTbl.perId = per.permission_id
+
+        LEFT JOIN
+        (
+        SELECT count(*) as status, ulp.permission_id as perId from xms_tbl_user_level_permission as ulp
+        LEFT JOIN xms_tbl_user_level as ul on ul.user_level_id = ulp.user_level_id
+        WHERE
+        ul.user_level_id = 8
+        GROUP BY ul.user_level_id,ulp.permission_id
+        ) as saleTbl ON saleTbl.perId = per.permission_id
+        LEFT JOIN
+        (
+        SELECT count(*) as status, ulp.permission_id as perId from xms_tbl_user_level_permission as ulp
+        LEFT JOIN xms_tbl_user_level as ul on ul.user_level_id = ulp.user_level_id
+        WHERE
+        ul.user_level_id = 11
+        GROUP BY ul.user_level_id,ulp.permission_id
+        ) as saleRepTbl ON saleRepTbl.perId = per.permission_id
+
+        LEFT JOIN
+        (
+        SELECT count(*) as status, ulp.permission_id as perId from xms_tbl_user_level_permission as ulp
+        LEFT JOIN xms_tbl_user_level as ul on ul.user_level_id = ulp.user_level_id
+        WHERE
+        ul.user_level_id = 9
+        GROUP BY ul.user_level_id,ulp.permission_id
+        ) as teleTbl ON teleTbl.perId = per.permission_id
+
+        LEFT JOIN
+        (
+        SELECT count(*) as status, ulp.permission_id as perId from xms_tbl_user_level_permission as ulp
+        LEFT JOIN xms_tbl_user_level as ul on ul.user_level_id = ulp.user_level_id
+        WHERE
+        ul.user_level_id = 6
+        GROUP BY ul.user_level_id,ulp.permission_id
+        ) as carrierTbl ON carrierTbl.perId = per.permission_id
+        LEFT JOIN
+        (
+        SELECT count(*) as status, ulp.permission_id as perId from xms_tbl_user_level_permission as ulp
+        LEFT JOIN xms_tbl_user_level as ul on ul.user_level_id = ulp.user_level_id
+        WHERE
+        ul.user_level_id = 7
+        GROUP BY ul.user_level_id,ulp.permission_id
+        ) as carrierServiceTbl ON carrierServiceTbl.perId = per.permission_id
+        order by setting asc
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectPermissionAllCount" parameterType="com.gms.xms.filter.admin.AdministrationFilter"
+            resultType="long">
+        select count(*) FROM
+        xms_tbl_permission
+    </select>
+</mapper>

@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="RateSheetDetail">
+    <resultMap id="RateSheetDetailMap" type="RateSheetDetailVo">
+        <result column="sheet_id" property="sheetId"/>
+        <result column="row_id" property="rowId"/>
+        <result column="column_id" property="columnId"/>
+        <result column="value" property="value"/>
+        <result column="min_charge" property="minCharge"/>
+        <result column="base_charge" property="baseCharge"/>
+        <result column="per_kg" property="perKg"/>
+    </resultMap>
+
+    <resultMap id="ExtraRateSheetDetailMap" type="ExtraRateSheetDetailVo" extends="RateSheetDetailMap">
+        <result column="row_name" property="rowName"/>
+    </resultMap>
+
+    <resultMap type="WebshipRateSheetDetailVo" id="RateSheetDetailExtend" extends="RateSheetDetailMap">
+        <result column="max_weight" property="maxWeight"/>
+        <result column="max_value" property="maxValue"/>
+        <result column="min_weight" property="minWeight"/>
+        <result column="min_value" property="minValue"/>
+        <association property="rateSheetRow" javaType="RateSheetRowVo">
+            <id column="row_id" property="rowId"/>
+            <result column="row_name" property="rowName"/>
+            <result column="char_row_name" property="charRowName"/>
+            <result column="ischar" property="isChar"/>
+        </association>
+        <association property="rateSheetColumn" javaType="RateSheetColumnVo">
+            <id column="column_id" property="columnId"/>
+        </association>
+    </resultMap>
+
+    <select id="selectMaxWeightAndMaxValueBySheetId" resultMap="RateSheetDetailExtend"
+            parameterType="RateSheetDetailFilter">
+        SELECT
+        MAX(sr.row_name) AS max_weight,
+        MAX(ROUND(sd.value, 2)) AS max_value
+        FROM
+        xms_tbl_rate_sheet_detail AS sd
+        INNER JOIN
+        xms_tbl_rate_sheet_column AS sc ON sd.column_id = sc.column_id
+        INNER JOIN
+        xms_tbl_rate_sheet_row AS sr ON sd.row_id = sr.row_id
+        WHERE
+        sd.sheet_id = #{sheetId}
+    </select>
+    <select id="selectMinWeightAndMinValueByFilter" resultMap="RateSheetDetailExtend"
+            parameterType="RateSheetDetailFilter">
+        SELECT
+        MIN(sr.row_name) AS min_weight,
+        MIN(ROUND(sd.value, 2)) AS min_value
+        FROM
+        xms_tbl_rate_sheet_detail AS sd
+        INNER JOIN
+        xms_tbl_rate_sheet_column AS sc ON sd.column_id = sc.column_id
+        INNER JOIN
+        xms_tbl_rate_sheet_row AS sr ON sd.row_id = sr.row_id
+        WHERE
+        sd.sheet_id = #{sheetId}
+        AND sc.column_name = #{columnName}
+    </select>
+    <select id="selectMaxWeightAndMaxValueByFilter" resultMap="RateSheetDetailExtend"
+            parameterType="RateSheetDetailFilter">
+        SELECT
+        MAX(sr.row_name) AS max_weight,
+        MAX(ROUND(sd.value, 2)) AS max_value
+        FROM
+        xms_tbl_rate_sheet_detail AS sd
+        INNER JOIN
+        xms_tbl_rate_sheet_column AS sc ON sd.column_id = sc.column_id
+        INNER JOIN
+        xms_tbl_rate_sheet_row AS sr ON sd.row_id = sr.row_id
+        WHERE
+        sd.sheet_id = #{sheetId}
+        AND sc.column_name = #{columnName}
+    </select>
+    <select id="selectDhlDomesticBaseChargeRate" resultMap="RateSheetDetailExtend"
+            parameterType="RateSheetDetailFilter">
+        <![CDATA[
+	SELECT
+		sd.value
+		FROM
+		xms_tbl_rate_sheet_detail AS sd
+		INNER JOIN
+		xms_tbl_rate_sheet_column AS sc ON sd.column_id = sc.column_id
+		INNER JOIN
+		xms_tbl_rate_sheet_row AS sr ON sd.row_id = sr.row_id
+		WHERE
+		sd.sheet_id = #{sheetId} 
+		AND sc.column_name = #{columnName}
+		AND sr.row_name <= #{rowName}
+		ORDER BY sr.row_name DESC
+		LIMIT 1
+	]]>
+    </select>
+    <select id="selectMaxOverWeight" resultMap="RateSheetDetailExtend" parameterType="RateSheetDetailFilter">
+        <![CDATA[
+	SELECT 
+	    row_name AS max_weight,
+	    value AS max_value
+	FROM
+	    xms_tbl_rate_sheet_detail AS sd
+	        INNER JOIN
+	    xms_tbl_rate_sheet_column AS sc ON sc.column_id = sd.column_id
+	        INNER JOIN
+	    xms_tbl_rate_sheet_row AS sr ON sr.row_id = sd.row_id
+	WHERE
+	    sd.sheet_id = #{sheetId}
+	        AND sc.column_name = #{columnName}
+	        AND row_name > #{maxRowName}
+	ORDER BY sr.row_name
+	LIMIT 1
+	]]>
+    </select>
+    <select id="selectBaseChargeWebShip" resultMap="RateSheetDetailExtend" parameterType="RateSheetDetailFilter">
+        SELECT
+        sd.*,value, row_name, char_row_name, ischar
+        FROM
+        xms_tbl_rate_sheet_detail AS sd
+        INNER JOIN
+        xms_tbl_rate_sheet_column AS sc ON sc.column_id = sd.column_id
+        INNER JOIN
+        xms_tbl_rate_sheet_row AS sr ON sr.row_id = sd.row_id
+        WHERE
+        sd.sheet_id = #{sheetId}
+        AND sc.column_name = #{columnName}
+       <choose>
+            <when test="type == 'upper'">
+                <![CDATA[
+				        AND sr.row_name >= #{rowName}
+				        ]]>
+                ORDER BY sr.row_name
+            </when>
+            <otherwise>
+                <![CDATA[
+				        AND sr.row_name <= #{rowName}
+				        ]]>
+                ORDER BY sr.row_name DESC
+            </otherwise>
+        </choose>
+        
+
+        LIMIT 1
+
+    </select>
+    <select id="selectBaseChargeByCharRowAndCol" resultMap="RateSheetDetailExtend"
+            parameterType="RateSheetDetailFilter">
+        SELECT
+        sd.sheet_id,
+        value,
+        min_charge,
+        base_charge,
+        per_kg
+        FROM
+        xms_tbl_rate_sheet_detail AS sd
+        LEFT JOIN
+        xms_tbl_rate_sheet_column AS sc ON sc.column_id = sd.column_id
+        LEFT JOIN
+        xms_tbl_rate_sheet_row AS sr ON sr.row_id = sd.row_id
+        WHERE
+        sd.sheet_id = #{sheetId}
+        AND sr.char_row_name = #{charRowName}
+        AND sc.column_name = #{columnName}
+        LIMIT 1
+    </select>
+    <select id="selectTntWeightBreak" resultMap="RateSheetDetailExtend" parameterType="RateSheetDetailFilter">
+        SELECT
+        char_row_name,
+        sd.*
+        FROM
+        xms_tbl_rate_sheet_detail AS sd
+        INNER JOIN
+        xms_tbl_rate_sheet_column AS sc ON sc.column_id = sd.column_id
+        INNER JOIN
+        xms_tbl_rate_sheet_row AS sr ON sr.row_id = sd.row_id
+        WHERE
+        sd.sheet_id = #{sheetId}
+        AND sr.char_row_name IN ('A' , 'F', 'D')
+        <![CDATA[
+		        AND sr.row_name >= #{rowName}
+		        ]]>
+        LIMIT 1
+    </select>
+
+    <select id="selectBySheetId" resultMap="RateSheetDetailMap" parameterType="long">
+        SELECT
+        *
+        FROM
+        xms_tbl_rate_sheet_detail
+        WHERE
+        sheet_id = #{sheetId}
+        ORDER BY row_id , column_id
+    </select>
+
+    <select id="getExtraRateSheetDetail" resultMap="ExtraRateSheetDetailMap" parameterType="RateSheetDetailVo">
+        select sd.*, row_name from xms_tbl_rate_sheet_detail as sd
+        inner join xms_tbl_rate_sheet_column as sc on sc.column_id = sd.column_id
+        inner join xms_tbl_rate_sheet_row as sr on sr.row_id = sd.row_id
+        where sd.sheet_id = #{sheetId}
+        and sc.column_id = #{columnId}
+        and sr.char_row_name in ('A' , 'F')
+        order by sr.row_name
+    </select>
+
+    <update id="updateRateSheetDetail" parameterType="RateSheetDetailVo">
+        update xms_tbl_rate_sheet_detail
+        <set>
+            <if test="value != null">
+                value = #{value},
+            </if>
+            <if test="minCharge != null">
+                min_charge = #{minCharge},
+            </if>
+            <if test="baseCharge != null">
+                base_charge = #{baseCharge},
+            </if>
+            <if test="perKg != null">
+                per_kg = #{perKg},
+            </if>
+        </set>
+        where column_id = #{columnId} and row_id = #{rowId}
+    </update>
+
+    <select id="updateRateSheetDetail_SelectForLog" parameterType="RateSheetDetailVo" resultMap="RateSheetDetailMap">
+        select * from xms_tbl_rate_sheet_detail
+        where column_id = #{columnId} and row_id = #{rowId}
+    </select>
+
+    <delete id="deleteRateSheetDetailBySheetId" parameterType="long">
+        DELETE FROM xms_tbl_rate_sheet_detail WHERE sheet_id=#{sheetId}
+    </delete>
+
+    <select id="deleteRateSheetDetailBySheetId_SelectForLog" parameterType="long" resultMap="RateSheetDetailMap">
+        SELECT * FROM xms_tbl_rate_sheet_detail WHERE sheet_id=#{sheetId}
+    </select>
+    <insert id="insertRateSheetDetail" parameterType="com.gms.xms.txndb.vo.RateSheetDetailVo">
+        insert into xms_tbl_rate_sheet_detail (sheet_id, row_id, column_id, value, min_charge, base_charge, per_kg)
+        values (#{sheetId}, #{rowId}, #{columnId}, #{value}, #{minCharge}, #{baseCharge}, #{perKg})
+    </insert>
+</mapper>

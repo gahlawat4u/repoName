@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="UpsZone">
+    <resultMap type="com.gms.xms.txndb.vo.ups.UpsZoneVo" id="UpsZoneMap">
+        <result column="ups_countryname" property="countryName"/>
+        <result column="ups_express_saver" property="expressSaverZone"/>
+        <result column="ups_expedited" property="expressExpeditedZone"/>
+    </resultMap>
+    <select id="getUpsZoneByFilter" resultMap="UpsZoneMap" parameterType="UpsZoneFilter">
+        <include refid="Functional.isNumeric" />
+        <![CDATA[
+				SELECT
+				    xz.ups_countryname,
+				    xz.${serviceGroup} as zone
+				FROM
+				    xms_tbl_ups_zone AS xz
+				WHERE
+				    ups_countryname = (select countryname from xms_tbl_country where countryid= ${countryId})
+				    and
+				    ups_express_ib=${bound}
+		]]>
+        <choose>
+            <when test="#fn = checknumeric, #fn(#postCode)">
+                and (${postCode} between ups_from_postcode and ups_to_postcode or ups_from_postcode='')
+            </when>
+            <when test="#postCode != ''">
+                and (#{postCode} between ups_from_postcode and ups_to_postcode or ups_from_postcode='')
+            </when>
+        </choose>
+        <if test="#fn = checknumeric, #fn(#postCode)" >
+
+        </if>
+        order by ups_from_postcode desc limit 1
+    </select>
+</mapper>

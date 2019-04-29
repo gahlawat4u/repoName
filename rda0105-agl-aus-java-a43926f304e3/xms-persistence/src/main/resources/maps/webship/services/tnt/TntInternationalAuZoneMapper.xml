@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="TntInternationalAuZone">
+    <resultMap id="TntInternationalAuZoneMap" type="TntInternationalAuZoneVo">
+        <id column="tnt_int_au_countryid" property="tntIntAuCountryId"/>
+        <result column="original_file_countryname" property="originalFileCountryName"/>
+        <result column="countryname" property="countryName"/>
+        <result column="express_outbound_zone" property="expressOutboundZone"/>
+        <result column="economy_express_outbound_zone" property="economyExpressOutboundZone"/>
+        <result column="express_inbound_zone" property="expressInboundZone"/>
+        <result column="economy_express_inbound_zone" property="economyExpressInboundZone"/>
+    </resultMap>
+    <select id="selectZoneByCountryName" parameterType="String" resultMap="TntInternationalAuZoneMap">
+        select * from xms_tbl_tnt_international_au_zone
+        where countryname = #{countryName}
+    </select>
+    <select id="getTntIntlZones" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsFilter"
+            resultMap="TntInternationalAuZoneMap">
+        select * from xms_tbl_tnt_international_au_zone
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+    <select id="countTntIntlZones" parameterType="com.gms.xms.filter.admin.systemstats.SysStatsFilter"
+            resultType="long">
+        select count(*) from xms_tbl_tnt_international_au_zone
+    </select>
+</mapper>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Dimension">
+    <resultMap id="Dimension" type="DimensionVo">
+        <id column="id" property="id"/>
+        <result column="webshipid" property="webshipId"/>
+        <result column="name" property="name"/>
+        <result column="l" property="l"/>
+        <result column="w" property="w"/>
+        <result column="h" property="h"/>
+        <result column="comment" property="comment"/>
+    </resultMap>
+
+    <select id="getById" parameterType="int" resultMap="Dimension">
+        SELECT * FROM xms_tbl_dimension
+        WHERE id = #{id}
+    </select>
+
+    <select id="getByWebshipId" parameterType="int" resultMap="Dimension">
+        SELECT * FROM xms_tbl_dimension
+        WHERE webshipid = #{webshipId}
+    </select>
+
+    <select id="selectByFilter" parameterType="DimensionFilter" resultMap="Dimension">
+        select * from xms_tbl_dimension
+        where webshipid = #{webshipId}
+        <if test="orderBy!=null">
+            ORDER BY ${orderBy}
+        </if>
+        <if test="startRecord!=null and recordSize!=null">
+            LIMIT #{startRecord}, #{recordSize}
+        </if>
+    </select>
+
+    <select id="countByFilter" parameterType="DimensionFilter" resultType="long">
+        select count(*) from xms_tbl_dimension
+        where webshipid = #{webshipId}
+    </select>
+
+    <insert id="insert" parameterType="DimensionVo">
+        INSERT INTO xms_tbl_dimension (webshipid, name, l, w, h, comment)
+        VALUES (#{webshipId},#{name},#{l},#{w},#{h},#{comment})
+    </insert>
+
+    <update id="update" parameterType="DimensionVo">
+        UPDATE xms_tbl_dimension
+        SET name = #{name},
+        l = #{l},
+        w = #{w},
+        h = #{h},
+        comment = #{comment}
+        WHERE id = #{id} AND webshipid = #{webshipId}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="DimensionVo" resultMap="Dimension">
+        select * from xms_tbl_dimension
+        WHERE id = #{id} AND webshipid = #{webshipId}
+    </select>
+
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM xms_tbl_dimension
+        WHERE id = #{id}
+    </delete>
+
+    <select id="deleteById_SelectForLog" parameterType="int" resultMap="Dimension">
+        select * FROM xms_tbl_dimension
+        WHERE id = #{id}
+    </select>
+</mapper>

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Country">
+    <resultMap id="CountryMap" type="CountryVo">
+        <id column="countryid" property="countryId"/>
+        <result column="countryname" property="countryName"/>
+        <result column="display_name" property="displayName"/>
+        <result column="other_name" property="otherName"/>
+        <result column="countrycode" property="countryCode"/>
+        <result column="gst_percent" property="gstPercent"/>
+        <result column="isvat_quotable" property="isVatQuotable"/>
+        <result column="modified_date" property="modifiedDate"/>
+        <result column="is_show" property="isShow"/>
+        <association property="dhlCountry" column="countryname" resultMap="DhlCountry"
+                     javaType="DhlCountryVo"></association>
+    </resultMap>
+    <resultMap id="DhlCountry" type="DhlCountryVo">
+        <id column="dhl_countryid" property="dhlCountryId"/>
+        <result column="dhl_ap_code" property="dhlApCode"/>
+        <result column="dhl_ap_zone" property="dhlApZone"/>
+        <result column="dhl_countryname" property="dhlCountryName"/>
+        <result column="dhl_region" property="dhlRegion"/>
+        <result column="dhl_timezone" property="dhlTimeZone"/>
+    </resultMap>
+
+    <select id="checkCountryByName" resultType="int" parameterType="String">
+        SELECT
+        count(*)
+        FROM
+        xms_tbl_country
+        WHERE
+        countryname = #{countryName}
+    </select>
+  
+     <!-- previous code  -->
+    <!-- <select id="checkCountryEU" resultType="int" parameterType="com.gms.xms.txndb.vo.ShipmentInfoVo">
+        SELECT count(*) FROM `xms_tbl_country` c
+        inner join `xms_tbl_country_EU` eu on eu.countryname=c.countryname where countryid = #{senderAddress.addressId}
+        or countryid =#{receiverAddress.addressId}
+    </select> -->
+    
+    <!-- code by shahabuddin -->
+    
+    <select id="checkCountryEU" resultType="int" parameterType="com.gms.xms.txndb.vo.ShipmentInfoVo">
+        SELECT count(*) FROM `xms_tbl_country` c
+        inner join `xms_tbl_country_eu` eu on eu.countryname=c.countryname where countryid = #{senderAddress.addressId}
+        or countryid =#{receiverAddress.addressId}
+    </select>
+
+    <select id="getCountryList" resultMap="CountryMap">
+        SELECT
+        *
+        FROM
+        xms_tbl_country
+        ORDER BY display_name
+    </select>
+
+    <select id="getSearchAirbilCountryList" resultMap="CountryMap">
+        SELECT
+        *
+        FROM
+        xms_tbl_country
+        WHERE is_show=1 ORDER BY countrycode
+    </select>
+
+    <select id="selectWebshipCountryList" resultMap="CountryMap">
+        SELECT
+        c.*
+        FROM
+        xms_tbl_country AS c
+        LEFT JOIN
+        xms_tbl_dhl_country AS dc ON dc.dhl_countryname = c.countryname
+        WHERE
+        is_show = 1
+        ORDER BY c.display_name
+    </select>
+
+    <select id="getCountryById" resultMap="CountryMap" parameterType="long">
+        SELECT
+        * FROM
+        xms_tbl_country
+        WHERE
+        countryid = #{countryId}
+    </select>
+
+    <select id="selectCountryByCountryName" resultMap="CountryMap" parameterType="String">
+        SELECT
+        *
+        FROM
+        xms_tbl_country
+        WHERE
+        countryname = #{countryName}
+    </select>
+
+    <select id="getCustomerAddressCountryIdList" resultMap="CountryMap">
+        SELECT
+        *
+        FROM
+        xms_tbl_country
+        WHERE
+        countryname IN
+        <foreach item="countryName" collection="list" open="(" close=")" separator=",">
+            #{countryName}
+        </foreach>
+    </select>
+
+    <select id="getCountryIdByCountryCode" parameterType="string" resultType="long">
+        select
+        countryid
+        from xms_tbl_country
+        where countrycode = #{countryCode}
+        order by countryid
+        limit 1
+    </select>
+
+    <select id="getCountryIdByCountryName" parameterType="string" resultType="long">
+        select countryid
+        from xms_tbl_country
+        where countryname = #{countryName}
+        limit 1
+    </select>
+
+    <select id="getCountryIdByCityName" parameterType="com.gms.xms.filter.country.CountryFilter" resultType="long">
+        select countryid
+        from xms_tbl_country c
+        left join xms_tbl_postal_code pc on c.countrycode = pc.countrycode
+        where pc.city_name = #{cityName}
+        and station_code = #{stationCode}
+        <if test="countryId!=null">
+            and countryid != #{countryId}
+        </if>
+        limit 1
+    </select>
+
+    <update id="update" parameterType="CountryVo">
+        UPDATE xms_tbl_country SET
+        countrycode=#{countryCode},countryname=#{countryName},display_name=#{displayName},other_name=#{otherName},gst_percent=#{gstPercent},modified_date=NOW()
+        WHERE countryid=#{countryId}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="CountryVo" resultMap="CountryMap">
+        select * from xms_tbl_country
+        WHERE countryid=#{countryId}
+    </select>
+
+    <insert id="addCountry" parameterType="CountryVo">
+        INSERT INTO xms_tbl_country
+        (countryid, countryname, countrycode, gst_percent, display_name, other_name,modified_date,isvat_quotable)
+        VALUES
+        (#{countryId},#{countryName}, #{countryCode} , #{gstPercent},'','',NOW(),0)
+    </insert>
+
+    <select id="selectCountryDetail" resultMap="CountryMap" parameterType="long">
+        SELECT
+        c.*, dc.*
+        FROM
+        xms_tbl_country AS c
+        LEFT JOIN xms_tbl_dhl_country AS dc ON dc.dhl_countryname = c.countryname
+        WHERE
+        c.countryid = #{countryId}
+
+    </select>
+
+
+    <update id="updateIsShow" parameterType="CountryVo">
+        update xms_tbl_country
+        <set>
+            <if test="isShow == true">
+                is_show = 1
+            </if>
+            <if test="isShow == false">
+                is_show = 0
+            </if>
+        </set>
+
+        <where>
+            1 = 1
+            <if test="countryId != null">
+                AND countryid = #{countryId}
+            </if>
+
+        </where>
+    </update>
+
+    <select id="updateIsShow_SelectForLog" parameterType="CountryVo" resultMap="CountryMap">
+        select * from xms_tbl_country
+        <where>
+            1 = 1
+            <if test="countryId != null">
+                AND countryid = #{countryId}
+            </if>
+
+        </where>
+    </select>
+</mapper>

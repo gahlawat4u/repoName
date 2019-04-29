@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ShipmentInvoice">
+    <resultMap id="ShipmentInvoiceMap" type="ShipmentInvoiceVo">
+        <result column="invoiceid" property="invoiceId" jdbcType="BIGINT"/>
+        <result column="shipmentid" property="shipmentId" jdbcType="BIGINT"/>
+        <result column="airbill_number" property="airbillNumber" jdbcType="VARCHAR"/>
+        <result column="cus_paymentid" property="cusPaymentId" jdbcType="VARCHAR"/>
+        <result column="paid_customer_cost" property="paidCustomerCost" jdbcType="DECIMAL"/>
+        <result column="paid_carrier_cost" property="paidCarrierCost" jdbcType="DECIMAL"/>
+        <result column="invoice_paymentid" property="invoicePaymentId" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="ShipmentInvoiceWithPaymentInfoMap" type="ShipmentInvoiceVo" extends="ShipmentInvoiceMap">
+        <result column="total_amount" property="totalAmount" jdbcType="DECIMAL"/>
+        <result column="total_payment" property="totalPayment" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <select id="selectByInvoiceCode" parameterType="String" resultMap="ShipmentInvoiceWithPaymentInfoMap">
+        <![CDATA[
+		select * from
+			(select 
+				si.*, 
+				sum(sb.customer_cost+sb.customer_tax_amount) as total_amount,
+				(select ifnull(sum(amount),0) from xms_tbl_invoice_payment_detail
+				where shipmentid = si.shipmentid and airbill_number = si.airbill_number) as total_payment
+			from xms_tbl_shipment_invoice as si
+			inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+			inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+			where i.invoice_code = #{invoiceCode}
+			group by si.shipmentid, si.airbill_number) as r
+		where total_payment<total_amount
+		]]>
+    </select>
+    <select id="selectByShipmentInvoiceByCode" parameterType="String" resultMap="ShipmentInvoiceWithPaymentInfoMap">
+        <![CDATA[
+			select 
+				si.*, 
+				sum(sb.customer_cost+sb.customer_tax_amount) as total_amount,
+				(select ifnull(sum(amount),0) from xms_tbl_invoice_payment_detail
+				where shipmentid = si.shipmentid and airbill_number = si.airbill_number) as total_payment
+			from xms_tbl_shipment_invoice as si
+			inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+			inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+			where i.invoice_code = #{invoiceCode}
+			group by si.shipmentid, si.airbill_number
+		]]>
+    </select>
+    <update id="updateInvoiceIdFromShipment" parameterType="ShipmentInvoiceVo">
+        update xms_tbl_shipment_invoice set invoiceid=#{invoiceId} where shipmentid=#{shipmentId} and airbill_number =
+        #{airbillNumber}
+    </update>
+
+    <select id="updateInvoiceIdFromShipment_SelectForLog" parameterType="ShipmentInvoiceVo"
+            resultMap="ShipmentInvoiceMap">
+        select * from xms_tbl_shipment_invoice where shipmentid=#{shipmentId} and airbill_number = #{airbillNumber}
+    </select>
+
+    <select id="ShipmentInvoi_checkStatusVoidByShipmentId" parameterType="long" resultType="int">
+        SELECT
+        count(*) AS c
+        FROM
+        (
+        SELECT
+        shipmentid
+        FROM
+        xms_tbl_shipment_invoice
+        WHERE
+        shipmentid = #{shipmentId}
+        UNION ALL
+        SELECT
+        shipmentid
+        FROM
+        xms_tbl_shipment
+        WHERE
+        shipmentid = #{shipmentId}
+        AND STATUS = 1
+        ) AS void;
+    </select>
+
+    <select id="selectEmptyInvoiceId" parameterType="ShipmentInvoiceVo" resultType="long">
+        select invoiceid
+        from xms_tbl_shipment_invoice
+        where shipmentid = #{shipmentId}
+        and airbill_number = #{airbillNumber}
+        order by invoiceid desc
+        limit 1
+    </select>
+
+    <select id="checkEmptyInvoice" parameterType="ShipmentInvoiceVo" resultType="int">
+        select count(*)
+        from xms_tbl_shipment_invoice
+        where invoiceid in
+        (select invoiceid
+        from xms_tbl_shipment_invoice
+        where shipmentid = #{shipmentId}
+        and airbill_number = #{airbillNumber}
+        group by airbill_number
+        order by invoiceid desc)
+    </select>
+
+    <delete id="deleteShipment" parameterType="ShipmentInvoiceVo">
+        delete from xms_tbl_shipment_invoice where shipmentid = #{shipmentId} and airbill_number = #{airbillNumber}
+    </delete>
+
+    <select id="deleteShipment_SelectForLog" parameterType="ShipmentInvoiceVo" resultMap="ShipmentInvoiceMap">
+        select * from xms_tbl_shipment_invoice where shipmentid = #{shipmentId} and airbill_number = #{airbillNumber}
+    </select>
+
+    <insert id="insert" parameterType="ShipmentVo">
+        insert into xms_tbl_shipment_invoice
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="invoiceId != null">
+                invoiceid,
+            </if>
+            <if test="shipmentId != null">
+                shipmentid,
+            </if>
+            <if test="airbillNumber != null">
+                airbill_number,
+            </if>
+            <if test="cusPaymentId != null">
+                cus_paymentid,
+            </if>
+            <if test="paidCustomerCost != null">
+                paid_customer_cost,
+            </if>
+            <if test="paidCarrierCost != null">
+                paid_carrier_cost,
+            </if>
+            <if test="invoicePaymentId != null">
+                invoice_paymentid,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="invoiceId != null">
+                #{invoiceId},
+            </if>
+            <if test="shipmentId != null">
+                #{shipmentId},
+            </if>
+            <if test="airbillNumber != null">
+                #{airbillNumber},
+            </if>
+            <if test="cusPaymentId != null">
+                #{cusPaymentId},
+            </if>
+            <if test="paidCustomerCost != null">
+                #{paidCustomerCost},
+            </if>
+            <if test="paidCarrierCost != null">
+                #{paidCarrierCost},
+            </if>
+            <if test="invoicePaymentId != null">
+                #{invoicePaymentId},
+            </if>
+        </trim>
+    </insert>
+    <select id="getShipmentInvoiceByInvoiceCode" parameterType="string" resultMap="ShipmentInvoiceMap">
+        <bind name="invoiceCode" value="_parameter"/>
+        select si.* from xms_tbl_shipment_invoice as si
+        inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        where i.invoice_code = #{invoiceCode}
+    </select>
+</mapper>

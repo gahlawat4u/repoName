@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="TollIpecManifest">
+    <resultMap id="TollIpecManifestMap" type="TollIpecManifestVo">
+        <result column="ipec_manifest_id" property="ipecManifestId"/>
+        <result column="manifest_identifier" property="manifestIdentifier"/>
+        <result column="create_date" property="createDate"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="upload_file" property="uploadFile"/>
+        <result column="status" property="status"/>
+        <result column="voidid" property="voidId"/>
+    </resultMap>
+
+    <select id="selectByShipment" resultMap="TollIpecManifestMap" parameterType="string">
+        SELECT * FROM xms_tbl_toll_ipec_manifest where shipmentid = #{shipmentId} limit 1;
+    </select>
+
+    <select id="updateTollIpecManifestStatus_SelectForLog" parameterType="TollIpecManifestVo"
+            resultMap="TollIpecManifestMap">
+        select * from xms_tbl_toll_ipec_manifest
+        where ipec_manifest_id = #{manifestId}
+    </select>
+
+    <update id="updateTollIpecManifestStatus" parameterType="TollIpecManifestVo">
+        update xms_tbl_toll_ipec_manifest
+        set
+        status = #{status}
+        where
+        ipec_manifest_id = #{manifestId}
+    </update>
+
+    <insert id="insertTollIpecManifestIdentifier" parameterType="TollIpecManifestVo" useGeneratedKeys="true"
+            keyProperty="ipecManifestId">
+        insert into xms_tbl_toll_ipec_manifest (manifest_identifier , create_date, shipmentid, upload_file)
+        select
+        if(manifest_identifier >= 999999999,
+        1,
+        manifest_identifier + 1) as manifest_identifier,
+        now(),
+        #{shipmentId},
+        #{uploadFile}
+        from
+        (select
+        ifnull(manifest_identifier, 999999999) as manifest_identifier
+        from
+        (select
+        manifest_identifier
+        from
+        xms_tbl_toll_ipec_manifest
+        order by ipec_manifest_id desc
+        limit 1) as maxconn union select 999999999) as conn
+        limit 1
+    </insert>
+
+    <select id="getManifestByMainShipment" parameterType="TollManifestVo" resultMap="TollIpecManifestMap">
+        SELECT SQL_CALC_FOUND_ROWS *  FROM xms_tbl_toll_ipec_manifest where status=0 and
+        (shipmentid = #{shipmentId} or shipmentid like concat('%',#{shipmentId},'%'))
+    </select>
+</mapper>

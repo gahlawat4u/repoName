@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean id="applicationContextProvider" class="com.gms.xms.common.config.SpringContextLoader"/>
+
+    <!--bean id="getAllBankTask"
+        class="com.gms.xms.workflow.task.franchisepayable.receivepayments.GetAllBankTask">
+    </bean>
+
+    <bean id="getCustomerAddressByNameTask"
+        class="com.gms.xms.workflow.task.franchisepayable.receivepayments.GetCustomerAddressByNameTask">
+    </bean>
+
+    <bean id="getOutstandingInvoicesByCustOrInvoiceCodeTask"
+        class="com.gms.xms.workflow.task.franchisepayable.receivepayments.GetOutstandingInvoicesByCustOrInvoiceCodeTask">
+    </bean>
+
+    <bean id="getQuoteJobDetailTask"
+        class="com.gms.xms.workflow.task.webship.GetQuoteJobDetailTask">
+    </bean>
+
+    <bean id="getQuoteJobListTask"
+        class="com.gms.xms.workflow.task.webship.GetQuoteJobListTask">
+    </bean>
+
+    <bean id="getQuoteJobListCountTask"
+        class="com.gms.xms.workflow.task.webship.GetQuoteJobListCountTask">
+    </bean>
+
+    <bean id="changeWebshipPassTask" class="com.gms.xms.workflow.task.webship.ChangeWebshipPassTask">
+    </bean>
+
+    <bean id="getWebshipByIdTask" class="com.gms.xms.workflow.task.webship.GetWebshipByIdTask">
+    </bean>
+
+    <bean id="getCustomerAddressBookCountTask"
+        class="com.gms.xms.workflow.task.webship.GetCustomerAddressBookCountTask">
+    </bean>
+
+    <bean id="getPackageByIdTask" class="com.gms.xms.workflow.task.webship.GetPackageByIdTask">
+    </bean>
+
+    <bean id="getCustomerAddressBookByCompanyOrContactTask"
+        class="com.gms.xms.workflow.task.webship.GetCustomerAddressBookByCompanyOrContactTask">
+    </bean>
+
+    <bean id="insertCustomerDefaultSettingTask"
+        class="com.gms.xms.workflow.task.webship.InsertCustomerDefaultSettingTask">
+    </bean>
+
+    <bean id="updateCustomerDefaultSettingTask"
+        class="com.gms.xms.workflow.task.webship.UpdateCustomerDefaultSettingTask">
+    </bean>
+
+    <bean id="getPaidInvoiceTotalByCustCodeTask"
+        class="com.gms.xms.workflow.task.webship.GetPaidInvoiceTotalByCustCodeTask">
+    </bean>
+
+    <bean id="getOutstandingInvoiceTotalByCustCodeTask"
+        class="com.gms.xms.workflow.task.webship.GetOutstandingInvoiceTotalByCustCodeTask">
+    </bean>
+
+    <bean id="getPaidInvoicesCountByCustCodeTask"
+        class="com.gms.xms.workflow.task.webship.GetPaidInvoicesCountByCustCodeTask">
+    </bean>
+
+    <bean id="getOutstandingInvoicesCountByCustCodeTask"
+        class="com.gms.xms.workflow.task.webship.GetOutstandingInvoicesCountByCustCodeTask">
+    </bean>
+
+    <bean id="getOutstandingInvoicesByCustCodeTask"
+        class="com.gms.xms.workflow.task.webship.GetOutstandingInvoicesByCustCodeTask">
+    </bean>
+
+    <bean id="getPaidInvoicesByCustCodeTask"
+        class="com.gms.xms.workflow.task.webship.GetPaidInvoicesByCustCodeTask">
+    </bean>
+
+    <bean id="getPackageListByServiceIdTask"
+        class="com.gms.xms.workflow.task.webship.GetPackageListByServiceIdTask">
+    </bean>
+
+    <bean id="getPackageListByShipmentTypeIdTask"
+        class="com.gms.xms.workflow.task.webship.GetPackageListByShipmentTypeIdTask">
+    </bean>
+
+    <bean id="getShipmentTypeListByServiceIdTask"
+        class="com.gms.xms.workflow.task.common.GetShipmentTypeListByServiceIdTask">
+    </bean>
+
+    <bean id="getServiceListByCustomerCodeTask"
+        class="com.gms.xms.workflow.task.webship.GetServiceListByCustomerCodeTask">
+    </bean>
+
+    <bean id="getServiceListByWebshipIdTask"
+        class="com.gms.xms.workflow.task.webship.GetServiceListByWebshipIdTask">
+    </bean>
+
+    <bean id="getCollectionTypeListTask"
+        class="com.gms.xms.workflow.task.common.GetCollectionTypeListTask">
+    </bean>
+
+    <bean id="getTradeTypeListTask" class="com.gms.xms.workflow.task.common.GetTradeTypeListTask">
+    </bean>
+
+    <bean id="getFranchiseListManagedByUserTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchiseListManagedByUserTask">
+    </bean>
+
+    <bean id="getUnfrozenPeriodListTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetUnfrozenPeriodListTask">
+    </bean>
+
+    <bean id="getFranchiseInfoByCodeTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchiseInfoByCodeTask">
+    </bean>
+
+    <bean id="getParentFranchiseByCodeTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetParentFranchiseByCodeTask">
+    </bean>
+
+    <bean id="getFranchisePayableMSOverviewTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableMSOverviewTask">
+    </bean>
+
+    <bean id="getFranchisePayableSCOverviewTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableSCOverviewTask">
+    </bean>
+
+    <bean id="getFranchisePayableMSMarginTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableMSMarginTask">
+    </bean>
+
+    <bean id="getFranchisePayableSCMarginTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableSCMarginTask">
+    </bean>
+
+    <bean id="getFranchisePayableMSDeductTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableMSDeductTask">
+    </bean>
+
+    <bean id="getFranchisePayableSCDeductTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableSCDeductTask">
+    </bean>
+
+    <bean id="getFranchisePayableMS61DaysTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableMS61DaysTask">
+    </bean>
+
+    <bean id="getFranchisePayableSC61DaysTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableSC61DaysTask">
+    </bean>
+
+    <bean id="getFranchisePayableMSNonCentralTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableMSNonCentralTask">
+    </bean>
+
+    <bean id="getFranchisePayableSCNonCentralTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableSCNonCentralTask">
+    </bean>
+
+    <bean id="getFranchisePayableMSCreditTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableMSCreditTask">
+    </bean>
+
+    <bean id="getFranchisePayableSCCreditTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableSCCreditTask">
+    </bean>
+
+    <bean id="getFranchisePayableMSOverpaymentTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableMSOverpaymentTask">
+    </bean>
+
+    <bean id="getFranchisePayableSCOverpaymentTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFranchisePayableSCOverpaymentTask">
+    </bean>
+
+    <bean id="determineReportCacheTask"
+        class="com.gms.xms.workflow.task.franchisepayable.DetermineReportCacheTask">
+    </bean>
+
+    <bean id="reconcileInvoicePaymentAwbLevelTask"
+        class="com.gms.xms.workflow.task.franchisepayable.ReconcileInvoicePaymentAwbLevelTask">
+    </bean>
+
+    <bean id="reconcileFranchiseTaxAmountTask"
+        class="com.gms.xms.workflow.task.franchisepayable.ReconcileFranchiseTaxAmountTask">
+    </bean>
+
+    <bean id="prepareDataForFranchisePayableReportTask"
+        class="com.gms.xms.workflow.task.franchisepayable.PrepareDataForFranchisePayableReportTask">
+    </bean>
+
+    <bean id="freezeFranchisePayableReportTask"
+        class="com.gms.xms.workflow.task.franchisepayable.FreezeFranchisePayableReportTask">
+    </bean>
+
+    <bean id="sendEmailMSPayableReportTask"
+        class="com.gms.xms.workflow.task.franchisepayable.SendEmailMSPayableReportTask">
+    </bean>
+
+    <bean id="sendEmailSCPayableReportTask"
+        class="com.gms.xms.workflow.task.franchisepayable.SendEmailSCPayableReportTask">
+    </bean>
+
+    <bean id="checkFranchisePayableStatusTask"
+        class="com.gms.xms.workflow.task.franchisepayable.CheckFranchisePayableStatusTask">
+    </bean>
+
+    <bean id="updateFranchisePayableStatusReportTask"
+        class="com.gms.xms.workflow.task.franchisepayable.UpdateFranchisePayableStatusReportTask">
+    </bean>
+
+    <bean id="getFrozenPeriodListTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetFrozenPeriodListTask">
+    </bean>
+
+    <bean id="getUserByIdTask"
+        class="com.gms.xms.workflow.task.franchisepayable.GetUserByIdTask">
+    </bean-->
+
+    <!-- ====== WEBSHIP ====== -->
+
+    <!-- bean id="getCustomerAddressBook"
+        class="com.gms.xms.workflow.task.webship.GetCustomerAddressBookTask">
+    </bean>
+
+    <bean id="getCustomerAddressBookByIdTask"
+        class="com.gms.xms.workflow.task.webship.GetCustomerAddressBookByIdTask">
+    </bean>
+
+    <bean id="insertCustomerAddressBookTask"
+        class="com.gms.xms.workflow.task.webship.InsertCustomerAddressBookTask">
+    </bean>
+
+    <bean id="deleteCustomerAddressBookByIdTask"
+        class="com.gms.xms.workflow.task.webship.DeleteCustomerAddressBookByIdTask">
+    </bean>
+
+    <bean id="updateCustomerAddressBookByIdTask"
+        class="com.gms.xms.workflow.task.webship.UpdateCustomerAddressBookByIdTask">
+    </bean>
+
+    <bean id="getWebshipHistoryTask" class="com.gms.xms.workflow.task.webship.GetWebshipHistoryTask">
+    </bean>
+    <bean id="getWebshipHistoryCountTask"
+        class="com.gms.xms.workflow.task.webship.GetWebshipHistoryCountTask">
+    </bean>
+
+
+    <bean id="getCountryListTask" class="com.gms.xms.workflow.task.common.GetCountryListTask">
+    </bean>
+
+    <bean id="getCurrencyListTask" class="com.gms.xms.workflow.task.common.GetCurrencyListTask">
+    </bean>
+
+    <bean id="getPackageListTask" class="com.gms.xms.workflow.task.common.GetPackageListTask">
+    </bean>
+
+    <bean id="getServiceListTask" class="com.gms.xms.workflow.task.common.GetServiceListTask">
+    </bean>
+
+    <bean id="getShipmentTypeListTask"
+        class="com.gms.xms.workflow.task.common.GetShipmentTypeListTask">
+    </bean>
+
+    <bean id="getBillingTypeListTask" class="com.gms.xms.workflow.task.common.GetBillingTypeListTask">
+    </bean>
+
+    <bean id="getCustomerDefaultSettingByCustomerCodeTask"
+        class="com.gms.xms.workflow.task.webship.GetCustomerDefaultSettingByCustomerCodeTask">
+    </bean>
+
+    <bean id="getWebshipHistoryDetailTask"
+        class="com.gms.xms.workflow.task.webship.GetWebshipHistoryDetailTask">
+    </bean>
+
+    <bean id="insertDimensionTask"
+        class="com.gms.xms.workflow.task.common.InsertDimensionTask">
+    </bean>
+
+    <bean id="getDimensionByWebshipIdTask"
+        class="com.gms.xms.workflow.task.common.GetDimensionByWebshipIdTask">
+    </bean>
+
+    <bean id="updateDimensionTask"
+        class="com.gms.xms.workflow.task.common.UpdateDimensionTask">
+    </bean-->
+</beans>

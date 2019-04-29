@@ -1,0 +1,1 @@
+INSERT INTO xms_tbl_system_setting (`setting_name`, `setting_value`, `description`, `user_level`, `allow_null`) VALUES ('Agl Warranty Credit Limit', '1000', 'Agl Warranty Credit Limit', '1', '0');

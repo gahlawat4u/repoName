@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerStatus">
+    <resultMap id="CustomerStatusMap" type="CustomerStatusVo">
+        <result column="setups" property="setups"/>
+        <result column="activations" property="activations"/>
+        <result column="shipment_count" property="shipmentCount"/>
+        <result column="rev_exc_gst" property="revenueExcGst"/>
+        <result column="rev_inc_gst" property="revenueIncGst"/>
+        <result column="margin_exc_gst" property="marginExcGst"/>
+        <result column="margin_inc_gst" property="marginIncGst"/>
+    </resultMap>
+
+    <select id="getWeeklyReport" parameterType="com.gms.xms.filter.reports.customer.status.CustomerStatusFilter"
+            resultType="map">
+        select
+        date_format(start_date,'%d-%m-%Y') as start_date,
+        date_format(end_date,'%d-%m-%Y') as end_date,
+        start_date as sort_start_date,
+        setups,
+        activations,
+        <foreach item="service" collection="serviceList" open="" close="" separator="," index="i">
+            sum(if(carrier=#{service},shipment_count,0)) as shipment_count_${service},
+            sum(if(carrier=#{service},rev_exc_gst,0)) as rev_exc_gst_${service},
+            sum(if(carrier=#{service},rev_inc_gst,0)) as rev_inc_gst_${service},
+            sum(if(carrier=#{service},margin_exc_gst,0)) as margin_exc_gst_${service},
+            sum(if(carrier=#{service},margin_inc_gst,0)) as margin_inc_gst_${service}
+        </foreach>,
+        sum(shipment_count) as total_shipment_count,
+        sum(rev_exc_gst) as total_rev_exc_gst,
+        sum(rev_inc_gst) as total_rev_inc_gst,
+        sum(margin_exc_gst) as total_margin_exc_gst,
+        sum(margin_inc_gst) as total_margin_inc_gst
+        from tmp_weekly_customer_status_report
+        where rpt_txn_id = #{rptTxnId}
+        group by start_date, end_date
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+    </select>
+
+    <select id="getMonthlyReport" parameterType="com.gms.xms.filter.reports.customer.status.CustomerStatusFilter"
+            resultType="map">
+        select
+        date_format(start_date,'%d-%m-%Y') as start_date,
+        date_format(end_date,'%d-%m-%Y') as end_date,
+        start_date as sort_start_date,
+        setups,
+        activations,
+        <foreach item="service" collection="serviceList" open="" close="" separator="," index="i">
+            sum(if(carrier=#{service},shipment_count,0)) as shipment_count_${service},
+            sum(if(carrier=#{service},rev_exc_gst,0)) as rev_exc_gst_${service},
+            sum(if(carrier=#{service},rev_inc_gst,0)) as rev_inc_gst_${service},
+            sum(if(carrier=#{service},margin_exc_gst,0)) as margin_exc_gst_${service},
+            sum(if(carrier=#{service},margin_inc_gst,0)) as margin_inc_gst_${service}
+        </foreach>,
+        sum(shipment_count) as total_shipment_count,
+        sum(rev_exc_gst) as total_rev_exc_gst,
+        sum(rev_inc_gst) as total_rev_inc_gst,
+        sum(margin_exc_gst) as total_margin_exc_gst,
+        sum(margin_inc_gst) as total_margin_inc_gst
+        from tmp_monthly_customer_status_report
+        where rpt_txn_id = #{rptTxnId}
+        group by start_date, end_date
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+    </select>
+
+    <select id="checkWeeklyReport" parameterType="com.gms.xms.filter.reports.customer.status.CustomerStatusFilter"
+            resultType="long">
+        select
+        count(*)
+        from
+        (select * from tmp_weekly_customer_status_report
+        where rpt_txn_id = #{rptTxnId}
+        group by start_date, end_date) as r
+    </select>
+
+    <select id="checkMonthlyReport" parameterType="com.gms.xms.filter.reports.customer.status.CustomerStatusFilter"
+            resultType="long">
+        select
+        count(*)
+        from
+        (select * from tmp_monthly_customer_status_report
+        where rpt_txn_id = #{rptTxnId}) as r
+    </select>
+
+    <select id="sumWeeklyReport" parameterType="com.gms.xms.filter.reports.customer.status.CustomerStatusFilter"
+            resultType="map">
+        select
+        sum(setups) as setups,
+        sum(activations) as activations,
+        <foreach item="service" collection="serviceList" open="" close="" separator="," index="i">
+            sum(shipment_count_${service}) as shipment_count_${service},
+            sum(rev_exc_gst_${service}) as rev_exc_gst_${service},
+            sum(rev_inc_gst_${service}) as rev_inc_gst_${service},
+            sum(margin_exc_gst_${service}) as margin_exc_gst_${service},
+            sum(margin_inc_gst_${service}) as margin_inc_gst_${service}
+        </foreach>,
+        sum(total_shipment_count) as total_shipment_count,
+        sum(total_rev_exc_gst) as total_rev_exc_gst,
+        sum(total_rev_inc_gst) as total_rev_inc_gst,
+        sum(total_margin_exc_gst) as total_margin_exc_gst,
+        sum(total_margin_inc_gst) as total_margin_inc_gst
+        from
+        (select
+        date_format(start_date,'%d-%m-%Y') as start_date,
+        date_format(end_date,'%d-%m-%Y') as end_date,
+        setups,
+        activations,
+        <foreach item="service" collection="serviceList" open="" close="" separator="," index="i">
+            sum(if(carrier=#{service},shipment_count,0)) as shipment_count_${service},
+            sum(if(carrier=#{service},rev_exc_gst,0)) as rev_exc_gst_${service},
+            sum(if(carrier=#{service},rev_inc_gst,0)) as rev_inc_gst_${service},
+            sum(if(carrier=#{service},margin_exc_gst,0)) as margin_exc_gst_${service},
+            sum(if(carrier=#{service},margin_inc_gst,0)) as margin_inc_gst_${service}
+        </foreach>,
+        sum(shipment_count) as total_shipment_count,
+        sum(rev_exc_gst) as total_rev_exc_gst,
+        sum(rev_inc_gst) as total_rev_inc_gst,
+        sum(margin_exc_gst) as total_margin_exc_gst,
+        sum(margin_inc_gst) as total_margin_inc_gst
+        from tmp_weekly_customer_status_report
+        where rpt_txn_id = #{rptTxnId}
+        group by start_date, end_date
+        ) as r
+    </select>
+
+    <select id="sumMonthlyReport" parameterType="com.gms.xms.filter.reports.customer.status.CustomerStatusFilter"
+            resultType="map">
+        select
+        sum(setups) as setups,
+        sum(activations) as activations,
+        <foreach item="service" collection="serviceList" open="" close="" separator="," index="i">
+            sum(shipment_count_${service}) as shipment_count_${service},
+            sum(rev_exc_gst_${service}) as rev_exc_gst_${service},
+            sum(rev_inc_gst_${service}) as rev_inc_gst_${service},
+            sum(margin_exc_gst_${service}) as margin_exc_gst_${service},
+            sum(margin_inc_gst_${service}) as margin_inc_gst_${service}
+        </foreach>,
+        sum(total_shipment_count) as total_shipment_count,
+        sum(total_rev_exc_gst) as total_rev_exc_gst,
+        sum(total_rev_inc_gst) as total_rev_inc_gst,
+        sum(total_margin_exc_gst) as total_margin_exc_gst,
+        sum(total_margin_inc_gst) as total_margin_inc_gst
+        from
+        (select
+        date_format(start_date,'%d-%m-%Y') as start_date,
+        date_format(end_date,'%d-%m-%Y') as end_date,
+        setups,
+        activations,
+        <foreach item="service" collection="serviceList" open="" close="" separator="," index="i">
+            sum(if(carrier=#{service},shipment_count,0)) as shipment_count_${service},
+            sum(if(carrier=#{service},rev_exc_gst,0)) as rev_exc_gst_${service},
+            sum(if(carrier=#{service},rev_inc_gst,0)) as rev_inc_gst_${service},
+            sum(if(carrier=#{service},margin_exc_gst,0)) as margin_exc_gst_${service},
+            sum(if(carrier=#{service},margin_inc_gst,0)) as margin_inc_gst_${service}
+        </foreach>,
+        sum(shipment_count) as total_shipment_count,
+        sum(rev_exc_gst) as total_rev_exc_gst,
+        sum(rev_inc_gst) as total_rev_inc_gst,
+        sum(margin_exc_gst) as total_margin_exc_gst,
+        sum(margin_inc_gst) as total_margin_inc_gst
+        from tmp_monthly_customer_status_report
+        where rpt_txn_id = #{rptTxnId}
+        group by start_date, end_date
+        ) as r
+    </select>
+
+    <insert id="prepareWeeklyReport" parameterType="com.gms.xms.filter.reports.customer.status.CustomerStatusFilter">
+        <![CDATA[
+		insert into tmp_weekly_customer_status_report (
+			rpt_txn_id,
+			start_date,
+			end_date,
+			carrier,
+			setups,
+			activations,
+			shipment_count,
+			rev_exc_gst,
+			rev_inc_gst,
+			margin_exc_gst,
+			margin_inc_gst
+		)
+		select 
+			#{rptTxnId},
+			cp.start_date,
+			cp.end_date,
+			cp.carrier,
+	        ifnull(st.setups,0) as setups,
+	        ifnull(av.activations,0) as activations,
+			ifnull(sm.shipment_count,0) as shipment_count,
+			ifnull(sm.rev_exc_gst,0) as rev_exc_gst,
+			ifnull(sm.rev_inc_gst,0) as rev_inc_gst,
+			ifnull(sm.margin_exc_gst,0) as margin_exc_gst,
+			ifnull(sm.margin_inc_gst,0) as margin_inc_gst
+		from
+			(select 
+				p.period as start_date,
+				date_add(p.period,interval 6 day) as end_date,
+				sv.service_id as carrier
+			from 
+				(select date_sub(date(#{reportDate, jdbcType=DATE}),interval weekday(#{reportDate, jdbcType=DATE}) day) as period
+					union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval weekday(#{reportDate, jdbcType=DATE}) day),interval 7 day) as period
+					union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval weekday(#{reportDate, jdbcType=DATE}) day),interval 14 day) as period
+					union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval weekday(#{reportDate, jdbcType=DATE}) day),interval 21 day) as period
+					union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval weekday(#{reportDate, jdbcType=DATE}) day),interval 28 day) as period
+					union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval weekday(#{reportDate, jdbcType=DATE}) day),interval 35 day) as period
+					union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval weekday(#{reportDate, jdbcType=DATE}) day),interval 42 day) as period
+					union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval weekday(#{reportDate, jdbcType=DATE}) day),interval 49 day) as period
+					union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval weekday(#{reportDate, jdbcType=DATE}) day),interval 56 day) as period
+					union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval weekday(#{reportDate, jdbcType=DATE}) day),interval 63 day) as period
+					union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval weekday(#{reportDate, jdbcType=DATE}) day),interval 70 day) as period
+					union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval weekday(#{reportDate, jdbcType=DATE}) day),interval 77 day) as period
+					union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval weekday(#{reportDate, jdbcType=DATE}) day),interval 84 day) as period
+				) as p
+			left join xms_tbl_service as sv on sv.inactive=0
+			) as cp
+		left join 
+			(select 
+				date_sub(date(i.invoice_date),interval weekday(i.invoice_date) day) as start_date,
+				date_add(date_sub(date(i.invoice_date),interval weekday(i.invoice_date) day), interval 6 day) as end_date,
+				sb.carrier,
+				sum(if(sb.accessorial_count=0,1,0)) as shipment_count,
+				sum(sb.customer_cost) as rev_exc_gst,
+				sum(sb.customer_cost+sb.customer_tax_amount) as rev_inc_gst,
+				sum(sb.customer_cost-sb.franchise_cost) as margin_exc_gst,
+				sum(sb.customer_cost+sb.customer_tax_amount-sb.franchise_cost-sb.franchise_tax_amount) as margin_inc_gst
+			from xms_tbl_invoice as i
+			inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+			inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+			inner join xms_tbl_service as sv on sv.service_id = sb.carrier and sv.inactive=0
+			where left(i.customer_code,3) in (${franchiseList})	
+				and i.invoice_date>=date_sub(#{reportDate, jdbcType=DATE},interval 14 week) and i.invoice_date<date_add(#{reportDate, jdbcType=DATE},interval 1 week)
+			group by start_date, end_date, carrier
+			) as sm on sm.start_date = cp.start_date and sm.end_date = cp.end_date and sm.carrier = cp.carrier
+		left join 
+			(select 
+				date_sub(date(create_date),interval weekday(create_date) day) as start_date, 
+	            date_add(date_sub(date(create_date),interval weekday(create_date) day),interval 6 day) as end_date, 
+				count(*) as setups 
+			from xms_tbl_customer
+	        where franchise_code in (${franchiseList})
+				and create_date>=date_sub(#{reportDate, jdbcType=DATE},interval 14 week) and create_date<date_add(#{reportDate, jdbcType=DATE},interval 1 week)
+			group by start_date, end_date
+	        ) as st on st.start_date = cp.start_date and st.end_date = cp.end_date
+		left join 
+			(select 
+				date_sub(date(activate_date),interval weekday(activate_date) day) as start_date, 
+	            date_add(date_sub(date(activate_date),interval weekday(activate_date) day),interval 6 day) as end_date, 
+				count(*) as activations 
+			from xms_tbl_customer
+	        where franchise_code in (${franchiseList})
+				and activate_date>=date_sub(#{reportDate, jdbcType=DATE},interval 14 week) and activate_date<date_add(#{reportDate, jdbcType=DATE},interval 1 week)
+			group by start_date, end_date
+	        ) as av on av.start_date = cp.start_date and av.end_date = cp.end_date	
+	    ]]>
+    </insert>
+
+    <insert id="prepareMonthlyReport" parameterType="com.gms.xms.filter.reports.customer.status.CustomerStatusFilter">
+        <![CDATA[
+		insert into tmp_monthly_customer_status_report (
+			rpt_txn_id,
+			start_date,
+			end_date,
+			carrier,
+			setups,
+			activations,
+			shipment_count,
+			rev_exc_gst,
+			rev_inc_gst,
+			margin_exc_gst,
+			margin_inc_gst
+		)
+		select 
+			#{rptTxnId},
+			cp.start_date,
+			cp.end_date,
+			cp.carrier,
+	        ifnull(st.setups,0) as setups,
+	        ifnull(av.activations,0) as activations,
+			ifnull(sm.shipment_count,0) as shipment_count,
+			ifnull(sm.rev_exc_gst,0) as rev_exc_gst,
+			ifnull(sm.rev_inc_gst,0) as rev_inc_gst,
+			ifnull(sm.margin_exc_gst,0) as margin_exc_gst,
+			ifnull(sm.margin_inc_gst,0) as margin_inc_gst
+		from
+			(select 
+				p.period as start_date,
+				date_add(p.period,interval day(last_day(p.period))-1 day) as end_date,
+				sv.service_id as carrier
+			from 
+				(select date_sub(date(#{reportDate, jdbcType=DATE}),interval day(date(#{reportDate, jdbcType=DATE}))-1 day) as period
+				union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval day(date(#{reportDate, jdbcType=DATE}))-1 day),interval 1 month) as period
+				union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval day(date(#{reportDate, jdbcType=DATE}))-1 day),interval 2 month) as period
+				union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval day(date(#{reportDate, jdbcType=DATE}))-1 day),interval 3 month) as period
+				union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval day(date(#{reportDate, jdbcType=DATE}))-1 day),interval 4 month) as period
+				union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval day(date(#{reportDate, jdbcType=DATE}))-1 day),interval 5 month) as period
+				union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval day(date(#{reportDate, jdbcType=DATE}))-1 day),interval 6 month) as period
+				union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval day(date(#{reportDate, jdbcType=DATE}))-1 day),interval 7 month) as period
+				union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval day(date(#{reportDate, jdbcType=DATE}))-1 day),interval 8 month) as period
+				union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval day(date(#{reportDate, jdbcType=DATE}))-1 day),interval 9 month) as period
+				union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval day(date(#{reportDate, jdbcType=DATE}))-1 day),interval 10 month) as period
+				union 
+				select date_sub(date_sub(date(#{reportDate, jdbcType=DATE}),interval day(date(#{reportDate, jdbcType=DATE}))-1 day),interval 11 month) as period
+				) as p
+			left join xms_tbl_service as sv on sv.inactive=0
+			) as cp
+		left join 
+			(select 
+				date_sub(date(i.invoice_date),interval day(date(i.invoice_date))-1 day) as start_date,
+				date_add(date_sub(date(i.invoice_date),interval day(date(i.invoice_date))-1 day),interval day(last_day(date_sub(date(i.invoice_date),interval day(date(i.invoice_date))-1 day)))-1 day) as end_date,
+				sb.carrier,
+				sum(if(sb.accessorial_count=0,1,0)) as shipment_count,
+				sum(sb.customer_cost) as rev_exc_gst,
+				sum(sb.customer_cost+sb.customer_tax_amount) as rev_inc_gst,
+				sum(sb.customer_cost-sb.franchise_cost) as margin_exc_gst,
+				sum(sb.customer_cost+sb.customer_tax_amount-sb.franchise_cost-sb.franchise_tax_amount) as margin_inc_gst
+			from xms_tbl_invoice as i
+			inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+			inner join xms_tbl_shipment_billing as sb on sb.shipmentid = si.shipmentid and sb.airbill_number = si.airbill_number
+			inner join xms_tbl_service as sv on sv.service_id = sb.carrier and sv.inactive=0
+	        where left(i.customer_code,3) in (${franchiseList})	
+				and i.invoice_date>=date_sub(#{reportDate, jdbcType=DATE},interval 13 month) and i.invoice_date<date_add(#{reportDate, jdbcType=DATE},interval 1 month)
+			group by start_date, end_date, carrier
+			) as sm on sm.start_date = cp.start_date and sm.end_date = cp.end_date and sm.carrier = cp.carrier
+		left join 
+			(select 
+				date_sub(date(create_date),interval day(date(create_date))-1 day) as start_date, 
+	            date_add(date_sub(date(create_date),interval day(date(create_date))-1 day),interval day(last_day(date_sub(date(create_date),interval day(date(create_date))-1 day)))-1 day) as end_date, 
+				count(*) as setups 
+			from xms_tbl_customer
+	        where franchise_code in (${franchiseList})
+				and create_date>=date_sub(#{reportDate, jdbcType=DATE},interval 13 month) and create_date<date_add(#{reportDate, jdbcType=DATE},interval 1 month)
+			group by start_date, end_date
+	        ) as st on st.start_date = cp.start_date and st.end_date = cp.end_date
+		left join 
+			(select 
+				date_sub(date(activate_date),interval day(date(activate_date))-1 day) as start_date, 
+	            date_add(date_sub(date(activate_date),interval day(date(activate_date))-1 day),interval day(last_day(date_sub(date(activate_date),interval day(date(activate_date))-1 day)))-1 day) as end_date, 
+				count(*) as activations 
+			from xms_tbl_customer
+	        where franchise_code in (${franchiseList})
+				and activate_date>=date_sub(#{reportDate, jdbcType=DATE},interval 13 month) and activate_date<date_add(#{reportDate, jdbcType=DATE},interval 1 month)
+			group by start_date, end_date
+	        ) as av on av.start_date = cp.start_date and av.end_date = cp.end_date
+		]]>
+    </insert>
+</mapper>

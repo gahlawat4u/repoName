@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FranchisePayableSCTechFee">
+    <resultMap id="FranchisePayableSCTechFeeMap" type="FranchisePayableSCTechFeeVo">
+        <result column="import_date" property="importDate"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="is_domestic" property="isDomestic"/>
+        <result column="intl_shipment_fee" property="intlShipmentFee"/>
+        <result column="dom_shipment_fee" property="domShipmentFee"/>
+    </resultMap>
+
+    <resultMap id="FranchisePayableSCTechFeeTotalMap" type="FranchisePayableSCTechFeeTotalVo">
+        <result column="intl_shipment_fee" property="intlShipmentFee"/>
+        <result column="dom_shipment_fee" property="domShipmentFee"/>
+        <result column="dom_shipment_count" property="domShipmentCount"/>
+        <result column="intl_shipment_count" property="intlShipmentCount"/>
+    </resultMap>
+
+    <!-- Tech Fee details (Service Charge) -->
+    <select id="getTechFeeDetails" parameterType="FranchisePayableFilter" resultMap="FranchisePayableSCTechFeeMap">
+        SELECT * FROM tmp_xms_tbl_fran_rab_tech_fee_detail
+        WHERE rpt_txn_id = #{rptTxnId}
+        and left(customer_code,3) in
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        <if test="startRecord!=null and recordSize!=null">
+            LIMIT #{startRecord}, #{recordSize}
+        </if>
+    </select>
+
+    <select id="getTechFeeDetailsTotal" parameterType="FranchisePayableFilter"
+            resultMap="FranchisePayableSCTechFeeTotalMap">
+        SELECT
+        SUM(intl_shipment_fee) AS intl_shipment_fee,
+        SUM(dom_shipment_fee) AS dom_shipment_fee,
+        SUM(if(is_domestic=0,1,0)) AS intl_shipment_count,
+        SUM(if(is_domestic=1,1,0)) AS dom_shipment_count
+        FROM tmp_xms_tbl_fran_rab_tech_fee_detail
+        WHERE rpt_txn_id = #{rptTxnId}
+        and left(customer_code,3) in
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+
+    <select id="getTechFeeDetailsRecordCount" parameterType="FranchisePayableFilter" resultType="long">
+        SELECT COUNT(*) FROM tmp_xms_tbl_fran_rab_tech_fee_detail
+        WHERE rpt_txn_id = #{rptTxnId}
+        and left(customer_code,3) in
+        <foreach item="franchiseCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+    </select>
+</mapper>

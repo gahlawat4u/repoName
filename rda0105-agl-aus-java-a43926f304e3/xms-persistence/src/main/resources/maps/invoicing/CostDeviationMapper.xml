@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CostDeviation">
+    <resultMap id="CostDeviationMap" type="CostDeviationVo">
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="calculated_franchise_cost" property="calculatedFranchiseCost"/>
+        <result column="franchise_cost" property="franchiseCost"/>
+        <result column="difference" property="difference"/>
+        <result column="service_name" property="serviceName"/>
+        <result column="weight" property="weight"/>
+    </resultMap>
+
+    <select id="getCostDeviationByFilter" parameterType="com.gms.xms.filter.invoicing.CostDeviationFilter"
+            resultMap="CostDeviationMap">
+        select
+        *
+        from
+        (select
+        sb.shipmentid,
+        sb.airbill_number,
+        i.invoice_code,
+        sb.calculated_franchise_cost,
+        sb.franchise_cost,
+        (sb.calculated_franchise_cost-sb.franchise_cost) as difference,
+        sv.service_name,
+        sb.weight
+        from xms_tbl_shipment_billing as sb
+        left join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and si.airbill_number =
+        sb.airbill_number and sb.accessorial_count=0
+        left join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        left join xms_tbl_service as sv on sv.service_id = sb.carrier
+        where left(i.customer_code,3) in (${franchiseList})
+        <![CDATA[ and i.invoice_date>=date(#{startDate}) and i.invoice_date<date_add(date(#{endDate}),interval 1 day) ]]>
+        ) as r
+        <![CDATA[
+		where difference<0
+		]]>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countCostDeviationByFilter" parameterType="com.gms.xms.filter.invoicing.CostDeviationFilter"
+            resultType="long">
+        select
+        count(*)
+        from
+        (select
+        sb.shipmentid,
+        sb.airbill_number,
+        i.invoice_code,
+        sb.calculated_franchise_cost,
+        sb.franchise_cost,
+        (sb.calculated_franchise_cost-sb.franchise_cost) as difference,
+        sv.service_name,
+        sb.weight
+        from xms_tbl_shipment_billing as sb
+        left join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and si.airbill_number =
+        sb.airbill_number and sb.accessorial_count=0
+        left join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        left join xms_tbl_service as sv on sv.service_id = sb.carrier
+        where left(i.customer_code,3) in (${franchiseList})
+        <![CDATA[ and i.invoice_date>=date(#{startDate}) and i.invoice_date<date_add(date(#{endDate}),interval 1 day) ]]>
+        ) as r
+        <![CDATA[
+		where difference<0
+		]]>
+    </select>
+
+    <select id="sumCostDeviationByFilter" parameterType="com.gms.xms.filter.invoicing.CostDeviationFilter"
+            resultMap="CostDeviationMap">
+        select
+        sum(calculated_franchise_cost) as calculated_franchise_cost,
+        sum(franchise_cost) as franchise_cost,
+        sum(difference) as difference,
+        sum(weight) as weight
+        from
+        (select
+        sb.shipmentid,
+        sb.airbill_number,
+        i.invoice_code,
+        sb.calculated_franchise_cost,
+        sb.franchise_cost,
+        (sb.calculated_franchise_cost-sb.franchise_cost) as difference,
+        sv.service_name,
+        sb.weight
+        from xms_tbl_shipment_billing as sb
+        left join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and si.airbill_number =
+        sb.airbill_number and sb.accessorial_count=0
+        left join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        left join xms_tbl_service as sv on sv.service_id = sb.carrier
+        where left(i.customer_code,3) in (${franchiseList})
+        <![CDATA[ and i.invoice_date>=date(#{startDate}) and i.invoice_date<date_add(date(#{endDate}),interval 1 day) ]]>
+        ) as r
+        <![CDATA[
+		where difference<0
+		]]>
+    </select>
+</mapper>

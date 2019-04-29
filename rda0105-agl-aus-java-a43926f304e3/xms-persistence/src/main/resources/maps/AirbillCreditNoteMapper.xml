@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="AirbillCreditNote">
+    <resultMap id="AirbillCreditNoteMap" type="AirbillCreditNoteVo">
+        <result column="adjustmentid" property="adjustmentId"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoiceid" property="invoiceId"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="cus_paymentid" property="cusPaymentId"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="customer_amount" property="customerAmount"/>
+        <result column="gst_customer_amount" property="gstCustomerAmount"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="awb_total" property="awbTotal"/>
+        <result column="awb_paid" property="awbPaid"/>
+        <result column="credit_type" property="creditType"/>
+    </resultMap>
+
+    <select id="getListAdjustmentAirbill" parameterType="Long" resultMap="AirbillCreditNoteMap">
+        select
+        cnd.adjustmentid,
+        cn.invoice_code,
+        i.invoiceid,
+        i.customer_code,
+        cnd.cus_paymentid,
+        adj.shipmentid,
+        adj.airbill_number,
+        adj.customer_amount,
+        adj.gst_customer_amount,
+        (adj.customer_amount+adj.gst_customer_amount) as total_amount,
+        (select sum(customer_cost+customer_tax_amount) from xms_tbl_shipment_billing
+        where airbill_number = adj.airbill_number and shipmentid = adj.shipmentid) as awb_total,
+        ifnull((select sum(amount) from xms_tbl_invoice_payment_detail
+        where airbill_number = adj.airbill_number and shipmentid = adj.shipmentid),0) as awb_paid,
+        adj.credit_type
+        from xms_tbl_credit_note_detail as cnd
+        inner join xms_tbl_credit_note as cn on cn.credit_note_id = cnd.credit_note_id
+        inner join xms_tbl_airbill_adjustment as adj on adj.adjustmentid = cnd.adjustmentid
+        inner join xms_tbl_invoice as i on i.invoice_code = cn.invoice_code
+        where cn.credit_note_id = #{creditNoteId}
+    </select>
+</mapper>

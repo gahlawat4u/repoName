@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Tracking">
+    <resultMap id="TrackingMap" type="TrackingVo">
+        <result column="shipmentid" property="shipmentId" jdbcType="BIGINT"/>
+        <result column="airbill_number" property="airbillNumber" jdbcType="VARCHAR"/>
+        <result column="track_date" property="trackDate" jdbcType="TIMESTAMP"/>
+        <result column="track_time" property="trackTime" jdbcType="VARCHAR"/>
+        <result column="event_code" property="eventCode" jdbcType="VARCHAR"/>
+        <result column="event_description" property="eventDescription" jdbcType="VARCHAR"/>
+        <result column="signatory" property="signatory" jdbcType="VARCHAR"/>
+        <result column="service_area_code" property="serviceAreaCode" jdbcType="VARCHAR"/>
+        <result column="service_area_description" property="serviceAreaDescription" jdbcType="VARCHAR"/>
+        <result column="shipper_name" property="shipperName" jdbcType="VARCHAR"/>
+        <result column="consignee_name" property="consigneeName" jdbcType="VARCHAR"/>
+        <result column="shipment_date" property="shipmentDate" jdbcType="TIMESTAMP"/>
+        <result column="weight" property="weight" jdbcType="VARCHAR"/>
+        <result column="weight_unit" property="weightUnit" jdbcType="VARCHAR"/>
+        <result column="service_type" property="serviceType" jdbcType="VARCHAR"/>
+        <result column="destination_service_area" property="destinationServiceArea" jdbcType="VARCHAR"/>
+        <result column="origin_service_area" property="originServiceArea" jdbcType="VARCHAR"/>
+        <result column="track_status" property="trackStatus" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <select id="selectAirbillNumberByShipmentId" parameterType="long" resultType="String">
+        select airbill_number from xms_tbl_tracking
+        where shipmentid = #{shipmentId}
+        limit 1
+    </select>
+
+    <select id="Tracking_SelectDeliveredTrackingList" resultMap="TrackingMap"
+            parameterType="DeliveredTrackingListFilter">
+        select * from xms_tbl_tracking WHERE shipmentid= #{shipmentId}
+        <if test="isAll !='all'">
+            And track_status=1
+        </if>
+    </select>
+
+    <delete id="Tracking_DeleteTracking" parameterType="TrackingVo">
+        delete from xms_tbl_tracking where shipmentid =#{shipmentId} and airbill_number=#{airbillNumber}
+    </delete>
+
+    <select id="Tracking_DeleteTracking_SelectForLog" parameterType="TrackingVo" resultMap="TrackingMap">
+        select * from xms_tbl_tracking where shipmentid =#{shipmentId} and airbill_number=#{airbillNumber}
+    </select>
+
+
+    <insert id="Tracking_InsertTracking" parameterType="TrackingVo">
+        insert into xms_tbl_tracking
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="shipmentId != null">
+                shipmentid,
+            </if>
+            <if test="airbillNumber != null">
+                airbill_number,
+            </if>
+            <if test="trackDate != null">
+                track_date,
+            </if>
+            <if test="trackTime != null">
+                track_time,
+            </if>
+            <if test="eventCode != null">
+                event_code,
+            </if>
+            <if test="eventDescription != null">
+                event_description,
+            </if>
+            <if test="signatory != null">
+                signatory,
+            </if>
+            <if test="serviceAreaCode != null">
+                service_area_code,
+            </if>
+            <if test="serviceAreaDescription != null">
+                service_area_description,
+            </if>
+            <if test="shipperName != null">
+                shipper_name,
+            </if>
+            <if test="consigneeName != null">
+                consignee_name,
+            </if>
+            <if test="shipmentDate != null">
+                shipment_date,
+            </if>
+            <if test="weight != null">
+                weight,
+            </if>
+            <if test="weightUnit != null">
+                weight_unit,
+            </if>
+            <if test="serviceType != null">
+                service_type,
+            </if>
+            <if test="destinationServiceArea != null">
+                destination_service_area,
+            </if>
+            <if test="originServiceArea != null">
+                origin_service_area,
+            </if>
+            <if test="trackStatus != null">
+                track_status,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="shipmentId != null">
+                #{shipmentId,jdbcType=BIGINT},
+            </if>
+            <if test="airbillNumber != null">
+                #{airbillNumber,jdbcType=VARCHAR},
+            </if>
+            <if test="trackDate != null">
+                #{trackDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="trackTime != null">
+                #{trackTime,jdbcType=VARCHAR},
+            </if>
+            <if test="eventCode != null">
+                #{eventCode,jdbcType=VARCHAR},
+            </if>
+            <if test="eventDescription != null">
+                #{eventDescription,jdbcType=VARCHAR},
+            </if>
+            <if test="signatory != null">
+                #{signatory,jdbcType=VARCHAR},
+            </if>
+            <if test="serviceAreaCode != null">
+                #{serviceAreaCode,jdbcType=VARCHAR},
+            </if>
+            <if test="serviceAreaDescription != null">
+                #{serviceAreaDescription,jdbcType=VARCHAR},
+            </if>
+            <if test="shipperName != null">
+                #{shipperName,jdbcType=VARCHAR},
+            </if>
+            <if test="consigneeName != null">
+                #{consigneeName,jdbcType=VARCHAR},
+            </if>
+            <if test="shipmentDate != null">
+                #{shipmentDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="weight != null">
+                #{weight,jdbcType=VARCHAR},
+            </if>
+            <if test="weightUnit != null">
+                #{weightUnit,jdbcType=VARCHAR},
+            </if>
+            <if test="serviceType != null">
+                #{serviceType,jdbcType=VARCHAR},
+            </if>
+            <if test="destinationServiceArea != null">
+                #{destinationServiceArea,jdbcType=VARCHAR},
+            </if>
+            <if test="originServiceArea != null">
+                #{originServiceArea,jdbcType=VARCHAR},
+            </if>
+            <if test="trackStatus != null">
+                #{trackStatus,jdbcType=TINYINT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="Tracking_UpdateTracking" parameterType="map">
+        update xms_tbl_tracking
+        <set>
+            <if test="record.shipmentId != null">
+                shipmentid = #{record.shipmentId,jdbcType=BIGINT},
+            </if>
+            <if test="record.airbillNumber != null">
+                airbill_number = #{record.airbillNumber,jdbcType=VARCHAR},
+            </if>
+            <if test="record.trackDate != null">
+                track_date = #{record.trackDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.trackTime != null">
+                track_time = #{record.trackTime,jdbcType=VARCHAR},
+            </if>
+            <if test="record.eventCode != null">
+                event_code = #{record.eventCode,jdbcType=VARCHAR},
+            </if>
+            <if test="record.eventDescription != null">
+                event_description = #{record.eventDescription,jdbcType=VARCHAR},
+            </if>
+            <if test="record.signatory != null">
+                signatory = #{record.signatory,jdbcType=VARCHAR},
+            </if>
+            <if test="record.serviceAreaCode != null">
+                service_area_code = #{record.serviceAreaCode,jdbcType=VARCHAR},
+            </if>
+            <if test="record.serviceAreaDescription != null">
+                service_area_description = #{record.serviceAreaDescription,jdbcType=VARCHAR},
+            </if>
+            <if test="record.shipperName != null">
+                shipper_name = #{record.shipperName,jdbcType=VARCHAR},
+            </if>
+            <if test="record.consigneeName != null">
+                consignee_name = #{record.consigneeName,jdbcType=VARCHAR},
+            </if>
+            <if test="record.shipmentDate != null">
+                shipment_date = #{record.shipmentDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.weight != null">
+                weight = #{record.weight,jdbcType=VARCHAR},
+            </if>
+            <if test="record.weightUnit != null">
+                weight_unit = #{record.weightUnit,jdbcType=VARCHAR},
+            </if>
+            <if test="record.serviceType != null">
+                service_type = #{record.serviceType,jdbcType=VARCHAR},
+            </if>
+            <if test="record.destinationServiceArea != null">
+                destination_service_area = #{record.destinationServiceArea,jdbcType=VARCHAR},
+            </if>
+            <if test="record.originServiceArea != null">
+                origin_service_area = #{record.originServiceArea,jdbcType=VARCHAR},
+            </if>
+            <if test="record.trackStatus != null">
+                track_status = #{record.trackStatus,jdbcType=TINYINT},
+            </if>
+        </set>
+        <if test="_parameter != null">
+            <include refid="Tracking_Update_By_Where_Clause"/>
+        </if>
+    </update>
+
+    <select id="Tracking_UpdateTracking_SelectForLog" parameterType="map" resultMap="TrackingMap">
+        select * from xms_tbl_tracking
+        <if test="_parameter != null">
+            <include refid="Tracking_Update_By_Where_Clause"/>
+        </if>
+    </select>
+
+    <delete id="deleteByShipmentId" parameterType="long">
+        delete from xms_tbl_tracking
+        where shipmentId = #{shipmentId}
+    </delete>
+
+    <select id="deleteByShipmentId_SelectForLog" parameterType="long" resultMap="TrackingMap">
+        select * from xms_tbl_tracking
+        where shipmentId = #{shipmentId}
+    </select>
+
+    <sql id="Tracking_Update_By_Where_Clause">
+        <where>
+            <foreach collection="example.oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" suffix=")" prefixOverrides="and">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach collection="criterion.value" item="listItem" open="(" close=")"
+                                             separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+</mapper>

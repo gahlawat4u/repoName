@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="AccessorialDetail">
+    <resultMap id="AccessorialDetailMap" type="AccessorialDetailVo">
+        <result column="accessorialid" property="accessorialId"/>
+        <result column="default_charge" property="defaultCharge"/>
+        <result column="apply_start_date" property="applyStartDate"/>
+        <result column="default_charge_carrier" property="defaultChargeCarrier"/>
+    </resultMap>
+
+    <select id="selectAllByAccessorialId" parameterType="AccessorialDetailFilter" resultMap="AccessorialDetailMap">
+        select * from xms_tbl_accessorial_detail
+        where accessorialid = #{accessorialId}
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectByFilter" parameterType="AccessorialDetailFilter" resultMap="AccessorialDetailMap">
+        SELECT
+        *
+        FROM
+        xms_tbl_accessorial_detail
+        WHERE
+        accessorialid = #{accessorialId}
+        <if test="applyStartDate != null and applyStartDate != ''">
+            AND apply_start_date = #{applyStartDate}
+        </if>
+    </select>
+    <select id="selectCountByAccessorialId" parameterType="long" resultType="integer">
+        SELECT
+        COUNT(*)
+        FROM
+        xms_tbl_accessorial_detail
+        WHERE
+        accessorialid = #{accessorialId}
+    </select>
+
+    <update id="updateAccessorialDetail" parameterType="AccessorialDetailUpdateVo">
+        UPDATE `xms_tbl_accessorial_detail`
+        SET
+        <if test="defaultCharge != null">
+            default_charge = #{defaultCharge},
+        </if>
+        <if test="applyStartDate != null">
+            apply_start_date = #{applyStartDate},
+        </if>
+        <if test="defaultChargeCarrier != null">
+            default_charge_carrier = #{defaultChargeCarrier}
+        </if>
+        WHERE
+        `accessorialid` = #{accessorialId}
+        AND `apply_start_date` = #{oldApplyStartDate}
+    </update>
+
+    <select id="updateAccessorialDetail_SelectForLog" parameterType="AccessorialDetailUpdateVo"
+            resultMap="AccessorialDetailMap">
+        select * from `xms_tbl_accessorial_detail`
+        WHERE
+        `accessorialid` = #{accessorialId}
+        AND `apply_start_date` = #{oldApplyStartDate}
+    </select>
+
+    <insert id="insertAccessorialDetail" parameterType="AccessorialDetailVo">
+        insert into xms_tbl_accessorial_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="accessorialId != null">
+                accessorialid,
+            </if>
+            <if test="defaultCharge != null">
+                default_charge,
+            </if>
+            <if test="applyStartDate != null">
+                apply_start_date,
+            </if>
+            <if test="defaultChargeCarrier != null">
+                default_charge_carrier,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="accessorialId != null">
+                #{accessorialId},
+            </if>
+            <if test="defaultCharge != null">
+                #{defaultCharge},
+            </if>
+            <if test="applyStartDate != null">
+                #{applyStartDate},
+            </if>
+            <if test="defaultChargeCarrier != null">
+                #{defaultChargeCarrier},
+            </if>
+        </trim>
+    </insert>
+
+    <delete id="deleteAccessorialDetail" parameterType="AccessorialDetailFilter">
+        DELETE FROM xms_tbl_accessorial_detail
+        WHERE
+        accessorialid = #{accessorialId}
+        AND apply_start_date = #{applyStartDate};
+    </delete>
+
+    <select id="deleteAccessorialDetail_SelectForLog" parameterType="AccessorialDetailFilter"
+            resultMap="AccessorialDetailMap">
+        SELECT * FROM xms_tbl_accessorial_detail
+        WHERE
+        accessorialid = #{accessorialId}
+        AND apply_start_date = #{applyStartDate};
+    </select>
+
+</mapper>

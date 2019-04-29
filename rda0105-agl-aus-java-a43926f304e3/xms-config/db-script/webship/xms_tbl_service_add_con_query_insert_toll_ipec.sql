@@ -1,0 +1,3 @@
+INSERT INTO `xms_tbl_service_add_con` (`add_con_name`, `add_con_type`, `add_con_code`, `shipment_type_id`) VALUES ('Insurance', 'checkbox', 'insurance', '215');
+INSERT INTO `xms_tbl_service_add_con` (`add_con_name`, `add_con_type`, `add_con_code`, `shipment_type_id`) VALUES ('Insurance', 'checkbox', 'insurance', '216');
+INSERT INTO `xms_tbl_service_add_con` (`add_con_name`, `add_con_type`, `add_con_code`, `shipment_type_id`) VALUES ('Insurance', 'checkbox', 'insurance', '217');

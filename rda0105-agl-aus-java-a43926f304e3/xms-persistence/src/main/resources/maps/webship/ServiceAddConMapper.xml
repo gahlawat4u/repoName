@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ServiceAddCon">
+    <resultMap id="ServiceAddConMap" type="ServiceAddConVo">
+        <id column="add_con_id" property="addConId"/>
+        <result column="add_con_name" property="addConName"/>
+        <result column="add_con_type" property="addConType"/>
+        <result column="add_con_code" property="addConCode"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <collection property="listProperties" column="add_con_id" javaType="ArrayList" ofType="ServiceAddConDetailsVo">
+            <result column="add_con_detail_name" property="addConDetailName"/>
+            <result column="add_con_detail_type" property="addConDetailType"/>
+            <result column="add_con_detail_code" property="addConDetailCode"/>
+            <result column="add_con_detail_list_value" property="addConDetailListValue"/>
+        </collection>
+    </resultMap>
+    <select id="selectByServiceIdAndShipmentTypeId" resultMap="ServiceAddConMap" parameterType="ServiceAddConFilter">
+        SELECT
+        *
+        FROM
+        xms_tbl_service_add_con AS sac
+        LEFT JOIN
+        xms_tbl_service_add_con_details AS sacd ON sacd.add_con_id = sac.add_con_id
+        WHERE
+        sac.shipment_type_id = #{shipmentTypeId}
+        and sac.add_con_name not like "%Insurance%"
+        ORDER BY sac.add_con_id
+    </select>
+</mapper>

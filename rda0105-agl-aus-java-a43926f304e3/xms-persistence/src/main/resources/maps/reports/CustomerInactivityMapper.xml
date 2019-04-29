@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CustomerInactivity">
+    <resultMap id="CustomerInactivityMap" type="CustomerInactivityVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="email" property="email"/>
+        <result column="sale_rep_name" property="saleRepName"/>
+        <result column="submission_date" property="submissionDate"/>
+        <result column="activation_date" property="activationDate"/>
+        <result column="last_invoice_date" property="lastInvoiceDate"/>
+    </resultMap>
+
+    <select id="getInactivityReport"
+            parameterType="com.gms.xms.filter.reports.customer.inactivity.CustomerInactivityFilter"
+            resultMap="CustomerInactivityMap">
+        select
+        c.customer_code,
+        ca.customer_name,
+        ca.email,
+        u.display_name as sale_rep_name,
+        c.create_date as submission_date,
+        c.activate_date as activation_date,
+        max(i.invoice_date) as last_invoice_date,
+        sum(if(i.invoice_date between #{startDate} and #{endDate},1,0)) as invoice_count_in_range,
+        sum(if(i.invoice_date between date_sub(#{startDate},interval 1 month) and date_sub(#{startDate},interval 1
+        day),1,0)) as invoice_count_in_last_month,
+        sum(if(i.invoice_date between date_sub(#{startDate},interval 3 month) and date_sub(#{startDate},interval 1
+        day),1,0)) as invoice_count_in_last_3_month,
+        sum(if(i.invoice_date between date_sub(#{startDate},interval 6 month) and date_sub(#{startDate},interval 1
+        day),1,0)) as invoice_count_in_last_6_month,
+        sum(if(i.invoice_date between date_sub(#{startDate},interval 9 month) and date_sub(#{startDate},interval 1
+        day),1,0)) as invoice_count_in_last_9_month,
+        sum(if(i.invoice_date between date_sub(#{startDate},interval 1 year) and date_sub(#{startDate},interval 1
+        day),1,0)) as invoice_count_in_last_year,
+        <![CDATA[
+		    sum(if(i.invoice_date < #{startDate},1,0)) as invoice_count_in_past
+		    ]]>
+        from
+        (select customer_code, sales_rep_id, date(create_date) as create_date, date(activate_date) as activate_date from
+        xms_tbl_customer
+        where franchise_code in (${franchiseList})
+        ) as c
+        inner join xms_tbl_customer_address as ca on ca.customer_code = c.customer_code
+        left join xms_tbl_user as u on u.userid = c.sales_rep_id
+        left join xms_tbl_invoice as i on i.customer_code = c.customer_code and i.invoice_date
+        group by c.customer_code
+        having invoice_count_in_range=0
+        <choose>
+            <when test="showCustomerOption==1">
+                <![CDATA[
+				and invoice_count_in_last_month>0
+	        	]]>
+            </when>
+            <when test="showCustomerOption==2">
+                <![CDATA[
+				and invoice_count_in_last_3_month>0
+	        	]]>
+            </when>
+            <when test="showCustomerOption==3">
+                <![CDATA[
+				and invoice_count_in_last_6_month>0
+	        	]]>
+            </when>
+            <when test="showCustomerOption==4">
+                <![CDATA[
+				and invoice_count_in_last_9_month>0
+	        	]]>
+            </when>
+            <when test="showCustomerOption==5">
+                <![CDATA[
+	        	and invoice_count_in_last_year>0
+	        	]]>
+            </when>
+            <when test="showCustomerOption==6">
+                <![CDATA[
+				and invoice_count_in_past>0
+	        	]]>
+            </when>
+            <when test="showCustomerOption==7">
+                and invoice_count_in_past=0
+            </when>
+        </choose>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="getInactivityCount"
+            parameterType="com.gms.xms.filter.reports.customer.inactivity.CustomerInactivityFilter" resultType="long">
+        select count(*) from
+        (select
+        c.customer_code,
+        ca.customer_name,
+        ca.email,
+        u.display_name as sale_rep_name,
+        c.create_date as submission_date,
+        c.activate_date as activation_date,
+        max(i.invoice_date) as last_invoice_date,
+        sum(if(i.invoice_date between #{startDate} and #{endDate},1,0)) as invoice_count_in_range,
+        sum(if(i.invoice_date between date_sub(#{startDate},interval 1 month) and date_sub(#{startDate},interval 1
+        day),1,0)) as invoice_count_in_last_month,
+        sum(if(i.invoice_date between date_sub(#{startDate},interval 3 month) and date_sub(#{startDate},interval 1
+        day),1,0)) as invoice_count_in_last_3_month,
+        sum(if(i.invoice_date between date_sub(#{startDate},interval 6 month) and date_sub(#{startDate},interval 1
+        day),1,0)) as invoice_count_in_last_6_month,
+        sum(if(i.invoice_date between date_sub(#{startDate},interval 9 month) and date_sub(#{startDate},interval 1
+        day),1,0)) as invoice_count_in_last_9_month,
+        sum(if(i.invoice_date between date_sub(#{startDate},interval 1 year) and date_sub(#{startDate},interval 1
+        day),1,0)) as invoice_count_in_last_year,
+        <![CDATA[
+			    sum(if(i.invoice_date < #{startDate},1,0)) as invoice_count_in_past
+			    ]]>
+        from
+        (select customer_code, sales_rep_id, date(create_date) as create_date, date(activate_date) as activate_date from
+        xms_tbl_customer
+        where franchise_code in (${franchiseList})
+        ) as c
+        inner join xms_tbl_customer_address as ca on ca.customer_code = c.customer_code
+        left join xms_tbl_user as u on u.userid = c.sales_rep_id
+        left join xms_tbl_invoice as i on i.customer_code = c.customer_code and i.invoice_date
+        group by c.customer_code
+        having invoice_count_in_range=0
+        <choose>
+            <when test="showCustomerOption==1">
+                <![CDATA[
+					and invoice_count_in_last_month>0
+		        	]]>
+            </when>
+            <when test="showCustomerOption==2">
+                <![CDATA[
+					and invoice_count_in_last_3_month>0
+		        	]]>
+            </when>
+            <when test="showCustomerOption==3">
+                <![CDATA[
+					and invoice_count_in_last_6_month>0
+		        	]]>
+            </when>
+            <when test="showCustomerOption==4">
+                <![CDATA[
+					and invoice_count_in_last_9_month>0
+		        	]]>
+            </when>
+            <when test="showCustomerOption==5">
+                <![CDATA[
+		        	and invoice_count_in_last_year>0
+		        	]]>
+            </when>
+            <when test="showCustomerOption==6">
+                <![CDATA[
+					and invoice_count_in_past>0
+		        	]]>
+            </when>
+            <when test="showCustomerOption==7">
+                and invoice_count_in_past=0
+            </when>
+        </choose>
+        ) as r
+    </select>
+</mapper>

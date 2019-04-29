@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="WebshipGroup">
+    <resultMap id="WebshipGroupMap" type="WebshipGroupVo">
+        <id column="webship_groupid" property="webshipGroupId"/>
+        <result column="webship_groupname" property="webshipGroupName"/>
+        <result column="owner_customerid" property="ownerCustomerId"/>
+    </resultMap>
+    <select id="selectAll" resultMap="WebshipGroupMap">select * from xms_tbl_webship_group
+    </select>
+    <select id="selectByFilter" parameterType="com.gms.xms.filter.admin.WebshipGroupFilter" resultMap="WebshipGroupMap">
+        select wg.webship_groupid, wg.webship_groupname,wg.owner_customerid from xms_tbl_webship_group as wg
+        <if test="orderBy!=null and orderBy!=''">order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+    <select id="countByFilter" parameterType="com.gms.xms.filter.admin.WebshipGroupFilter" resultType="long">select
+        count(*) from xms_tbl_webship_group
+    </select>
+    <insert id="insert" parameterType="WebshipGroupVo" useGeneratedKeys="true" keyProperty="webshipGroupId">insert into
+        xms_tbl_webship_group ( webship_groupname,owner_customerid) values (#{webshipGroupName},#{ownerCustomerId})
+    </insert>
+    <update id="update" parameterType="WebshipGroupVo">
+        update xms_tbl_webship_group
+        <set>
+            <if test="webshipGroupName != null">webship_groupname = #{webshipGroupName},
+            </if>
+            <if test="ownerCustomerId != null">owner_customerid = #{ownerCustomerId},
+            </if>
+        </set>
+        <where>webship_groupid = #{webshipGroupId}
+        </where>
+    </update>
+
+    <select id="update_SelectForLog" parameterType="WebshipGroupVo" resultMap="WebshipGroupMap">
+        select * from xms_tbl_webship_group
+        <where>webship_groupid = #{webshipGroupId}
+        </where>
+    </select>
+
+    <delete id="delete" parameterType="integer">delete from xms_tbl_webship_group where webship_groupid =
+        #{webshipGroupId}
+    </delete>
+
+    <select id="delete_SelectForLog" parameterType="integer" resultMap="WebshipGroupMap">select * from
+        xms_tbl_webship_group where webship_groupid = #{webshipGroupId}
+    </select>
+
+    <select id="countWebshipGroupByName" resultType="long" parameterType="WebshipGroupVo">
+        select COUNT(*) FROM xms_tbl_webship_group WHERE webship_groupname = #{webshipGroupName}
+        <if test="webshipGroupId != null">and webship_groupid != #{webshipGroupId}
+        </if>
+    </select>
+    <select id="selectById" parameterType="integer" resultMap="WebshipGroupMap">select * from xms_tbl_webship_group
+        where webship_groupid = #{webshipGroupId}
+    </select>
+</mapper>

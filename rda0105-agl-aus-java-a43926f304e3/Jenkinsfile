@@ -1,0 +1,102 @@
+pipeline {
+    agent any
+
+    parameters {
+        booleanParam(name: 'is_remote_deployment', defaultValue: false, description: 'Does this build deploy to Remote server? (default to Local server)')
+        string(name:'remote_server_ip', defaultValue:'52.74.170.244', description:'Remote server IP. Ignore this if you are deploying on Local server.')
+        string(name:'remote_server_username', defaultValue:'root', description:'Remote server username. Ignore this if you are deploying on Local server.')
+        string(name:'deployment_dir', defaultValue:'/opt/deployment_war', description:'Deployment folder where artifact is copied to after packing.')
+        string(name:'deployment_script', defaultValue:'/opt/deployment_scripts/xms_deployment.sh', description:'Deployment script to deploy these artifacts to Tomcat server.')
+        string(name:'admin_war_name', defaultValue:'xms-admin-au', description:'Name of Admin package (.war file). Leave this parameter blank if you don\'t want to deploy XMS Admin.')
+        string(name:'webship_war_name', defaultValue:'xms-webship-au', description:'Name of Webship package (.war file). Leave this parameter blank if you don\'t want to deploy XMS Webship.')
+    }
+
+    tools {
+        maven 'M3'
+    }
+
+    stages {
+            stage('Preparation') {
+                when {
+                    expression {
+                        wrap([$class: 'BuildUser']) {
+                            return env.BUILD_USER_ID != null;
+                        }
+                    }
+                }
+                steps {
+                    wrap([$class: 'BuildUser']) {
+                        slackSend (color: "warning", message: ":rocket: Build *STARTED*:\nStarted by *${env.BUILD_USER}*\nJob *${env.JOB_NAME}* [${env.BUILD_NUMBER}]\nCheck console output <${env.BUILD_URL}|here>", tokenCredentialId: "xms_ci_integration_token")
+                    }
+                }
+            }
+
+            stage('Build') {
+                when {
+                    expression {
+                        wrap([$class: 'BuildUser']) {
+                            return env.BUILD_USER_ID != null;
+                        }
+                    }
+                }
+                steps {
+                    sh 'mvn clean package -DskipTests=true'
+                }
+            }
+
+            stage('Start Tomcat Server') {
+				when {
+					expression {
+						wrap([$class: 'BuildUser']) {
+							return env.BUILD_USER_ID != null && !params.is_remote_deployment;
+						}
+					}
+				}
+				steps {
+					ansiColor('xterm') {
+						sh '''
+							sudo mv xms-admin/target/xms-admin-2.0.war xms-admin/target/${admin_war_name}.war
+							sudo cp xms-admin/target/${admin_war_name}.war ${deployment_dir}
+
+							sudo mv xms-webship/target/xms-webship-2.0.war xms-webship/target/${webship_war_name}.war
+							sudo cp xms-webship/target/${webship_war_name}.war ${deployment_dir}
+
+							sudo ${deployment_script} ${admin_war_name} ${webship_war_name}
+						'''
+					}
+				}
+			}
+
+			stage('Remote Deployment') {
+				when {
+					expression {
+						wrap([$class: 'BuildUser']) {
+							return env.BUILD_USER_ID != null && params.is_remote_deployment;
+						}
+					}
+				}
+				steps {
+					ansiColor('xterm') {
+						sh '''
+							sudo mv xms-admin/target/xms-admin-2.0.war xms-admin/target/${admin_war_name}.war
+							scp xms-admin/target/${admin_war_name}.war ${remote_server_username}@${remote_server_ip}:${deployment_dir}
+
+							sudo mv xms-webship/target/xms-webship-2.0.war xms-webship/target/${webship_war_name}.war
+							scp xms-webship/target/${webship_war_name}.war ${remote_server_username}@${remote_server_ip}:${deployment_dir}
+
+							ssh ${remote_server_username}@${remote_server_ip} ${deployment_script} ${admin_war_name} ${webship_war_name}
+						'''
+					}
+				}
+			}
+        }
+
+        post {
+            failure {
+                slackSend (color: "danger", message: ":scream: Build *FAILED*:\nJob *${env.JOB_NAME}* [${env.BUILD_NUMBER}]\nCheck console output <${env.BUILD_URL}|here>", tokenCredentialId: "xms_ci_integration_token")
+            }
+            success {
+                slackSend (color: "good", message: ":white_check_mark: Build *SUCCESSFUL*:\nJob *${env.JOB_NAME}* [${env.BUILD_NUMBER}]\nCheck console output <${env.BUILD_URL}|here>", tokenCredentialId: "xms_ci_integration_token")
+            }
+        }
+}

@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="SalesRepReport">
+    <resultMap id="SalesRepOverviewMap" type="SalesRepOverviewVo">
+        <result column="sales_rep_id" property="salesRepId"/>
+        <result column="userid" property="userId"/>
+        <result column="user_code" property="userCode"/>
+        <result column="user_name" property="userName"/>
+        <result column="display_name" property="displayName"/>
+        <result column="setups" property="setups"/>
+        <result column="activations" property="activations"/>
+        <result column="printed_invoices" property="printedInvoices"/>
+        <result column="email_invoices" property="emailInvoices"/>
+    </resultMap>
+
+    <resultMap id="SalesRepServiceStatMap" type="SalesRepServiceStatVo">
+        <result column="service_name" property="serviceName"/>
+        <result column="goal" property="goal"/>
+        <result column="payout" property="payout"/>
+        <result column="actual_shipments" property="actualShipments"/>
+        <result column="actual_margin" property="actualMargin"/>
+        <result column="goal_pct" property="goalPct"/>
+        <result column="payout_amt" property="payoutAmount"/>
+    </resultMap>
+
+    <resultMap id="SalesRepAirbillStatMap" type="SalesRepAirbillStatVo">
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="shipmentid" property="shipmentId"/>
+        <result column="airbill_number" property="airbillNumber"/>
+        <result column="total_paid" property="totalPaid"/>
+        <result column="customer_cost" property="customerCost"/>
+        <result column="franchise_cost" property="franchiseCost"/>
+        <result column="margin" property="margin"/>
+    </resultMap>
+
+    <select id="getSalesRepOverview" parameterType="com.gms.xms.filter.admin.payables.salesrep.SalesRepReportFilter"
+            resultMap="SalesRepOverviewMap">
+        <![CDATA[
+		select 
+			sr.sales_rep_id,
+		    sr.userid,
+			u.user_code,
+			u.user_name,
+			u.display_name,
+			ifnull(st.setups,0) as setups,
+		    ifnull(ac.activations,0) as activations,
+		    ifnull(pe.printed_invoices,0) as printed_invoices,
+		    ifnull(pe.email_invoices,0) as email_invoices
+		from xms_tbl_sales_rep as sr 
+		inner join xms_tbl_user as u on u.userid = sr.userid
+		inner join 
+			(select count(*) as setups from 
+				(select customer_code from xms_tbl_customer as cc
+				where cc.create_date>=date(#{startDate}) and cc.create_date<date_add(#{endDate},interval 1 day) 
+					and cc.franchise_code in (${franchiseList})			
+					and cc.sales_rep_id = #{userId}
+				union 
+				select franchise_code from xms_tbl_franchise as fc
+				where fc.create_date>=date(#{startDate}) and fc.create_date<date_add(#{endDate},interval 1 day) 
+					and left(fc.franchise_code,3) in (${franchiseList})
+					and fc.sales_rep_id = #{userId}
+				) as c
+			) as st on (1=1)
+		inner join 
+			(select count(*) as activations from 
+				(select customer_code from xms_tbl_customer as cc
+				where cc.activate_date>=date(#{startDate}) and cc.activate_date<date_add(#{endDate},interval 1 day) 
+					and cc.franchise_code in (${franchiseList})
+					and cc.sales_rep_id = #{userId}
+					union 
+				select franchise_code from xms_tbl_franchise as fc
+				where fc.activate_date>=date(#{startDate}) and fc.activate_date<date_add(#{endDate},interval 1 day) 
+					and left(fc.franchise_code,3) in (${franchiseList})
+					and fc.sales_rep_id = #{userId}
+				) as c
+			) as ac on (1=1)
+		inner join 
+			(select 
+				ifnull((max(case status when 4 then @rownum:=@rownum+1 else 0 end)),0) as printed_invoices,
+				ifnull(max((case status when 2 then @rowemail:=@rowemail+1 else 0 end)),0) as email_invoices 
+			from xms_tbl_invoice as i									
+			inner join 
+				(select customer_code from xms_tbl_customer as cc
+		        where cc.franchise_code in (${franchiseList}) 
+					and cc.sales_rep_id = #{userId}  
+					union 
+				select franchise_code from xms_tbl_franchise as fc
+				where left(fc.franchise_code,3) in (${franchiseList}) 
+					and fc.sales_rep_id = #{userId}
+		        ) as c on (c.customer_code=i.customer_code),((select @rownum:=0) p),((select @rowemail:=0) e)
+			where i.paid = 1 and i.invoice_date between #{startDate} and #{endDate}
+		    ) as pe on (1=1)
+		where sr.userid = #{userId}
+		]]>
+    </select>
+
+    <select id="getSalesRepServiceStats" parameterType="com.gms.xms.filter.admin.payables.salesrep.SalesRepReportFilter"
+            resultMap="SalesRepServiceStatMap">
+        <![CDATA[
+		select
+			sv.service_name,
+			cast(srs.goal as decimal(20,0)) as goal,
+		    srs.payout,
+		    ifnull(sm.actual_shipments,0) as actual_shipments,
+		    ifnull(sm.actual_margin,0) as actual_margin,
+		    100*ifnull(sm.actual_shipments,0)/srs.goal as goal_pct,
+		    srs.payout*ifnull(sm.actual_margin,0)/100 as payout_amt
+		from xms_tbl_sales_rep_service as srs
+		left join
+		    (select
+				sb.carrier,
+				sum(if(sb.accessorial_count=0,1,0)) as actual_shipments,
+				sum(sb.customer_cost+sb.customer_tax_amount-sb.franchise_cost-sb.franchise_tax_amount) as actual_margin
+			from
+				(select 
+					distinct shipmentid, airbill_number
+				from 
+					(select cc.customer_code from xms_tbl_customer as cc
+					where cc.sales_rep_id = #{userId}
+						and cc.franchise_code in (${franchiseList})
+						union
+					select f.franchise_code from xms_tbl_franchise as f
+					where f.sales_rep_id = #{userId}
+						and left(f.franchise_code,3) in (${franchiseList})
+					) as c 
+				inner join xms_tbl_invoice as i on i.customer_code = c.customer_code
+				inner join xms_tbl_invoice_payment as ip on ip.invoiceid = i.invoiceid
+				inner join xms_tbl_customer_payment as cp on cp.cus_paymentid = ip.cus_paymentid
+				inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+				where i.paid = 1
+					and cp.payment_date>=date(#{startDate}) and cp.payment_date<date_add(date(#{endDate}),interval 1 day)
+				order by shipmentid, airbill_number
+				) as awb
+			inner join xms_tbl_shipment_billing as sb on sb.shipmentid = awb.shipmentid and sb.airbill_number = awb.airbill_number
+			group by sb.carrier
+			) as sm on sm.carrier = srs.serviceid
+		inner join xms_tbl_sales_rep as sr on sr.sales_rep_id = srs.sales_rep_id
+		left join xms_tbl_service as sv on sv.service_id = srs.serviceid
+		where sr.userid = #{userId}
+		]]>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+    </select>
+
+    <select id="getSalesRepAirbillStats" parameterType="com.gms.xms.filter.admin.payables.salesrep.SalesRepReportFilter"
+            resultMap="SalesRepAirbillStatMap">
+        <![CDATA[
+		select
+			awb.invoice_code,
+		    awb.customer_code,
+		    awb.customer_name,
+			awb.shipmentid,
+		    awb.airbill_number,
+		    ifnull(awb.total_paid,0) as total_paid,
+		    sum(sb.customer_cost+sb.customer_tax_amount) as customer_cost,
+		    sum(sb.franchise_cost+sb.franchise_tax_amount) as franchise_cost,
+			sum(sb.customer_cost+sb.customer_tax_amount-sb.franchise_cost-sb.franchise_tax_amount) as margin
+		from
+			(select
+				aw.invoice_code,
+		        aw.customer_code,
+		        aw.customer_name,
+		        aw.shipmentid,
+		        aw.airbill_number,
+		        sum(ipd.amount) as total_paid
+		    from
+				(select 
+					i.invoice_code,
+					i.customer_code,
+					ca.customer_name,
+					si.shipmentid, 
+					si.airbill_number
+				from 
+					(select customer_code from xms_tbl_customer as c 
+					where c.sales_rep_id = #{userId}
+						and c.franchise_code in (${franchiseList})
+						union
+					select franchise_code from xms_tbl_franchise as f
+					where f.sales_rep_id = #{userId}
+						and left(f.franchise_code,3) in (${franchiseList})
+					) as c 
+				inner join xms_tbl_invoice as i on i.customer_code = c.customer_code
+				inner join xms_tbl_invoice_payment as ip on ip.invoiceid = i.invoiceid
+				inner join xms_tbl_customer_payment as cp on cp.cus_paymentid = ip.cus_paymentid
+				inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+				left join xms_tbl_customer_address as ca on ca.customer_code = c.customer_code
+				where i.paid = 1
+					and cp.payment_date>=date(#{startDate}) and cp.payment_date<date_add(date(#{endDate}),interval 1 day)
+				group by si.shipmentid, si.airbill_number
+				) as aw
+			left join xms_tbl_invoice_payment_detail as ipd on ipd.shipmentid = aw.shipmentid and ipd.airbill_number = aw.airbill_number
+		    group by aw.shipmentid, aw.airbill_number
+		    ) as awb
+		inner join xms_tbl_shipment_billing as sb on sb.shipmentid = awb.shipmentid and sb.airbill_number = awb.airbill_number
+		group by awb.shipmentid, awb.airbill_number
+		]]>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countSalesRepAirbillStats"
+            parameterType="com.gms.xms.filter.admin.payables.salesrep.SalesRepReportFilter" resultType="long">
+        <![CDATA[
+		select
+			count(*)
+		from
+			(select 
+				i.invoice_code,
+				i.customer_code,
+				ca.customer_name,
+				si.shipmentid, 
+				si.airbill_number
+			from 
+				(select customer_code from xms_tbl_customer as c 
+				where c.sales_rep_id = #{userId}
+					and c.franchise_code in (${franchiseList})
+					union
+				select franchise_code from xms_tbl_franchise as f
+				where f.sales_rep_id = #{userId}
+					and left(f.franchise_code,3) in (${franchiseList})
+				) as c 
+			inner join xms_tbl_invoice as i on i.customer_code = c.customer_code
+			inner join xms_tbl_invoice_payment as ip on ip.invoiceid = i.invoiceid
+			inner join xms_tbl_customer_payment as cp on cp.cus_paymentid = ip.cus_paymentid
+			inner join xms_tbl_shipment_invoice as si on si.invoiceid = i.invoiceid
+			left join xms_tbl_customer_address as ca on ca.customer_code = c.customer_code
+			where i.paid = 1
+				and cp.payment_date>=date(#{startDate}) and cp.payment_date<date_add(date(#{endDate}),interval 1 day)
+			group by si.shipmentid, si.airbill_number
+			) as r
+		]]>
+    </select>
+</mapper>

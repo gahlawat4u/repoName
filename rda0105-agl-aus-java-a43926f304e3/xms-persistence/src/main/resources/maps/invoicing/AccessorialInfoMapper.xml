@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AccessorialInfo">
+    <select id="selectAirbillInfoEditByShipmentId"
+            parameterType="ShipmentVo"
+            resultType="com.gms.xms.txndb.vo.invoicing.manageinvoice.editairbill.AirbillInfoEditVo">
+        <![CDATA[
+	SELECT
+		 s.customer_code AS customerCode,
+		 smb.senderaddressid AS senderAddressId,
+		 smb.receiveraddressid AS receiverAddressId,
+		 smb.description AS description,
+		 smb.require_calculate AS requireCalculate,
+		 smb.carrier AS serviceId,
+		 smb.airbill_number AS airbillNumber,
+		 smb.shipmentid AS shipmentId,
+		 st.shipment_type_id AS shipmentTypeId,
+		 sv.service_name AS serviceName,
+		 smb.carrier_cost AS carrierBaseCharge,
+		 smb.customer_cost AS calculatedCharge,
+		 smb.franchise_cost AS franchiseCost,
+		 smb.ship_date AS shipmentDate,
+		 0 AS forceCustCharge,
+		 smb.weight AS weight,
+		 smb.billing_reweight_weight AS reweightWeight,
+		 smb.bill_actual_dimension AS actualDimensions,
+		 smb.billing_freight_class AS freightClass,
+		 smb.origin_countryid AS originId,
+		 smb.destination_countryid AS destinationId,
+		 smb.service_area_code_origin AS originCity,
+		 smb.service_area_code_destination AS destinationCity,
+		 smb.zone AS zone,
+		 smb.pal AS noOfPieces,
+		 smb.shipper_reference AS reference,
+		 smb.billing_reference2 AS reference2,
+		 smb.billing_reference3 AS reference3,
+		 smb.billing_received_by AS receivedBy,
+		 smb.billing_received_date AS receivedDate,
+		 s.create_date AS createDate,
+		 s.modified_date AS modifiedDate,
+		 smb.tax_code AS taxCode,
+		 smb.customer_tax_amount AS taxAmount,
+		 smb.customer_tax_percent AS tax,
+		 TRUE AS isGst,
+		 CONCAT(
+		st.shipment_type_id,
+		 ',',
+		 st.content,
+		 ',',
+		 st.bound,
+		 ',',
+		 smb.carrier
+		) AS serviceCode
+		FROM
+		 xms_tbl_shipment_billing AS smb
+		LEFT JOIN xms_tbl_shipment as s ON s.shipmentid = smb.shipmentid
+		LEFT JOIN xms_tbl_service AS sv ON sv.service_id = smb.carrier
+		LEFT JOIN 
+		 (select shipment_type_id, shipment_type_name, serviceid, content, bound,
+				case pac.package_type
+				when 1 then concat(st.shipment_type_name,' Doc')
+				when 2 then concat(st.shipment_type_name,' Doc (Inbound)')
+				when 3 then concat(st.shipment_type_name)
+				when 4 then concat(st.shipment_type_name,' (Inbound)')
+				when 5 then concat(st.shipment_type_name,' Pak')
+				when 6 then concat(st.shipment_type_name,' Pak (Inbound)')
+				when 7 then concat(st.shipment_type_name)
+		end as display_description
+			from xms_tbl_shipment_type as st
+		 inner join
+		  (select 1 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Document' AS package_type_name, 1 AS package_type, 0 AS content, 0 AS bound
+		   union 
+		  select 0 AS doc, 1 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Document (Inbound)' AS package_type_name, 2 AS package_type, 0 AS content, 1 AS bound
+		   union 
+		  select 0 AS doc, 0 AS doc_in, 1 AS pack, 0 AS pack_in, 0 AS pak, 0 AS pak_in, 'Package' AS package_type_name, 3 AS package_type, 1 AS content, 0 AS bound
+		   union 
+		  select 0 AS doc, 0 AS doc_in, 0 AS pack, 1 AS pack_in, 0 AS pak, 0 AS pak_in, 'Package (Inbound)' AS package_type_name, 4 AS package_type, 1 AS content, 1 AS bound
+		   union 
+		  select 0 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 1 AS pak, 0 AS pak_in, 'Pak' AS package_type_name, 5 AS package_type, 2 AS content, 0 AS bound
+		   union 
+		  select 0 AS doc, 0 AS doc_in, 0 AS pack, 0 AS pack_in, 0 AS pak, 1 AS pak_in, 'Pak (Inbound)' AS package_type_name, 6 AS package_type, 2 AS content, 1 AS bound
+		   union
+		  select 0 as doc, 0 as doc_in, 0 as pack, 0 as pack_in, 0 as pak, 0 as pak_in, '' as package_type_name, 7 as package_type, -1 as content, 0 as bound 
+		  ) as pac on (pac.doc = st.document and st.document = 1)
+		  or (pac.doc_in = st.document_inbound and st.document_inbound = 1)
+		  or (pac.pack = st.package and st.package = 1)
+		  or (pac.pack_in = st.package_inbound and st.package_inbound = 1)
+		  or (pac.pak = st.pak and st.pak = 1)
+		  or (pac.pak_in = st.pak_inbound and st.pak_inbound = 1)
+		     or (st.document = 0 and st.document_inbound=0 and st.package = 0 and st.package_inbound = 0 and pac.content=-1)
+		 ) as st on st.shipment_type_name = smb.description and st.serviceid = smb.carrier AND st.display_description = smb.display_description
+		LEFT JOIN xms_tbl_address AS senderAddress ON senderAddress.addressid = smb.senderaddressid
+		LEFT JOIN xms_tbl_address AS receiverAddress ON receiverAddress.addressid = smb.receiveraddressid
+		WHERE
+		 smb.shipmentid = #{shipmentId}
+		AND smb.is_base_charge = 1
+		AND smb.airbill_number = #{airbillNumber}  limit 1;
+
+	]]>
+    </select>
+
+    <select id="selectAccessorialByShipmentId"
+            parameterType="long"
+            resultType="com.gms.xms.txndb.vo.invoicing.manageinvoice.editairbill.AccessorialInfoVo">
+        <![CDATA[
+	SELECT 
+		smb.carrier							AS serviceId,
+		smb.description 					AS description,
+		smb.description 					AS descriptionOld,
+		smb.customer_cost					AS customerCost,
+		smb.franchise_cost					AS franchiseCost,
+		smb.carrier_cost					AS carrierCost,
+		smb.customer_tax_percent			AS customerTaxPercent,
+		smb.customer_tax_amount				AS customerTaxAmount,
+		smb.require_calculate				AS requireCalculate,
+		true								AS isGst
+	FROM xms_tbl_shipment_billing 			AS smb
+	WHERE smb.shipmentid = #{shipmentId} and smb.is_base_charge = 0;
+	]]>
+    </select>
+
+    <select id="selectAccessorialByShipmentIdAndAirbillNumber" parameterType="com.gms.xms.txndb.vo.ShipmentVo"
+            resultType="AccessorialInfoVo">
+        select
+        smb.carrier as serviceId,
+        smb.description as description,
+        smb.description as descriptionOld,
+        smb.customer_cost as customerCost,
+        smb.franchise_cost as franchiseCost,
+        smb.carrier_cost as carrierCost,
+        smb.customer_tax_percent as customerTaxPercent,
+        smb.customer_tax_amount as customerTaxAmount,
+        smb.require_calculate as requireCalculate,
+        a.accessorialid as accessorialId,
+        smb.accessorial_count,
+        true as isGst
+        from xms_tbl_shipment_billing as smb
+        left join xms_tbl_accessorial as a on a.description = smb.description and smb.carrier = a.carrier
+        where smb.shipmentid = #{shipmentId}
+        and smb.airbill_number = #{airbillNumber}
+        and smb.is_base_charge = 0
+        group by description order by smb.accessorial_count
+    </select>
+
+    <select id="selectAccessorialsByShipmentId"
+            parameterType="int"
+            resultType="com.gms.xms.txndb.vo.invoicing.manageinvoice.editairbill.ViewEditInvoiceAccessorialVo">
+        <![CDATA[
+	SELECT 
+		acc.accessorialid 			AS accessorialId,
+		acc.`code`					AS accessorialCode,
+		acc.description 			AS accessorialName,
+		MAX(accd.apply_start_date) 	AS applyStartDate,
+		acc.isquotable 				AS isQuoteAble,
+		acc.typeid					AS typeId,
+		accd.default_charge 		AS defaultCharge
+	FROM xms_tbl_accessorial AS acc 
+	LEFT JOIN xms_tbl_accessorial_detail AS accd on acc.accessorialid = accd.accessorialid
+	WHERE acc.carrier=#{serviceId}
+	GROUP BY acc.accessorialid
+	]]>
+    </select>
+</mapper>

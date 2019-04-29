@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Area">
+    <resultMap id="AreaMap" type="AreaVo">
+        <id column="area_id" property="areaId"/>
+        <result column="area_name" property="areaName"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="AreaMap">
+        select area_id, area_name from xms_tbl_area
+        where area_id!=0
+        order by area_name
+    </select>
+    <select id="selectByFilter" parameterType="com.gms.xms.filter.admin.AreaFilter"
+            resultMap="AreaMap">
+        select
+        t.area_id,
+        t.area_name
+        from xms_tbl_area as t
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countByFilter" parameterType="com.gms.xms.filter.admin.AreaFilter"
+            resultType="long">
+        select count(*) from xms_tbl_area as t
+    </select>
+    <insert id="insert" parameterType="AreaVo"
+            useGeneratedKeys="true" keyProperty="areaId">
+        insert into xms_tbl_area (
+        area_name)
+        values (#{areaName})
+    </insert>
+
+    <update id="update" parameterType="AreaVo">
+        update xms_tbl_area
+        <set>
+            <if test="areaName != null">
+                area_name = #{areaName}
+            </if>
+        </set>
+        <where>
+            area_id = #{areaId}
+        </where>
+    </update>
+
+    <select id="update_SelectForLog" parameterType="AreaVo" resultMap="AreaMap">
+        select * from xms_tbl_area
+        where
+        area_id = #{areaId}
+    </select>
+
+    <delete id="delete" parameterType="integer">
+        delete from xms_tbl_area
+        where area_id = #{areaId}
+    </delete>
+
+    <select id="delete_SelectForLog" parameterType="integer" resultMap="AreaMap">
+        select * from xms_tbl_area
+        where area_id = #{areaId}
+    </select>
+
+    <select id="countAreaByName" resultType="long" parameterType="AreaVo">
+        select count(*) FROM xms_tbl_area
+        WHERE area_name = #{areaName}
+        <if test="areaId != null">and area_id != #{areaId}
+        </if>
+    </select>
+</mapper>

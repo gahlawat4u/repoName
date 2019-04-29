@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Product">
+    <resultMap id="ProductMap" type="ProductVo">
+        <id column="product_id" property="productId"/>
+        <result column="product_name" property="productName"/>
+        <result column="description" property="description"/>
+        <result column="carrierid" property="carrierId"/>
+        <result column="localizationid" property="localizationId"/>
+    </resultMap>
+
+    <select id="selectById" parameterType="long" resultMap="ProductMap">
+        select * from xms_tbl_product
+        where product_id = #{productId}
+    </select>
+
+    <select id="selectByFilter" parameterType="com.gms.xms.filter.admin.ProductFilter" resultMap="ProductMap">
+        select * from xms_tbl_product
+        WHERE carrierid = #{carrierId}
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countByFilter" parameterType="com.gms.xms.filter.admin.ProductFilter" resultType="long">
+        select count(*) from xms_tbl_product
+        WHERE carrierid = #{carrierId}
+    </select>
+
+    <select id="countProductByName" resultType="long" parameterType="com.gms.xms.filter.admin.ProductFilter">
+        select count(*) FROM xms_tbl_product
+        WHERE product_name = #{productName} and carrierid = #{carrierId}
+        <if test="productId != null">
+            and product_id != #{productId}
+        </if>
+    </select>
+
+    <insert id="insert" parameterType="ProductVo" useGeneratedKeys="true" keyProperty="productId">
+        insert into xms_tbl_product (product_name,description,carrierid,localizationid)
+        values (#{productName},#{description},#{carrierId},#{localizationId})
+    </insert>
+
+    <update id="update" parameterType="ProductVo">
+        update xms_tbl_product
+        <set>
+            <if test="productName != null">
+                product_name = #{productName},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="carrierId != null">
+                carrierid = #{carrierId},
+            </if>
+            <if test="localizationId != null">
+                localizationid = #{localizationId}
+            </if>
+        </set>
+        <where>
+            product_id = #{productId}
+        </where>
+    </update>
+
+    <select id="update_SelectForLog" parameterType="ProductVo" resultMap="ProductMap">
+        select * xms_tbl_product
+        where
+        product_id = #{productId}
+    </select>
+
+    <delete id="delete" parameterType="long">
+        delete from xms_tbl_product
+        where product_id = #{productId}
+    </delete>
+    <select id="delete_SelectForLog" parameterType="long" resultMap="ProductMap">
+        select * from xms_tbl_product
+        where product_id = #{productId}
+    </select>
+</mapper>

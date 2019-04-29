@@ -1,0 +1,784 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Customer">
+    <resultMap id="CustomerMap" type="CustomerVo">
+        <id column="id" property="id"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="franchise_code" property="franchiseCode"/>
+        <result column="srno" property="srno"/>
+        <result column="create_date" property="createDate"/>
+        <result column="activate_date" property="activateDate"/>
+        <result column="inactive" property="inActive"/>
+        <result column="group_id" property="groupId"/>
+        <result column="webship_groupid" property="webshipGroupId"/>
+        <result column="industryid" property="industryId"/>
+        <result column="sales_rep_id" property="salesRepId"/>
+        <result column="collectorid" property="collectorId"/>
+        <result column="registrationid" property="registrationId"/>
+        <result column="gstid" property="gstId"/>
+        <result column="rejection_note" property="rejectionNote"/>
+        <result column="minimun_base_charge" property="minimunBaseCharge"/>
+        <result column="invoice_sorting" property="invoiceSorting"/>
+        <result column="invoice_terms" property="invoiceTerms"/>
+        <result column="invoice_to_customerid" property="invoiceToCustomerId"/>
+        <result column="pickup_fee" property="pickupFee"/>
+        <result column="invoice_late_fee" property="invoiceLateFee"/>
+        <result column="email_invoice" property="emailInvoice"/>
+        <result column="download_csv_invoice" property="downloadCsvInvoice"/>
+        <result column="admin_function" property="adminFunction"/>
+        <result column="webship_adminid" property="webshipAdminId"/>
+        <result column="dhl_account" property="dhlAccount"/>
+        <result column="dhl_domestic_account" property="dhlDomesticAccount"/>
+        <result column="dhl_international_account" property="dhlInternationalAccount"/>
+        <result column="dhl_inbound_account" property="dhlInboundAccount"/>
+        <result column="other_account" property="otherAccount"/>
+        <result column="previous_carrier" property="previousCarrier"/>
+        <result column="area_id" property="areaId"/>
+        <result column="created_userid" property="createdUserId"/>
+        <result column="tnt_account" property="tntAccount"/>
+        <result column="aae_account" property="aaeAccount"/>
+        <result column="hub_account" property="hubAccount"/>
+        <result column="fedex_account" property="fedexAccount"/>
+        <result column="toll_priority_account" property="tollPriorityAccount"/>
+        <result column="startrack_account" property="startrackAccount"/>
+        <result column="uk_mail_account" property="ukMailAccount"/>
+        <result column="ups_account" property="upsAccount"/>
+        <result column="booking_email_notification" property="bookingEmailNotification"/>
+        <result column="toll_ipec_account" property="tollIpecAccount"/>
+        <result column="ram_account" property="ramAccount"/>
+        <result column="usps_account" property="uspsAccount"/>
+        <result column="ontrac_account" property="ontracAccount"/>
+        <result column="dispatch_id" property="dispatchId"/>
+        <result column="enable_si" property="enableSi"/>
+        <result column="profile_image" property="profileImage"/>
+        
+    </resultMap>
+    <resultMap id="CustomerDetailMap" type="CustomerDetailVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="create_date" property="createDate"/>
+        <result column="activate_date" property="activateDate"/>
+        <result column="invoice_days" property="invoiceDays"/>
+        <result column="email_invoice" property="emailInvoice"/>
+        <result column="webship_group_name" property="webshipGroupName"/>
+        <result column="sales_rep_name" property="salesRepName"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="address_contact_name" property="addressContactName"/>
+        <result column="address_address1" property="addressAddress1"/>
+        <result column="address_address2" property="addressAddress2"/>
+        <result column="address_city" property="addressCity"/>
+        <result column="address_country" property="addressCountry"/>
+        <result column="address_postal_code" property="addressPostalCode"/>
+        <result column="address_phone" property="addressPhone"/>
+        <result column="address_email" property="addressEmail"/>
+        <result column="billing_customer_name" property="billingCustomerName"/>
+        <result column="billing_contact_name" property="billingContactName"/>
+        <result column="billing_address1" property="billingAddress1"/>
+        <result column="billing_address2" property="billingAddress2"/>
+        <result column="billing_city" property="billingCity"/>
+        <result column="billing_country" property="billingCountry"/>
+        <result column="billing_postal_code" property="billingPostalCode"/>
+        <result column="billing_phone" property="billingPhone"/>
+        <result column="billing_email" property="billingEmail"/>
+        <result column="dhl_international_account" property="dhlInternationalAccount"/>
+        <result column="dhl_inbound_account" property="dhlInboundAccount"/>
+    </resultMap>
+    <resultMap id="CustomerListEntryMap" type="CustomerListEntryVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="mtd" property="mtd"/>
+        <result column="ytd" property="ytd"/>
+        <result column="last_shipment_date" property="lastShipmentDate"/>
+    </resultMap>
+    <resultMap id="CustomerOwnerMap" type="CustomerVo" extends="CustomerMap">
+        <id column="customer_code" property="customerCode"/>
+        <association property="customerAddress" javaType="CustomerAddressVo">
+            <id column="customer_code" property="customerCode"/>
+            <result column="owner" property="owner"/>
+        </association>
+    </resultMap>
+
+    <resultMap type="CustomerVo" id="selectCustomerWithCusAddressMap" extends="CustomerMap">
+        <association property="customerAddress" javaType="CustomerAddressVo" autoMapping="true"
+                     resultMap="RateSheetColumn.RateSheetColumnMap"></association>
+        <association property="webshipGroup" javaType="WebshipGroupVo" autoMapping="true"
+                     resultMap="WebshipGroup.WebshipGroupMap"></association>
+        <association property="customerBilling" javaType="CustomerBillingAddressVo" autoMapping="true"
+                     resultMap="CustomerBillingAddress.CustomerBillingAddressMap"></association>
+    </resultMap>
+
+    <resultMap id="QuotedCustomerMap" type="CustomerVo">
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerAddress.customerName"/>
+    </resultMap>
+
+    <select id="selectCustomerByFilter" parameterType="com.gms.xms.filter.account.franchises.ManageFranchiseFilter"
+            resultMap="selectCustomerWithCusAddressMap">
+        SELECT
+        c.*, ca.*, ct.*, cba.*, wg.*
+        FROM
+        xms_tbl_customer AS c
+        LEFT JOIN xms_tbl_customer_address AS ca ON ca.customer_code = c.customer_code
+        LEFT JOIN xms_tbl_country AS ct ON ct.countryid = ca.country
+        LEFT JOIN xms_tbl_customer_billing_address AS cba ON cba.customer_code = c.customer_code
+        LEFT JOIN xms_tbl_webship_group AS wg ON wg.webship_groupid = c.webship_groupid
+        WHERE
+        c.customer_code = #{customerCode};
+    </select>
+
+    <select id="getLastestCustCodeByFranCode" parameterType="long" resultType="long">select max(customer_code) from
+        xms_tbl_customer where franchise_code = #{franchiseCode}
+    </select>
+    <select id="selectByCode" parameterType="String" resultMap="CustomerMap">
+        select * from xms_tbl_customer where customer_code = #{customerCode}
+        limit 1
+    </select>
+    <select id="countByCode" parameterType="long" resultType="int">select count(*) from xms_tbl_customer where
+        customer_code = #{customerCode}
+    </select>
+    <select id="selectMinimumBaseChargeByCustomerCode" resultMap="CustomerMap" parameterType="long">SELECT * FROM
+        (SELECT customer_code, IFNULL(minimun_base_charge, 0) AS minimun_base_charge FROM xms_tbl_customer UNION SELECT
+        franchise_code, IFNULL(minimun_base_charge, 0) AS minimun_base_charge FROM xms_tbl_franchise) AS minbase WHERE
+        customer_code = #{customerCode}
+    </select>
+    <select id="Customer_SelectCustomerCodeByLoginIsAdmin" resultMap="CustomerMap">SELECT DISTINCT customer_code FROM
+        xms_tbl_customer UNION SELECT franchise_code AS customer_code FROM xms_tbl_franchise
+    </select>
+    <select id="Customer_SelectCustomerCodeByLoginIsFranchiseAccount" resultMap="CustomerMap"
+            parameterType="com.gms.xms.txndb.vo.UserVo">SELECT DISTINCT customer_code FROM xms_tbl_customer WHERE
+        franchise_code = #{userCode} OR sales_rep_id = #{userId} OR created_userid = #{userId} OR sales_rep_id IN (
+        SELECT userid FROM xms_tbl_user WHERE parent_user_id IN (#{userId}) ) UNION SELECT franchise_code AS
+        customer_code FROM xms_tbl_franchise WHERE franchise_code LIKE #{userCode} OR sales_rep_id = #{userId} OR
+        created_userid = #{userId} OR sales_rep_id IN ( SELECT userid FROM xms_tbl_user WHERE parent_user_id IN
+        (#{userId}) )
+    </select>
+    <select id="Customer_SelectCustomerCodeByLoginIsSaleManager" resultMap="CustomerMap"
+            parameterType="com.gms.xms.txndb.vo.UserVo">SELECT DISTINCT customer_code FROM xms_tbl_prospect AS p WHERE
+        customer_code IS NOT NULL AND p.sales_person_id IN ( SELECT userid FROM xms_tbl_user WHERE parent_user_id IN
+        (#{userId}) ) UNION SELECT DISTINCT customer_code FROM xms_tbl_customer WHERE created_userid = #{userId} OR
+        sales_rep_id = #{userId} OR sales_rep_id IN ( SELECT userid FROM xms_tbl_user WHERE parent_user_id IN
+        (#{userId}) ) UNION SELECT DISTINCT franchise_code AS customer_code FROM xms_tbl_franchise WHERE created_userid
+        = #{userId} OR sales_rep_id = #{userId} OR sales_rep_id IN ( SELECT userid FROM xms_tbl_user WHERE
+        parent_user_id IN (#{userId}) )
+    </select>
+    <select id="Customer_SelectCustomerCodeByLoginIsSaleRep" resultMap="CustomerMap"
+            parameterType="com.gms.xms.txndb.vo.UserVo">SELECT DISTINCT customer_code FROM xms_tbl_customer WHERE
+        created_userid = #{userId} OR sales_rep_id = #{userId} UNION SELECT DISTINCT franchise_code AS customer_code
+        FROM xms_tbl_franchise WHERE created_userid = #{userId} OR sales_rep_id = #{userId}
+    </select>
+    <select id="Customer_SelectCustomerCodeByLoginIsSaleTelemarketer" resultMap="CustomerMap"
+            parameterType="com.gms.xms.txndb.vo.UserVo">SELECT DISTINCT customer_code FROM xms_tbl_prospect AS p LEFT
+        JOIN xms_tbl_prospect_history AS h ON p.prospectid = h.prospectid WHERE p.customer_code IS NOT NULL AND userid =
+        #{userId} UNION SELECT DISTINCT customer_code FROM xms_tbl_customer WHERE created_userid = #{userId} OR
+        sales_rep_id = #{userId} UNION SELECT DISTINCT franchise_code AS customer_code FROM xms_tbl_franchise WHERE
+        created_userid = #{userId} OR sales_rep_id = #{userId}
+    </select>
+    <select id="searchCustomers" parameterType="CustomerFilter" resultMap="CustomerDetailMap">
+        select
+        cu.customer_code,
+        cu.create_date,
+        cu.activate_date,
+        cu.days as invoice_days,
+        cu.email_invoice,
+        cu.dhl_international_account,
+        cu.dhl_inbound_account,
+        wg.webship_groupname as webship_group_name,
+        u1.display_name as sales_rep_name,
+        ca.customer_name,
+        ca.contact_name as address_contact_name,
+        ca.address1 as address_address1,
+        ca.address2 as address_address2,
+        ca.city as address_city,
+        co1.countryname as address_country,
+        ca.postal_code as address_postal_code,
+        ca.phone as address_phone,
+        ca.email as address_email,
+        cba.billing_customer_name,
+        cba.billing_contact_name,
+        cba.billing_address1,
+        cba.billing_address2,
+        cba.billing_city,
+        co2.countryname as billing_country,
+        cba.billing_postal_code,
+        cba.billing_phone,
+        cba.billing_email
+        from
+        (select
+        customer_code,
+        create_date,
+        activate_date,
+        webship_groupid,
+        sales_rep_id,
+        dhl_account,
+        dhl_domestic_account,
+        dhl_international_account,
+        dhl_inbound_account,
+        it1.days,
+        email_invoice
+        from xms_tbl_customer as c
+        inner join xms_tbl_invoice_terms as it1 on it1.invoice_terms_id = c.invoice_terms
+        where franchise_code in
+        <foreach item="franCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franCode}
+        </foreach>
+        <if test="customerCode!=null">
+            and customer_code like concat(#{customerCode},'%')
+        </if>
+        <if test="submitStartDate!=null">
+            and date(create_date) >= #{submitStartDate}
+        </if>
+        <if test="submitEndDate!=null">
+            and date(create_date) &lt;= #{submitEndDate}
+        </if>
+        <if test="dhlInternationalAccount!=null and dhlInternationalAccount!=''">
+            and dhl_international_account = #{dhlInternationalAccount}
+        </if>
+        <if test="dhlInboundAccount!=null and dhlInboundAccount!=''">
+            and dhl_inbound_account = #{dhlInboundAccount}
+        </if>
+        <if test="webshipGroupId!=null">
+            and webship_groupid = #{webshipGroupId}
+        </if>
+        <if test="salesRepId!=null">
+            and sales_rep_id = #{salesRepId}
+        </if>
+        ) as cu
+        left join xms_tbl_customer_address as ca on ca.customer_code = cu.customer_code
+        left join xms_tbl_user as u1 on u1.userid = cu.sales_rep_id
+        left join xms_tbl_webship_group as wg on wg.webship_groupid = cu.webship_groupid
+        left join xms_tbl_country as co1 on co1.countryid = ca.country
+        left join xms_tbl_customer_billing_address as cba on cba.customer_code = cu.customer_code
+        left join xms_tbl_country as co2 on co2.countryid = cba.billing_country
+        <where>
+            <if test="customerName!=null and customerName!=''">
+                and ca.customer_name like concat('%',#{customerName},'%')
+            </if>
+        </where>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+    <select id="searchCustomersCount" parameterType="CustomerFilter" resultType="long">
+        select count(*) from
+        (select
+        customer_code,
+        create_date,
+        activate_date,
+        webship_groupid,
+        sales_rep_id,
+        dhl_account,
+        dhl_domestic_account,
+        dhl_international_account,
+        dhl_inbound_account,
+        it1.days,
+        email_invoice
+        from xms_tbl_customer as c
+        inner join xms_tbl_invoice_terms as it1 on it1.invoice_terms_id = c.invoice_terms
+        where franchise_code in
+        <foreach item="franCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franCode}
+        </foreach>
+        <if test="customerCode!=null">
+            and customer_code like concat(#{customerCode},'%')
+        </if>
+        <if test="submitStartDate!=null">
+            and date(create_date) >= #{submitStartDate}
+        </if>
+        <if test="submitEndDate!=null">
+            and date(create_date) &lt;= #{submitEndDate}
+        </if>
+        <if test="dhlInternationalAccount!=null and dhlInternationalAccount!=''">
+            and dhl_international_account = #{dhlInternationalAccount}
+        </if>
+        <if test="dhlInboundAccount!=null and dhlInboundAccount!=''">
+            and dhl_inbound_account = #{dhlInboundAccount}
+        </if>
+        <if test="webshipGroupId!=null">
+            and webship_groupid = #{webshipGroupId}
+        </if>
+        <if test="salesRepId!=null">
+            and sales_rep_id = #{salesRepId}
+        </if>
+        ) as cu
+        left join xms_tbl_customer_address as ca on ca.customer_code = cu.customer_code
+        left join xms_tbl_user as u1 on u1.userid = cu.sales_rep_id
+        left join xms_tbl_webship_group as wg on wg.webship_groupid = cu.webship_groupid
+        left join xms_tbl_country as co1 on co1.countryid = ca.country
+        left join xms_tbl_customer_billing_address as cba on cba.customer_code = cu.customer_code
+        left join xms_tbl_country as co2 on co2.countryid = cba.billing_country
+        <where>
+            <if test="customerName!=null and customerName!=''">
+                and ca.customer_name like concat('%',#{customerName},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="selectCustomerList" parameterType="CustomerFilter" resultMap="CustomerListEntryMap">
+        select
+        c.customer_code,
+        ca.customer_name,
+        ifnull(r.mtd,0.00) as mtd,
+        ifnull(r.ytd,0.00) as ytd,
+        max(s.shipment_date) as last_shipment_date
+        from xms_tbl_customer as c
+        inner join xms_tbl_customer_address as ca on ca.customer_code = c.customer_code
+        left join
+        (select
+        i.customer_code,
+        <![CDATA[
+				sum(if(sb.ship_date>=DATE_SUB(NOW(), INTERVAL 1 month) and sb.ship_date<=NOW(),sb.customer_cost+sb.customer_tax_amount,0.00)) as mtd, 
+				sum(if(sb.ship_date>=DATE_SUB(NOW(), INTERVAL 1 year) and sb.ship_date<=NOW(),sb.customer_cost+sb.customer_tax_amount,0.00)) as ytd 
+				]]>
+        from xms_tbl_shipment_billing as sb
+        inner join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and si.airbill_number =
+        sb.airbill_number
+        inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        inner join xms_tbl_customer as cu on cu.customer_code = i.customer_code
+        where cu.franchise_code in
+        <foreach item="franCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franCode}
+        </foreach>
+        <![CDATA[
+				and sb.ship_date>=DATE_SUB(NOW(), INTERVAL 1 year) and sb.ship_date<=NOW() 
+			]]>
+        group by customer_code
+        ) as r on r.customer_code = c.customer_code
+        left join xms_tbl_shipment as s on s.customer_code = c.customer_code
+        where c.franchise_code in
+        <foreach item="franCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franCode}
+        </foreach>
+        <if test="salesRepId!=null and salesRepId!=''">
+            and c.sales_rep_id = #{salesRepId}
+        </if>
+        group by c.customer_code
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countCustomerList" parameterType="CustomerFilter" resultType="long">
+        select
+        count(*)
+        from
+        (select
+        c.customer_code,
+        ca.customer_name,
+        ifnull(r.mtd,0.00) as mtd,
+        ifnull(r.ytd,0.00) as ytd,
+        max(s.shipment_date) as last_shipment_date
+        from xms_tbl_customer as c
+        inner join xms_tbl_customer_address as ca on ca.customer_code = c.customer_code
+        left join
+        (select
+        i.customer_code,
+        <![CDATA[
+					sum(if(sb.ship_date>=DATE_SUB(NOW(), INTERVAL 1 month) and sb.ship_date<=NOW(),sb.customer_cost+sb.customer_tax_amount,0.00)) as mtd, 
+					sum(if(sb.ship_date>=DATE_SUB(NOW(), INTERVAL 1 year) and sb.ship_date<=NOW(),sb.customer_cost+sb.customer_tax_amount,0.00)) as ytd 
+					]]>
+        from xms_tbl_shipment_billing as sb
+        inner join xms_tbl_shipment_invoice as si on si.shipmentid = sb.shipmentid and si.airbill_number =
+        sb.airbill_number
+        inner join xms_tbl_invoice as i on i.invoiceid = si.invoiceid
+        inner join xms_tbl_customer as cu on cu.customer_code = i.customer_code
+        where cu.franchise_code in
+        <foreach item="franCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franCode}
+        </foreach>
+        <![CDATA[
+					and sb.ship_date>=DATE_SUB(NOW(), INTERVAL 1 year) and sb.ship_date<=NOW() 
+				]]>
+        group by customer_code
+        ) as r on r.customer_code = c.customer_code
+        left join xms_tbl_shipment as s on s.customer_code = c.customer_code
+        where c.franchise_code in
+        <foreach item="franCode" collection="franchiseCodeList" open="(" close=")" separator=",">
+            #{franCode}
+        </foreach>
+        <if test="salesRepId!=null and salesRepId!=''">
+            and c.sales_rep_id = #{salesRepId}
+        </if>
+        group by c.customer_code
+        ) as result
+    </select>
+
+    <select id="selectByFranchises" parameterType="list" resultMap="CustomerMap">
+        select distinct customer_code,id from xms_tbl_customer
+        where franchise_code in
+        <foreach item="franchiseCode" index="index" collection="list" open="(" close=")" separator=",">
+            #{franchiseCode}
+        </foreach>
+        order by customer_code
+    </select>
+
+    <select id="getCustomerDetailByCode" parameterType="String" resultMap="CustomerDetailMap">
+        select
+        distinct
+        cu.customer_code,
+        cu.create_date,
+        cu.activate_date,
+        cu.days as invoice_days,
+        cu.email_invoice,
+        cu.dhl_international_account,
+        cu.dhl_inbound_account,
+        wg.webship_groupname as webship_group_name,
+        u1.display_name as sales_rep_name,
+        ca.customer_name,
+        ca.contact_name as address_contact_name,
+        ca.address1 as address_address1,
+        ca.address2 as address_address2,
+        ca.city as address_city,
+        co1.countryname as address_country,
+        ca.postal_code as address_postal_code,
+        ca.phone as address_phone,
+        ca.email as address_email,
+        cba.billing_customer_name,
+        cba.billing_contact_name,
+        cba.billing_address1,
+        cba.billing_address2,
+        cba.billing_city,
+        co2.countryname as billing_country,
+        cba.billing_postal_code,
+        cba.billing_phone,
+        cba.billing_email
+        from
+        (select
+        customer_code,
+        create_date,
+        activate_date,
+        webship_groupid,
+        sales_rep_id,
+        dhl_account,
+        dhl_domestic_account,
+        dhl_international_account,
+        dhl_inbound_account,
+        it1.days,
+        email_invoice
+        from xms_tbl_customer as c
+        inner join xms_tbl_invoice_terms as it1 on it1.invoice_terms_id = c.invoice_terms
+        union
+        select
+        franchise_code as customer_code,
+        create_date,
+        activate_date,
+        webship_groupid,
+        sales_rep_id,
+        dhl_account,
+        dhl_domestic_account,
+        dhl_international_account,
+        dhl_inbound_account,
+        it2.days,
+        email_invoice
+        from xms_tbl_franchise as f
+        inner join xms_tbl_invoice_terms as it2 on it2.invoice_terms_id = f.invoice_terms
+        ) as cu
+        left join xms_tbl_customer_address as ca on ca.customer_code = cu.customer_code
+        left join xms_tbl_user as u1 on u1.userid = cu.sales_rep_id
+        left join xms_tbl_webship_group as wg on wg.webship_groupid = cu.webship_groupid
+        left join xms_tbl_country as co1 on co1.countryid = ca.country
+        left join xms_tbl_customer_billing_address as cba on cba.customer_code = cu.customer_code
+        left join xms_tbl_country as co2 on co2.countryid = cba.billing_country where cu.customer_code = #{customerCode}
+    </select>
+
+    <select id="checkAglWarranty" parameterType="long" resultType="int">
+        select
+        enable_si
+        from
+        xms_tbl_customer
+        where
+        customer_code = #{customerCode}
+    </select>
+
+    <insert id="insertCustomer" parameterType="CustomerVo" useGeneratedKeys="true" keyProperty="id">
+        insert into xms_tbl_customer (
+        customer_code,
+        franchise_code,
+        srno,
+        create_date,
+        inactive,
+        group_id,
+        webship_groupid,
+        industryid,
+        sales_rep_id,
+        collectorid,
+        registrationid,
+        gstid,
+        rejection_note,
+        minimun_base_charge,
+        invoice_sorting,
+        invoice_terms,
+        invoice_to_customerid,
+        pickup_fee,
+        invoice_late_fee,
+        email_invoice,
+        download_csv_invoice,
+        admin_function,
+        webship_adminid,
+        dhl_account,
+        dhl_domestic_account,
+        dhl_international_account,
+        dhl_inbound_account,
+        other_account,
+        previous_carrier,
+        area_id,
+        created_userid,
+        tnt_account,
+        aae_account,
+        hub_account,
+        fedex_account,
+        toll_priority_account,
+        uk_mail_account,
+        ups_account,
+        booking_email_notification,
+        toll_ipec_account,
+        startrack_account,
+        dispatch_id,
+        ram_account,
+        usps_account,
+        ontrac_account,
+        enable_si,
+        profile_image
+        ) values (
+        #{customerCode},
+        #{franchiseCode},
+        #{srno},
+        #{createDate},
+        #{inActive},
+        #{groupId},
+        #{webshipGroupId},
+        #{industryId},
+        #{salesRepId},
+        #{collectorId},
+        #{registrationId},
+        #{gstId},
+        #{rejectionNote},
+        #{minimunBaseCharge},
+        #{invoiceSorting},
+        #{invoiceTerms},
+        #{invoiceToCustomerId},
+        #{pickupFee},
+        #{invoiceLateFee},
+        #{emailInvoice},
+        #{downloadCsvInvoice},
+        #{adminFunction},
+        #{webshipAdminId},
+        #{dhlAccount},
+        #{dhlDomesticAccount},
+        #{dhlInternationalAccount},
+        #{dhlInboundAccount},
+        #{otherAccount},
+        #{previousCarrier},
+        #{areaId},
+        #{createdUserId},
+        #{tntAccount},
+        #{aaeAccount},
+        #{hubAccount},
+        #{fedexAccount},
+        #{tollPriorityAccount},
+        #{ukMailAccount},
+        #{upsAccount},
+        #{bookingEmailNotification},
+        #{tollIpecAccount},
+        #{startrackAccount},
+        #{dispatchId},
+        #{ramAccount},
+        #{uspsAccount},
+        #{ontracAccount},
+        #{enableSi},
+      #{profileImage}
+        )
+    </insert>
+
+    <update id="updateCustomer" parameterType="CustomerVo">
+        update xms_tbl_customer
+        <set>
+            <if test="franchiseCode!=null">franchise_code = #{franchiseCode},
+            </if>
+            <if test="srno!=null">srno = #{srno},
+            </if>
+            <if test="createDate!=null">create_date = #{createDate},
+            </if>
+            <if test="activateDate!=null">activate_date = #{activateDate},
+            </if>
+            <if test="inActive!=null">inactive = #{inActive},
+            </if>
+            <if test="groupId!=null">group_id = #{groupId},
+            </if>
+            <if test="webshipGroupId!=null">webship_groupid = #{webshipGroupId},
+            </if>
+            <if test="industryId!=null">industryid = #{industryId},
+            </if>
+            <if test="salesRepId!=null">sales_rep_id = #{salesRepId},
+            </if>
+            <if test="collectorId!=null">collectorid = #{collectorId},
+            </if>
+            <if test="registrationId!=null">registrationid = #{registrationId},
+            </if>
+            <if test="gstId!=null">gstid = #{gstId},
+            </if>
+            <if test="rejectionNote!=null">rejection_note = #{rejectionNote},
+            </if>
+            <if test="minimunBaseCharge!=null">minimun_base_charge = #{minimunBaseCharge},
+            </if>
+            <if test="invoiceSorting!=null">invoice_sorting = #{invoiceSorting},
+            </if>
+            <if test="invoiceTerms!=null">invoice_terms = #{invoiceTerms},
+            </if>
+            <if test="invoiceToCustomerId!=null">invoice_to_customerId = #{invoiceToCustomerId},
+            </if>
+            <if test="pickupFee!=null">pickup_fee = #{pickupFee},
+            </if>
+            <if test="invoiceLateFee!=null">invoice_late_fee = #{invoiceLateFee},
+            </if>
+            <if test="emailInvoice!=null">email_invoice = #{emailInvoice},
+            </if>
+            <if test="downloadCsvInvoice!=null">download_csv_invoice = #{downloadCsvInvoice},
+            </if>
+            <if test="adminFunction!=null">admin_function = #{adminFunction},
+            </if>
+            <if test="webshipAdminId!=null">webship_adminid = #{webshipAdminId},
+            </if>
+            <if test="dhlAccount!=null">dhl_account = #{dhlAccount},
+            </if>
+            <if test="dhlDomesticAccount!=null">dhl_domestic_account = #{dhlDomesticAccount},
+            </if>
+            <if test="dhlInternationalAccount!=null">dhl_international_account = #{dhlInternationalAccount},
+            </if>
+            <if test="dhlInboundAccount!=null">dhl_inbound_account = #{dhlInboundAccount},
+            </if>
+            <if test="otherAccount!=null">other_account = #{otherAccount},
+            </if>
+            <if test="previousCarrier!=null">previous_carrier = #{previousCarrier},
+            </if>
+            <if test="areaId!=null">area_id = #{areaId},
+            </if>
+            <if test="createdUserId!=null">created_userid = #{createdUserId},
+            </if>
+            <if test="tntAccount!=null">tnt_account = #{tntAccount},
+            </if>
+            <if test="aaeAccount!=null">aae_account = #{aaeAccount},
+            </if>
+            <if test="hubAccount!=null">hub_account = #{hubAccount},
+            </if>
+            <if test="fedexAccount!=null">fedex_account = #{fedexAccount},
+            </if>
+            <if test="tollPriorityAccount!=null">toll_priority_account = #{tollPriorityAccount},
+            </if>
+            <if test="ukMailAccount!=null">uk_mail_account = #{ukMailAccount},
+            </if>
+            <if test="upsAccount!=null">ups_account = #{upsAccount},
+            </if>
+            <if test="bookingEmailNotification!=null">booking_email_notification = #{bookingEmailNotification},
+            </if>
+            <if test="tollIpecAccount!=null">toll_ipec_account = #{tollIpecAccount},
+            </if>
+            <if test="startrackAccount!=null">startrack_account = #{startrackAccount},
+            </if>
+            <if test="dispatchId!=null">dispatch_id = #{dispatchId},
+            </if>
+            <if test="ramAccount!=null">ram_account = #{ramAccount},
+            </if>
+            <if test="uspsAccount!=null">usps_account = #{uspsAccount},
+            </if>
+            <if test="ontracAccount!=null">ontrac_account = #{ontracAccount},
+            </if>
+            <if test="enableSi!=null">enable_si = #{enableSi},
+            </if>
+            <if test="profileImage!=null">profile_image = #{profileImage},
+            </if>
+        </set>
+        where customer_code = #{customerCode}
+    </update>
+
+
+    <select id="updateCustomer_SelectForLog" parameterType="CustomerVo" resultMap="CustomerMap">
+        select * from xms_tbl_customer
+        where customer_code = #{customerCode}
+    </select>
+
+    <update id="updateActiveDateByCustomerCode" parameterType="CustomerVo">
+        update xms_tbl_customer
+        set
+        activate_date = #{activateDate}
+        where
+        customer_code = #{customerCode}
+    </update>
+    
+     <update id="updateCustomerProfileImage" parameterType="CustomerVo">
+        update xms_tbl_customer
+        set
+        profile_image = #{profileImage}
+        where
+        customer_code = #{customerCode}
+    </update>
+    
+
+    <select id="updateActiveDateByCustomerCode_SelectForLog" parameterType="CustomerVo" resultMap="CustomerMap">
+        select * from xms_tbl_customer
+        where
+        customer_code = #{customerCode}
+    </select>
+
+    <select id="selectOwnerByFranchises" parameterType="CustomerFilter" resultMap="CustomerOwnerMap">
+        SELECT c.customer_code as customer_code,a.owner as owner FROM xms_tbl_customer c LEFT JOIN
+        xms_tbl_customer_address a ON c.customer_code = a.customer_code AND a.usertype =1 where LEFT(c.customer_code,3)
+        in
+        <foreach item="franCode" collection="franchiseCodeList" open="(" close=")" separator=",">#{franCode}
+        </foreach>
+    </select>
+
+    <select id="getQuotedCustomersByFranchises" parameterType="string" resultMap="QuotedCustomerMap">
+        select
+        distinct
+        q.customer_code,
+        ca.customer_name
+        from xms_tbl_webship_quote_log as q
+        left join xms_tbl_customer_address as ca on ca.customer_code = q.customer_code
+        where left(q.customer_code,3) in (${_parameter})
+        order by q.customer_code, ca.customer_name
+    </select>
+
+    <select id="getCustomersByFranchise" parameterType="string" resultMap="QuotedCustomerMap">
+        select
+        c.customer_code,
+        ca.customer_name
+        from xms_tbl_customer as c
+        inner join xms_tbl_customer_address as ca on ca.customer_code = c.customer_code
+        where c.franchise_code = #{franchiseCode}
+        order by c.customer_code
+    </select>
+    <select id="selectSaleRepByCustomerCode" parameterType="String" resultType="Long">
+        Select sales_rep_id from xms_tbl_customer where customer_code = #{customerCode}
+    </select>
+
+    <select id="getCustomerBaseChargeByCode" parameterType="string" resultType="double">
+        select
+        minimun_base_charge
+        from
+        (select customer_code, minimun_base_charge from xms_tbl_customer
+        where customer_code = #{customerCode}
+        union
+        select franchise_code as customer_code, minimun_base_charge from xms_tbl_franchise
+        where franchise_code = #{customerCode}
+        ) as c
+        where customer_code = #{customerCode}
+    </select>
+    <select id="getUserIdByCustomerCode" parameterType="string" resultType="long">
+        <bind name="customerCode" value="_parameter"/>
+        select id from xms_tbl_customer
+        where customer_code = #{customerCode}
+    </select>
+    
+    
+    <select id="getCustomerProfileImage" parameterType="String" resultMap="CustomerMap">
+        
+        select profile_image from xms_tbl_customer
+        where customer_code = #{customerCode}
+    </select>
+  
+</mapper>

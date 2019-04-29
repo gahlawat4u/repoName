@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="LanguageValue">
+    <resultMap id="LanguageValueMap" type="LanguageValueVo">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="lang_code" property="langCode" jdbcType="VARCHAR"/>
+        <result column="original" property="original" jdbcType="VARCHAR"/>
+        <result column="destination" property="destination" jdbcType="VARCHAR"/>
+        <result column="mode" property="mode" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="getAll" resultMap="LanguageValueMap">
+        select * from xms_tbl_language_value
+    </select>
+    <select id="getLanguageValueList" parameterType="com.gms.xms.filter.languagevalue.LanguageValueFilter"
+            resultMap="LanguageValueMap">
+        select * from xms_tbl_language_value
+        <where>
+            <if test="langCode != null and langCode != ''">
+                lang_code = #{langCode}
+            </if>
+            <if test="original != null and original != ''">
+                <bind name="originalBinded" value="'%' + _parameter.getOriginal() + '%'"/>
+                AND ( original like #{originalBinded} or destination like #{originalBinded})
+            </if>
+        </where>
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+    <select id="getLanguageValueCount" parameterType="com.gms.xms.filter.languagevalue.LanguageValueFilter"
+            resultType="long">
+        select count(*) from xms_tbl_language_value
+        <where>
+            <if test="langCode != null and langCode != ''">
+                lang_code = #{langCode}
+            </if>
+            <if test="original != null and original != ''">
+                <bind name="originalBinded" value="'%' + _parameter.getOriginal() + '%'"/>
+                AND ( original like #{originalBinded} or destination like #{originalBinded})
+            </if>
+        </where>
+    </select>
+    <select id="selectLanguageValueByKey" parameterType="LanguageValueVo" resultMap="LanguageValueMap">
+        select * from xms_tbl_language_value
+        where lang_code = #{langCode} and original = #{original}
+    </select>
+    <select id="selectLanguageValueById" parameterType="int" resultMap="LanguageValueMap">
+        select * from xms_tbl_language_value
+        where id = #{id}
+    </select>
+    <insert id="insertLanguageValue" parameterType="LanguageValueVo">
+        INSERT INTO `xms_tbl_language_value`
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            lang_code,
+            original,
+            destination,
+            mode
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{langCode},#{original},#{destination},#{mode}
+        </trim>
+    </insert>
+    <update id="updateLanguageValue" parameterType="LanguageValueVo">
+        UPDATE xms_tbl_language_value
+        SET
+        <if test="mode != null and mode != ''">
+            mode = #{mode},
+        </if>
+        destination = #{destination}
+        WHERE id = #{id}
+    </update>
+
+    <select id="updateLanguageValue_SelectForLog" parameterType="LanguageValueVo" resultMap="LanguageValueMap">
+        select * from xms_tbl_language_value
+        WHERE id = #{id}
+    </select>
+</mapper>

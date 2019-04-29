@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="CreditNoteDetail">
+    <resultMap id="CreditNoteDetailMap" type="CreditNoteDetailVo">
+        <result column="credit_note_id" property="creditNoteId"/>
+        <result column="adjustmentid" property="adjustmentId"/>
+        <result column="cus_paymentid" property="cusPaymentId"/>
+        <result column="credit_airbill_number" property="creditAirbillNumber"/>
+        <result column="amount" property="amount"/>
+        <result column="gst_amount" property="gstAmount"/>
+        <result column="reason" property="reason"/>
+    </resultMap>
+
+    <select id="countByCreditNoteId" parameterType="long" resultType="int">
+        select count(*) from xms_tbl_credit_note_detail
+        where credit_note_id = #{creditNoteId}
+    </select>
+
+    <select id="selectByCreditNoteId" resultMap="CreditNoteDetailMap" parameterType="long">
+        SELECT
+        *
+        FROM
+        xms_tbl_credit_note_detail
+        WHERE
+        credit_note_id = #{creditNoteId}
+    </select>
+
+    <select id="selectByAdjustmentId" resultMap="CreditNoteDetailMap" parameterType="long">
+        SELECT
+        *
+        FROM
+        xms_tbl_credit_note_detail
+        WHERE
+        adjustmentid = #{adjustmentId}
+    </select>
+
+    <select id="selectByVo" resultMap="CreditNoteDetailMap" parameterType="CreditNoteDetailVo">
+        SELECT
+        *
+        FROM
+        xms_tbl_credit_note_detail
+        WHERE
+        adjustmentid = #{adjustmentId} and credit_note_id = #{creditNoteId}
+    </select>
+
+    <insert id="insert" parameterType="CreditNoteDetailVo">
+        insert into xms_tbl_credit_note_detail (credit_note_id, reason, adjustmentid, cus_paymentid,
+        credit_airbill_number, amount, gst_amount)
+        values (#{creditNoteId}, #{reason}, #{adjustmentId}, #{cusPaymentId}, #{creditAirbillNumber}, #{amount},
+        #{gstAmount})
+    </insert>
+
+    <update id="resetCustomerPaymentId" parameterType="long">
+        update xms_tbl_credit_note_detail
+        set cus_paymentid = 0
+        where credit_note_id = #{creditNoteId}
+    </update>
+
+    <select id="resetCustomerPaymentId_SelectForLog" parameterType="long" resultMap="CreditNoteDetailMap">
+        select * from xms_tbl_credit_note_detail
+        where credit_note_id = #{creditNoteId}
+    </select>
+
+    <update id="updateCustomerPaymentId" parameterType="CreditNoteDetailVo">
+        update xms_tbl_credit_note_detail
+        set cus_paymentid = #{cusPaymentId}
+        where credit_note_id = #{creditNoteId} and adjustmentid = #{adjustmentId}
+    </update>
+
+    <select id="updateCustomerPaymentId_SelectForLog" parameterType="CreditNoteDetailVo"
+            resultMap="CreditNoteDetailMap">
+        select * from xms_tbl_credit_note_detail
+        where credit_note_id = #{creditNoteId} and adjustmentid = #{adjustmentId}
+    </select>
+
+    <update id="update" parameterType="CreditNoteDetailVo">
+        update xms_tbl_credit_note_detail
+        <set>
+            <if test="reason!=null">
+                reason = #{reason},
+            </if>
+            <if test="cusPaymentId!=null">
+                cus_paymentid = #{cusPaymentId},
+            </if>
+            <if test="amount!=null">
+                amount = #{amount},
+            </if>
+            <if test="gstAmount!=null">
+                gst_amount = #{gstAmount},
+            </if>
+        </set>
+        where credit_note_id = #{creditNoteId} and adjustmentid = #{adjustmentId}
+    </update>
+
+    <select id="update_SelectForLog" parameterType="CreditNoteDetailVo" resultMap="CreditNoteDetailMap">
+        update xms_tbl_credit_note_detail
+        where credit_note_id = #{creditNoteId} and adjustmentid = #{adjustmentId}
+    </select>
+
+    <delete id="deleteCreditDetailByAdjustmentId" parameterType="long">
+        delete from xms_tbl_credit_note_detail
+        where adjustmentid = #{adjustmentId}
+    </delete>
+
+    <select id="deleteCreditDetailByAdjustmentId_SelectForLog" parameterType="long" resultMap="CreditNoteDetailMap">
+        select * from xms_tbl_credit_note_detail
+        where adjustmentid = #{adjustmentId}
+    </select>
+</mapper>

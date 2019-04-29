@@ -1,0 +1,12 @@
+UPDATE `xms_tbl_shipment_type_package` SET `allow_custom_value`='0' WHERE (`sp_id`='189');
+UPDATE `xms_tbl_shipment_type_package` SET `allow_custom_value`='0' WHERE (`sp_id`='188');
+UPDATE `xms_tbl_shipment_type_package` SET `allow_custom_value`='0' WHERE (`sp_id`='187');
+UPDATE `xms_tbl_shipment_type_package` SET `allow_custom_value`='0' WHERE (`sp_id`='186');
+UPDATE `xms_tbl_shipment_type_package` SET `allow_custom_value`='0' WHERE (`sp_id`='185');
+UPDATE `xms_tbl_shipment_type_package` SET `allow_custom_value`='0' WHERE (`sp_id`='184');
+UPDATE `xms_tbl_shipment_type_package` SET `allow_custom_value`='0' WHERE (`sp_id`='183');
+UPDATE `xms_tbl_shipment_type_package` SET `allow_custom_value`='0' WHERE (`sp_id`='182');
+UPDATE `xms_tbl_shipment_type_package` SET `allow_custom_value`='0' WHERE (`sp_id`='181');
+UPDATE `xms_tbl_shipment_type_package` SET `allow_custom_value`='0' WHERE (`sp_id`='180');
+UPDATE `xms_tbl_shipment_type_package` SET `allow_custom_value`='0' WHERE (`sp_id`='179');
+UPDATE `xms_tbl_shipment_type_package` SET `allow_custom_value`='0' WHERE (`sp_id`='178');

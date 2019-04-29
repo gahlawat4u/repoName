@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Territory">
+    <resultMap id="TerritoryMap" type="TerritoryVo">
+        <id column="territory_id" property="territoryId"/>
+
+        <result column="territory_name" property="territoryName"/>
+    </resultMap>
+
+    <select id="selectById" parameterType="long" resultMap="TerritoryMap">
+        select *
+        from xms_tbl_territory
+        where territory_id = #{territory_id}
+    </select>
+
+    <select id="selectByFilter" parameterType="com.gms.xms.filter.admin.TerritoryFilter"
+            resultMap="TerritoryMap">
+        select
+        t.territory_id,
+        t.territory_name
+        from xms_tbl_territory as t
+        <if test="orderBy!=null and orderBy!=''">
+            order by ${orderBy}
+        </if>
+        <if test="startRecord!=null and pageSize!=null">
+            limit #{startRecord}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="countByFilter" parameterType="com.gms.xms.filter.admin.TerritoryFilter"
+            resultType="long">
+        select count(*) from xms_tbl_territory as t
+    </select>
+    <insert id="insert" parameterType="TerritoryVo"
+            useGeneratedKeys="true" keyProperty="territoryId">
+        insert into xms_tbl_territory (
+        territory_name)
+        values (#{territoryName})
+    </insert>
+
+    <update id="update" parameterType="TerritoryVo">
+        update xms_tbl_territory
+        <set>
+            <if test="territoryName != null">
+                territory_name = #{territoryName}
+            </if>
+        </set>
+        <where>
+            territory_id = #{territoryId}
+        </where>
+    </update>
+
+    <select id="update_SelectForLog" parameterType="TerritoryVo" resultMap="TerritoryMap">
+        select * from xms_tbl_territory
+        where
+        territory_id = #{territoryId}
+    </select>
+
+    <delete id="delete" parameterType="long">
+        delete from xms_tbl_territory
+        where territory_id = #{territoryId}
+    </delete>
+
+    <select id="delete_SelectForLog" parameterType="long" resultMap="TerritoryMap">
+        select * from xms_tbl_territory
+        where territory_id = #{territoryId}
+    </select>
+
+    <select id="countTerritoryByName" resultType="long" parameterType="TerritoryVo">
+        select count(*) FROM xms_tbl_territory
+        WHERE territory_name = #{territoryName}
+        <if test="territoryId != null">and territory_id != #{territoryId}
+        </if>
+    </select>
+</mapper>

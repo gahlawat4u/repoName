@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ImportRateSheet">
+    <resultMap id="ImportRateSheetMap" type="ImportRateSheetVo">
+        <result column="sheet_id" property="sheetId"/>
+        <result column="sheet_name" property="sheetName"/>
+        <result column="create_date" property="createDate"/>
+        <result column="shipment_type_id" property="shipmentTypeId"/>
+        <result column="cells" property="cells"/>
+        <result column="source_zone" property="sourceZone"/>
+        <result column="carrier_cost" property="carrierCost"/>
+        <result column="is_per_weight" property="isPerWeight"/>
+        <result column="content" property="content"/>
+        <result column="bound" property="bound"/>
+    </resultMap>
+
+    <resultMap id="RateSheetTypeByCarrierMap" type="RateSheetTypeVo" extends="ShipmentType.ShipmentType">
+        <result column="id" property="id"/>
+        <result column="type" property="type"/>
+    </resultMap>
+
+    <select id="getRateSheetTypeByCarrier" parameterType="long" resultMap="RateSheetTypeByCarrierMap">
+        select
+        shipment_type_id,
+        shipment_type_name,
+        id,
+        type
+        from
+        (select
+        shipment_type_id,
+        if(s.localizationid>0,If(ld.detail='' or ld.detail is null,l.default_text,ld.detail),shipment_type_name) as
+        shipment_type_name,
+        concat(shipment_type_id , ',0,0,',allow_non_carrier,',',allow_carrier) as id,
+        'document' as type
+        from xms_tbl_shipment_type as s
+        left join xms_tbl_localization as l on s.localizationid=l.localizationid
+        left join xms_tbl_localization_detail as ld on ld.languageid = 0 and s.localizationid=ld.localizationid
+        where s.serviceid=#{carrierId} and document='1' order by shipment_type_name
+        ) as doc
+        union
+        select
+        shipment_type_id,
+        shipment_type_name,
+        id,
+        type
+        from
+        (select
+        shipment_type_id,
+        if(s.localizationid>0,If(ld.detail='' or ld.detail is null,l.default_text,ld.detail),shipment_type_name) as
+        shipment_type_name,
+        concat(shipment_type_id , ',0,1,',allow_non_carrier,',',allow_carrier) as id,
+        'document_inbound' as type
+        from xms_tbl_shipment_type as s
+        left join xms_tbl_localization as l on s.localizationid=l.localizationid
+        left join xms_tbl_localization_detail as ld on ld.languageid = 0 and s.localizationid=ld.localizationid
+        where s.serviceid=#{carrierId} and document_inbound='1' order by shipment_type_name
+        ) as doc_in
+        union
+        select
+        shipment_type_id,
+        shipment_type_name,
+        id,
+        type
+        from
+        (select
+        shipment_type_id,
+        if(s.localizationid>0,If(ld.detail='' or ld.detail is null,l.default_text,ld.detail),shipment_type_name) as
+        shipment_type_name,
+        concat(shipment_type_id , ',1,0,',allow_non_carrier,',',allow_carrier) as id ,
+        'package' as type
+        from xms_tbl_shipment_type as s
+        left join xms_tbl_localization as l on s.localizationid=l.localizationid
+        left join xms_tbl_localization_detail as ld on ld.languageid = 0 and s.localizationid=ld.localizationid
+        where s.serviceid=#{carrierId} and package='1' order by shipment_type_name
+        ) as pack
+        union
+        select
+        shipment_type_id,
+        shipment_type_name,
+        id,
+        type
+        from
+        (select
+        shipment_type_id,
+        if(s.localizationid>0,If(ld.detail='' or ld.detail is null,l.default_text,ld.detail),shipment_type_name) as
+        shipment_type_name,
+        concat(shipment_type_id , ',1,1,',allow_non_carrier,',',allow_carrier) as id ,
+        'package_inbound' as type
+        from xms_tbl_shipment_type as s
+        left join xms_tbl_localization as l on s.localizationid=l.localizationid
+        left join xms_tbl_localization_detail as ld on ld.languageid = 0 and s.localizationid=ld.localizationid
+        where s.serviceid=#{carrierId} and package_inbound='1' order by shipment_type_name
+        ) as pack_in
+        union
+        select
+        shipment_type_id,
+        shipment_type_name,
+        id,
+        type
+        from
+        (select
+        shipment_type_id,
+        if(s.localizationid>0,If(ld.detail='' or ld.detail is null,l.default_text,ld.detail),shipment_type_name) as
+        shipment_type_name,
+        concat(shipment_type_id , ',2,0,',allow_non_carrier,',',allow_carrier) as id ,
+        'pak' as type
+        from xms_tbl_shipment_type as s
+        left join xms_tbl_localization as l on s.localizationid=l.localizationid
+        left join xms_tbl_localization_detail as ld on ld.languageid = 0 and s.localizationid=ld.localizationid
+        where s.serviceid=#{carrierId} and pak='1' order by shipment_type_name
+        ) as pak
+        union
+        select
+        shipment_type_id,
+        shipment_type_name,
+        id,
+        type
+        from
+        (select
+        shipment_type_id,
+        if(s.localizationid>0,If(ld.detail='' or ld.detail is null,l.default_text,ld.detail),shipment_type_name) as
+        shipment_type_name,
+        concat(shipment_type_id , ',2,1,',allow_non_carrier,',',allow_carrier) as id ,
+        'pak_inbound' as type
+        from xms_tbl_shipment_type as s
+        left join xms_tbl_localization as l on s.localizationid=l.localizationid
+        left join xms_tbl_localization_detail as ld on ld.languageid = 0 and s.localizationid=ld.localizationid
+        where s.serviceid=#{carrierId} and pak_inbound='1' order by shipment_type_name
+        ) as pak_in
+        union
+        select
+        shipment_type_id,
+        shipment_type_name,
+        id,
+        type
+        from
+        (select
+        shipment_type_id,
+        if(s.localizationid>0,If(ld.detail='' or ld.detail is null,l.default_text,ld.detail),shipment_type_name) as
+        shipment_type_name,
+        concat(shipment_type_id , ',0,0,',allow_non_carrier,',',allow_carrier) as id ,
+        '' as type
+        from xms_tbl_shipment_type as s
+        left join xms_tbl_localization as l on s.localizationid=l.localizationid
+        left join xms_tbl_localization_detail as ld on ld.languageid = 0 and s.localizationid=ld.localizationid
+        where s.serviceid=#{carrierId} and document!='1' and document_inbound!='1'
+        and package!='1' and package_inbound!='1' and pak!='1' and pak_inbound!='1' order by shipment_type_name
+        ) as non_type
+        order by shipment_type_name
+    </select>
+
+    <select id="countRateSheetNameByFilter" parameterType="com.gms.xms.filter.admin.ratesheets.ImportRateSheetFilter"
+            resultType="long">
+        select
+        count(*)
+        from
+        (select
+        *
+        from
+        xms_tbl_rate_sheet
+        where
+        shipment_type_id = #{shipmentTypeId}
+        and sheet_name = #{sheetName}
+        and carrier_cost = #{carrierCost}
+        and is_per_weight = #{isPerWeight}
+        ) as r
+    </select>
+
+    <select id="countRateSheetDuplicate" parameterType="com.gms.xms.filter.admin.ratesheets.ImportRateSheetFilter"
+            resultType="long">
+        select
+        count(*)
+        from
+        (select
+        *
+        from
+        xms_tbl_rate_sheet
+        where
+        shipment_type_id = #{shipmentTypeId}
+        and sheet_name = #{sheetName}
+        and carrier_cost = #{carrierCost}
+        and content = #{content}
+        and bound = #{bound}
+        ) as r
+    </select>
+
+    <insert id="insertRateSheet" parameterType="RateSheetVo" useGeneratedKeys="true" keyProperty="sheetId">
+        insert into xms_tbl_rate_sheet
+        (sheet_name,
+        create_date,
+        shipment_type_id,
+        cells,
+        <if test="sourceZone!=null">
+            source_zone,
+        </if>
+        carrier_cost,
+        is_per_weight,
+        content,
+        bound)
+        values
+        (#{sheetName},
+        now(),
+        #{shipmentTypeId},
+        #{cells},
+        <if test="sourceZone!=null">
+            #{sourceZone},
+        </if>
+        #{carrierCost},
+        #{isPerWeight},
+        #{content},
+        #{bound})
+    </insert>
+
+    <insert id="insertDataCols" parameterType="RateSheetColumnVo" useGeneratedKeys="true" keyProperty="columnId">
+        insert into xms_tbl_rate_sheet_column
+        (sheet_id,
+        column_name)
+        values
+        (#{sheetId},
+        #{columnName})
+    </insert>
+
+    <insert id="insertDataRows" parameterType="RateSheetRowVo" useGeneratedKeys="true" keyProperty="rowId">
+        <if test="rowName!=null">
+            insert into xms_tbl_rate_sheet_row
+            (sheet_id,
+            row_name,
+            char_row_name,
+            ischar)
+            values
+            (#{sheetId},
+            #{rowName},
+            '',
+            0)
+        </if>
+        <if test="charRowName!=null">
+            insert into xms_tbl_rate_sheet_row
+            (sheet_id,
+            row_name,
+            char_row_name,
+            ischar)
+            values
+            (#{sheetId},
+            0,
+            #{charRowName},
+            1)
+        </if>
+    </insert>
+
+    <insert id="insertDataDetails" parameterType="RateSheetDetailVo">
+        insert into xms_tbl_rate_sheet_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="sheetId!=null">
+                sheet_id,
+            </if>
+            <if test="rowId!=null">
+                row_id,
+            </if>
+            <if test="columnId!=null">
+                column_id,
+            </if>
+            <if test="value!=null">
+                value,
+            </if>
+            <if test="minCharge!=null">
+                min_charge,
+            </if>
+            <if test="baseCharge!=null">
+                base_charge,
+            </if>
+            <if test="perKg!=null">
+                per_kg,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="sheetId!=null">
+                #{sheetId},
+            </if>
+            <if test="rowId!=null">
+                #{rowId},
+            </if>
+            <if test="columnId!=null">
+                #{columnId},
+            </if>
+            <if test="value!=null">
+                #{value},
+            </if>
+            <if test="minCharge!=null">
+                #{minCharge},
+            </if>
+            <if test="baseCharge!=null">
+                #{baseCharge},
+            </if>
+            <if test="perKg!=null">
+                #{perKg},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="selectRateSheetColumnId" parameterType="RateSheetColumnVo" resultType="long">
+        select
+        column_id
+        from
+        xms_tbl_rate_sheet_column
+        where
+        sheet_id = #{sheetId}
+        and column_name = #{columnName}
+    </select>
+
+    <select id="selectRateSheetRowId" parameterType="RateSheetRowVo" resultType="long">
+        <if test="rowName!=null">
+            select
+            row_id
+            from
+            xms_tbl_rate_sheet_row
+            where
+            sheet_id = #{sheetId}
+            and row_name = #{rowName}
+        </if>
+        <if test="charRowName!=null">
+            select
+            row_id
+            from
+            xms_tbl_rate_sheet_row
+            where
+            sheet_id = #{sheetId}
+            and char_row_name = #{charRowName}
+        </if>
+    </select>
+
+    <update id="updateCells" parameterType="RateSheetVo">
+        update xms_tbl_rate_sheet
+        set
+        cells = #{cells}
+        where
+        sheet_id = #{sheetId}
+    </update>
+
+    <select id="updateCells_SelectForLog" parameterType="RateSheetVo" resultMap="ImportRateSheetMap">
+        select * from xms_tbl_rate_sheet
+
+        where
+        sheet_id = #{sheetId}
+    </select>
+</mapper>

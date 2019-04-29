@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TollPickupResponse>
+    <Header>
+        <Sender>Toll</Sender>
+        <Receiver>TollConnect</Receiver>
+        <DocumentType>TollPickupResponse</DocumentType>
+        <DocumentID>200612171220227</DocumentID>
+        <DateTimeStamp>2006-01-12T17:12:27+1100</DateTimeStamp>
+    </Header>
+    <PickupConfirmation>
+        <ConfirmationNumber>PRIO:562582</ConfirmationNumber>
+    </PickupConfirmation>
+</TollPickupResponse>
